@@ -11,7 +11,9 @@ import {
   handleNodeImageFromXmind,
   handleNodeImageToXmind,
   getXmindContentXmlData,
-  parseNodeGeneralizationToXmind
+  parseNodeGeneralizationToXmind,
+  collectAssociativeLinesToXmind,
+  applyXmindRelationships
 } from '../utils/xmind'
 
 //  解析.xmind文件
@@ -65,6 +67,10 @@ const transformXmind = async (content, files, handleMultiCanvas) => {
       // 节点内容
       text: isUndef(node.title) ? '' : node.title
     }
+    // 保留主题 id，关联线两端靠它对应回来
+    if (node.id) {
+      newNode.data.uid = node.id
+    }
     // 节点备注
     if (node.notes) {
       const notesData = node.notes.realHTML || node.notes.plain
@@ -117,6 +123,7 @@ const transformXmind = async (content, files, handleMultiCanvas) => {
     }
   }
   walk(nodeTree, newTree)
+  applyXmindRelationships(newTree, data.relationships)
   await Promise.all(waitLoadImageList)
   return newTree
 }
@@ -227,7 +234,9 @@ const transformToXmind = async (data, name) => {
   // 转换核心数据
   let newTree = {}
   let waitLoadImageList = []
+  const relationships = []
   let walk = async (node, newNode, isRoot) => {
+    collectAssociativeLinesToXmind(node, relationships)
     let newData = {
       id: node.data.uid,
       structureClass: 'org.xmind.ui.logic.right',
@@ -299,6 +308,9 @@ const transformToXmind = async (data, name) => {
     }
   }
   walk(data, newTree, true)
+  if (relationships.length > 0) {
+    newTree.relationships = relationships
+  }
   await Promise.all(waitLoadImageList)
   const contentData = [newTree]
   // 创建压缩包

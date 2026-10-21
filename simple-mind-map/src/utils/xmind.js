@@ -242,3 +242,145 @@ export const parseNodeGeneralizationToXmind = node => {
     summaries
   }
 }
+
+// 关联线样式写入 XMind relationship 能识别的线条属性
+const styleToXmindLineProperties = style => {
+  if (!style || typeof style !== 'object') return null
+  const properties = {}
+  if (style.associativeLineColor) {
+    properties['line-color'] = style.associativeLineColor
+  }
+  if (
+    style.associativeLineWidth !== undefined &&
+    style.associativeLineWidth !== null &&
+    style.associativeLineWidth !== ''
+  ) {
+    properties['line-width'] = style.associativeLineWidth + 'pt'
+  }
+  if (style.associativeLineDasharray) {
+    properties['line-pattern'] =
+      style.associativeLineDasharray === 'none' ? 'solid' : 'dash'
+  }
+  return Object.keys(properties).length > 0 ? properties : null
+}
+
+// 从 XMind relationship 线条属性还原关联线样式
+const styleFromXmindLineProperties = properties => {
+  if (!properties || typeof properties !== 'object') return null
+  const style = {}
+  if (properties['line-color']) {
+    style.associativeLineColor = properties['line-color']
+  }
+  if (
+    properties['line-width'] !== undefined &&
+    properties['line-width'] !== null
+  ) {
+    const width = parseFloat(properties['line-width'])
+    if (!Number.isNaN(width)) {
+      style.associativeLineWidth = width
+    }
+  }
+  if (properties['line-pattern'] && properties['line-pattern'] !== 'solid') {
+    style.associativeLineDasharray = '6,4'
+  }
+  return Object.keys(style).length > 0 ? style : null
+}
+
+// 导出时收集节点上的关联线，转换成画布级 relationships
+export const collectAssociativeLinesToXmind = (node, relationships) => {
+  const data = (node && node.data) || {}
+  const targets = data.associativeLineTargets
+  if (!data.uid || !Array.isArray(targets) || targets.length === 0) return
+  const textMap = data.associativeLineText || {}
+  const styleMap = data.associativeLineStyle || {}
+  const points = data.associativeLinePoint || []
+  const offsets = data.associativeLineTargetControlOffsets || []
+  targets.forEach((targetId, index) => {
+    if (!targetId) return
+    const relationship = {
+      id: createUid(),
+      end1Id: data.uid,
+      end2Id: targetId
+    }
+    if (textMap[targetId]) {
+      relationship.title = getTextFromHtml(textMap[targetId])
+    }
+    const style = styleMap[targetId]
+    const properties = styleToXmindLineProperties(style)
+    if (properties) {
+      relationship.style = {
+        properties
+      }
+    }
+    // smm 只给本应用回读曲线和完整样式，XMind 会忽略未知字段
+    const smm = {}
+    if (points[index]) smm.point = points[index]
+    if (offsets[index]) smm.offsets = offsets[index]
+    if (style) smm.style = style
+    if (Object.keys(smm).length > 0) {
+      relationship.smm = smm
+    }
+    relationships.push(relationship)
+  })
+}
+
+const indexNodesByUid = (tree, map) => {
+  if (!tree) return
+  if (tree.data && tree.data.uid) {
+    map.set(tree.data.uid, tree)
+  }
+  ;(tree.children || []).forEach(child => {
+    indexNodesByUid(child, map)
+  })
+}
+
+// 导入时把画布 relationships 还原成节点上的关联线
+export const applyXmindRelationships = (tree, relationships) => {
+  if (!tree || !Array.isArray(relationships) || relationships.length === 0) {
+    return
+  }
+  const idToNode = new Map()
+  indexNodesByUid(tree, idToNode)
+  relationships.forEach(item => {
+    if (!item) return
+    const fromId = item.end1Id
+    const toId = item.end2Id
+    if (!fromId || !toId) return
+    const fromNode = idToNode.get(fromId)
+    if (!fromNode || !idToNode.has(toId)) return
+    if (!Array.isArray(fromNode.data.associativeLineTargets)) {
+      fromNode.data.associativeLineTargets = []
+    }
+    if (fromNode.data.associativeLineTargets.includes(toId)) return
+    fromNode.data.associativeLineTargets.push(toId)
+    const lineIndex = fromNode.data.associativeLineTargets.length - 1
+    const smm = item.smm || {}
+    if (smm.point) {
+      if (!Array.isArray(fromNode.data.associativeLinePoint)) {
+        fromNode.data.associativeLinePoint = []
+      }
+      fromNode.data.associativeLinePoint[lineIndex] = smm.point
+    }
+    if (smm.offsets) {
+      if (!Array.isArray(fromNode.data.associativeLineTargetControlOffsets)) {
+        fromNode.data.associativeLineTargetControlOffsets = []
+      }
+      fromNode.data.associativeLineTargetControlOffsets[lineIndex] = smm.offsets
+    }
+    if (item.title) {
+      if (!fromNode.data.associativeLineText) {
+        fromNode.data.associativeLineText = {}
+      }
+      fromNode.data.associativeLineText[toId] = item.title
+    }
+    const style =
+      smm.style ||
+      styleFromXmindLineProperties(item.style && item.style.properties)
+    if (style) {
+      if (!fromNode.data.associativeLineStyle) {
+        fromNode.data.associativeLineStyle = {}
+      }
+      fromNode.data.associativeLineStyle[toId] = style
+    }
+  })
+}
