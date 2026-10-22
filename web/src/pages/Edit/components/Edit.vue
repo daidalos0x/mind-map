@@ -460,9 +460,6 @@ export default {
         }
       })
       this.loadPlugins()
-      this.mindMap.keyCommand.addShortcut('Control+s', () => {
-        this.manualSave()
-      })
       // 转发事件
       ;[
         'node_active',

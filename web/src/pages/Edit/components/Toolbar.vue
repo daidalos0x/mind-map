@@ -33,6 +33,33 @@
             <span class="text">{{ $t('toolbar.openFile') }}</span>
           </div>
         </el-tooltip>
+        <el-tooltip
+          effect="dark"
+          :content="$t('toolbar.saveTip')"
+          placement="bottom"
+        >
+          <div class="toolbarBtn" @click="saveCurrentFile">
+            <span class="icon saveIcon">
+              <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+                <path
+                  d="M3.2 2.2h7.4l3 3v8.6a1 1 0 0 1-1 1H3.2a1 1 0 0 1-1-1V3.2a1 1 0 0 1 1-1z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M5 2.2v3.6h6V2.2M5 13.8V9.2h6v4.6"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.3"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            <span class="text">{{ $t('toolbar.save') }}</span>
+          </div>
+        </el-tooltip>
         <div class="toolbarBtn" @click="saveLocalFile" v-if="!isMobile">
           <span class="icon iconfont iconlingcunwei"></span>
           <span class="text">{{ $t('toolbar.saveAs') }}</span>
@@ -515,6 +542,11 @@ export default {
       await this.createLocalFile(exampleData)
     },
 
+    // 保存当前文件（由 Edit 页统一处理浏览器文件库 / 桌面 App / 本地文件句柄）
+    saveCurrentFile() {
+      this.$bus.$emit('saveMindMap')
+    },
+
     // 另存为
     async saveLocalFile() {
       if (this.runDesktopAction('save-as')) {
@@ -800,6 +832,15 @@ export default {
       }
 
       .mermaidIcon {
+        align-items: center;
+        padding: 0;
+
+        svg {
+          display: block;
+        }
+      }
+
+      .saveIcon {
         align-items: center;
         padding: 0;
 

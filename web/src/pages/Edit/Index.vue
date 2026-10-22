@@ -59,6 +59,8 @@ export default {
     this.$bus.$on('mindMapReady', this.onMindMapReady)
     this.$bus.$on('showFileHome', this.leaveEditor)
     this.$bus.$on('enterEditor', this.enterEditor)
+    this.$bus.$on('saveMindMap', this.saveCurrent)
+    window.addEventListener('keydown', this.onKeydownSave, true)
     this.initLocalConfig()
     const loading = this.$loading({
       lock: true,
@@ -74,12 +76,79 @@ export default {
     this.$bus.$off('mindMapReady', this.onMindMapReady)
     this.$bus.$off('showFileHome', this.leaveEditor)
     this.$bus.$off('enterEditor', this.enterEditor)
+    this.$bus.$off('saveMindMap', this.saveCurrent)
+    window.removeEventListener('keydown', this.onKeydownSave, true)
   },
   methods: {
     ...mapMutations(['setLocalConfig']),
 
     enterEditor() {
       this.screen = 'edit'
+    },
+
+    // Cmd / Ctrl + S 保存当前文件
+    onKeydownSave(e) {
+      if (!(e.metaKey || e.ctrlKey) || e.altKey) {
+        return
+      }
+      if (String(e.key).toLowerCase() !== 's') {
+        return
+      }
+      if (this.screen !== 'edit') {
+        return
+      }
+      e.preventDefault()
+      this.saveCurrent()
+    },
+
+    // 保存当前文件：桌面 App 写回原文件，浏览器写回文件库
+    async saveCurrent() {
+      if (!this.mindMap || this.screen !== 'edit') {
+        return false
+      }
+      const data = this.documentData()
+
+      // 1. 桌面 App
+      if (window.__TAURI_INTERNALS__ && window.__desktopSession) {
+        if (!window.__desktopSession.path) {
+          this.$message.info(this.$t('toolbar.saveNeedPath'))
+          return false
+        }
+        try {
+          window.__desktopSession.mindMapData = data
+          await window.__TAURI_INTERNALS__.invoke('save_mind_map', { data })
+          this.$message.success(this.$t('toolbar.saved'))
+          return true
+        } catch (error) {
+          console.log(error)
+          this.$message.error(this.$t('toolbar.saveFailed'))
+          return false
+        }
+      }
+
+      // 2. 通过文件系统访问 API 打开的本地 .smm 文件
+      if (this.$store.state.isHandleLocalFile) {
+        this.$bus.$emit('write_local_file', data)
+        this.$message.success(this.$t('toolbar.saved'))
+        return true
+      }
+
+      // 3. 浏览器文件库
+      const library = browserFileLibrary()
+      const id = library.currentId()
+      if (!id) {
+        this.$message.info(this.$t('toolbar.saveNeedPath'))
+        return false
+      }
+      try {
+        library.save(id, data)
+        this.$message.success(this.$t('toolbar.saved'))
+        return true
+      } catch (error) {
+        console.log(error)
+        this.$message.error(this.$t('toolbar.saveFailed'))
+        return false
+      }
     },
 
     onMindMapReady(mindMap) {
