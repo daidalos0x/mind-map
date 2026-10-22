@@ -3,9 +3,6 @@
     <header class="homeHeader">
       <div class="brand">Mind</div>
       <div class="actions">
-        <button type="button" class="primary" @click="create">
-          {{ $t('home.new') }}
-        </button>
         <button type="button" class="secondary" @click="pick">
           {{ $t('home.open') }}
         </button>
@@ -18,7 +15,16 @@
         />
       </div>
     </header>
-    <div v-if="files.length" class="grid">
+    <div class="grid">
+      <button type="button" class="card newCard" @click="create">
+        <div class="thumb">
+          <span class="plus">+</span>
+        </div>
+        <div class="meta">
+          <div class="name">{{ $t('home.new') }}</div>
+          <div class="time">{{ $t('home.blank') }}</div>
+        </div>
+      </button>
       <article
         v-for="file in files"
         :key="file.id"
@@ -27,26 +33,28 @@
       >
         <div class="thumb">
           <img v-if="file.thumbnail" :src="file.thumbnail" alt="" />
-          <div v-else class="fallback">{{ file.name }}</div>
-        </div>
-        <div class="meta">
-          <div class="name">{{ file.name }}</div>
-          <div class="time">{{ formatTime(file.updatedAt) }}</div>
-          <el-dropdown trigger="click" @command="command => onCommand(command, file)">
-            <button type="button" class="more" @click.stop>···</button>
+          <div v-else class="cover">
+            <span>{{ file.name }}</span>
+          </div>
+          <el-dropdown
+            class="menu"
+            trigger="click"
+            @command="command => onCommand(command, file)"
+          >
+            <button type="button" class="more" @click.stop aria-label="menu">
+              <span></span><span></span><span></span>
+            </button>
             <el-dropdown-menu slot="dropdown">
               <el-dropdown-item command="rename">{{ $t('home.rename') }}</el-dropdown-item>
               <el-dropdown-item command="delete">{{ $t('home.delete') }}</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </div>
+        <div class="meta">
+          <div class="name">{{ file.name }}</div>
+          <div class="time">{{ formatTime(file.updatedAt) }}</div>
+        </div>
       </article>
-    </div>
-    <div v-else class="empty">
-      <p>{{ $t('home.empty') }}</p>
-      <button type="button" class="primary" @click="create">
-        {{ $t('home.new') }}
-      </button>
     </div>
     <el-dialog
       :title="$t('import.xmindCanvasSelectDialogTitle')"
@@ -121,7 +129,12 @@ export default {
       if (!value) {
         return ''
       }
-      return new Date(value).toLocaleString()
+      return new Date(value).toLocaleString(undefined, {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
     },
     async create() {
       if (this.isDesktop()) {
@@ -280,42 +293,62 @@ export default {
 <style lang="less" scoped>
 .fileHome {
   min-height: 100vh;
-  background: #f6f7f8;
-  color: #1a1a1a;
+  background: #f3f4f6;
+  color: #1c1c1e;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
 
   &.isDark {
-    background: #1c1c1e;
-    color: #f5f5f5;
+    background: #161618;
+    color: #f5f5f7;
 
-    .card,
-    .secondary {
-      background: #2c2c2e;
-      color: #f5f5f5;
+    .card {
+      background: #232326;
+      border-color: rgba(255, 255, 255, 0.06);
     }
 
-    .time,
-    .fallback {
-      color: rgba(255, 255, 255, 0.55);
+    .cover,
+    .thumb {
+      background: #1c1c1f;
+    }
+
+    .secondary,
+    .more {
+      background: #2c2c2e;
+      color: #f5f5f7;
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .time {
+      color: rgba(255, 255, 255, 0.45);
     }
   }
+}
+
+.homeHeader,
+.grid,
+.empty {
+  width: min(1080px, calc(100% - 80px));
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .homeHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28px 40px 8px;
+  padding-top: 40px;
 }
 
 .brand {
-  font-size: 28px;
-  font-weight: 650;
+  font-size: 22px;
+  font-weight: 600;
   letter-spacing: -0.03em;
 }
 
 .actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
+  padding-bottom: 4px;
 }
 
 .fileInput {
@@ -325,10 +358,14 @@ export default {
 button {
   border: 0;
   cursor: pointer;
-  border-radius: 10px;
-  height: 40px;
-  padding: 0 18px;
   font-size: 14px;
+}
+
+.primary,
+.secondary {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
 }
 
 .primary {
@@ -337,28 +374,66 @@ button {
 }
 
 .secondary {
-  background: #fff;
-  color: #1a1a1a;
+  background: transparent;
+  color: #1c1c1e;
+  border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 22px;
-  padding: 28px 40px 48px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+  padding-top: 36px;
+  padding-bottom: 64px;
 }
 
 .card {
+  position: relative;
   background: #fff;
-  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
   overflow: hidden;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.06);
+
+    .more {
+      opacity: 1;
+    }
+  }
+}
+
+.newCard {
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  background: #fff;
+  border-style: dashed;
+  border-color: rgba(0, 0, 0, 0.14);
+}
+
+.plus {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8e8e93;
+  font-size: 22px;
+  line-height: 1;
 }
 
 .thumb {
-  height: 150px;
-  background: #fff;
+  position: relative;
+  height: 176px;
+  background: #f7f7f8;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -366,64 +441,73 @@ button {
   img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
+    padding: 12px;
+    box-sizing: border-box;
   }
 }
 
-.fallback {
-  padding: 16px;
-  color: #8a8a8a;
-  font-size: 16px;
+.cover {
+  padding: 0 22px;
   text-align: center;
+
+  span {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 18px;
+    font-weight: 560;
+    letter-spacing: -0.03em;
+    line-height: 1.35;
+    color: #3a3a3c;
+  }
+}
+
+.menu {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.more {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+
+  span {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #3a3a3c;
+  }
 }
 
 .meta {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
-  gap: 4px 8px;
-  padding: 14px 14px 16px;
-  align-items: center;
+  padding: 12px 14px 14px;
 }
 
 .name {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
+  letter-spacing: -0.01em;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .time {
-  grid-column: 1;
-  color: #8a8a8a;
+  margin-top: 4px;
+  color: #8e8e93;
   font-size: 12px;
-}
-
-.more {
-  grid-row: 1 / span 2;
-  grid-column: 2;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  background: transparent;
-  color: inherit;
-  font-size: 18px;
-  letter-spacing: 1px;
-}
-
-.empty {
-  min-height: 60vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 18px;
-
-  p {
-    margin: 0;
-    color: #8a8a8a;
-    font-size: 16px;
-  }
 }
 </style>

@@ -338,6 +338,7 @@ export default {
     rename: '重新命名',
     delete: '刪除',
     empty: '還沒有導圖',
+    blank: '空白導圖',
     deleteTip: '刪除後無法復原，確定刪除這份導圖嗎？',
     back: '首頁',
     name: '名稱',

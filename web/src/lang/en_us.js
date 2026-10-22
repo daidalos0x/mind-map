@@ -344,6 +344,7 @@ export default {
     rename: 'Rename',
     delete: 'Delete',
     empty: 'No mind maps yet',
+    blank: 'Blank map',
     deleteTip: 'This mind map will be removed. Continue?',
     back: 'Home',
     name: 'Name',

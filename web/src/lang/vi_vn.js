@@ -342,6 +342,7 @@ export default {
     rename: 'Đổi tên',
     delete: 'Xóa',
     empty: 'Chưa có sơ đồ',
+    blank: 'Sơ đồ trống',
     deleteTip: 'Sơ đồ này sẽ bị xóa. Tiếp tục?',
     back: 'Trang chủ',
     name: 'Tên',

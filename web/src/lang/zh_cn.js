@@ -337,6 +337,7 @@ export default {
     rename: '重命名',
     delete: '删除',
     empty: '还没有导图',
+    blank: '空白导图',
     deleteTip: '删除后无法恢复，确定删除这份导图吗？',
     back: '首页',
     name: '名称',
