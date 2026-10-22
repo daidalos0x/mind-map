@@ -15,9 +15,17 @@
 
 Documents are `.xmind` files, stored locally.
 
+## Features
+
 | Mind map | Mermaid mode |
 | --- | --- |
 | ![Mind map](./assets/screenshots/mind-map.png) | ![Mermaid mode](./assets/screenshots/mermaid.png) |
+
+- **Lightweight** — Tauri 2 instead of Electron; the Windows installer is about 5 MB.
+- **Local-first** — documents are plain `.xmind` files on disk, no account, nothing uploaded.
+- **Two views of one document** — a classic mind map, or a Mermaid `mindmap` source with live preview.
+- **Full editor** — 14 layouts, 50+ themes, dark mode, rich text, notes, tags, images, formulas and an outline view.
+- **AI assisted** — generate a diagram from a prompt through your own OpenAI-compatible endpoint.
 
 ## Install
 
