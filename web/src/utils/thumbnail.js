@@ -36,6 +36,16 @@ export const svgElementToThumbnail = async svg => {
   }
 }
 
+export const svgMarkupToThumbnail = async markup => {
+  const host = document.createElement('div')
+  host.innerHTML = markup
+  const svg = host.querySelector('svg')
+  if (!svg) {
+    return ''
+  }
+  return svgElementToThumbnail(svg)
+}
+
 export const mindMapPng = async mindMap => {
   const exporter = mindMap.doExport
   if (!exporter) {

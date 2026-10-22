@@ -16,12 +16,13 @@ import Toolbar from './components/Toolbar.vue'
 import Edit from './components/Edit.vue'
 import FileHome from './components/FileHome.vue'
 import { mapState, mapMutations } from 'vuex'
-import { getLocalConfig } from '@/api'
+import { getData, getLocalConfig } from '@/api'
 import { browserFileLibrary } from '@/utils/fileLibrary'
-import { isMermaidStyleOn } from '@/utils/mermaidStyle'
-import { mindMapPng, shrinkThumbnail, svgElementToThumbnail } from '@/utils/thumbnail'
+import { isMermaidStyleOn, mermaidSourceFor, renderMermaidSvg } from '@/utils/mermaidStyle'
+import { mindMapPng, shrinkThumbnail, svgMarkupToThumbnail } from '@/utils/thumbnail'
 
 const STYLE_COMMANDS = new Set(['SET_NODE_STYLE', 'SET_NODE_STYLES', 'SET_NODE_SHAPE'])
+const MERMAID_KEYS = ['mermaidStyle', 'mermaidSource', 'layoutBeforeMermaid', 'themeBeforeMermaid']
 
 export default {
   components: {
@@ -158,21 +159,19 @@ export default {
         return ''
       }
       const token = ++this.previewToken
+      const mermaid = isMermaidStyleOn()
       try {
         let source = ''
-        if (isMermaidStyleOn()) {
-          const svg = document.querySelector('.mermaidOfficialView svg')
-          if (!svg) {
-            return ''
-          }
-          source = await svgElementToThumbnail(svg)
+        if (mermaid) {
+          const markup = await renderMermaidSvg(mermaidSourceFor(this.mindMap))
+          source = await svgMarkupToThumbnail(markup)
         } else {
           const png = await mindMapPng(this.mindMap)
           if (typeof png === 'string' && png.indexOf('data:') === 0) {
             source = await shrinkThumbnail(png)
           }
         }
-        if (token !== this.previewToken) {
+        if (token !== this.previewToken || isMermaidStyleOn() !== mermaid) {
           return ''
         }
         return source
@@ -192,6 +191,17 @@ export default {
       } catch (error) {
         console.log(error)
       }
+    },
+
+    documentData() {
+      const data = this.mindMap.getData(true)
+      const stored = getData() || {}
+      MERMAID_KEYS.forEach(key => {
+        if (Object.prototype.hasOwnProperty.call(stored, key)) {
+          data[key] = stored[key]
+        }
+      })
+      return data
     },
 
     async storeThumbnail(image) {
@@ -218,7 +228,7 @@ export default {
       this.previewTimer = null
       if (window.__TAURI_INTERNALS__ && window.__desktopSession) {
         if (this.mindMap && window.__desktopSession.path) {
-          const data = this.mindMap.getData(true)
+          const data = this.documentData()
           window.__desktopSession.mindMapData = data
           const invoke = window.__TAURI_INTERNALS__.invoke
           try {
@@ -246,7 +256,7 @@ export default {
       const library = browserFileLibrary()
       const id = library.currentId()
       if (id && this.mindMap) {
-        const data = this.mindMap.getData(true)
+        const data = this.documentData()
         let thumbnail = ''
         try {
           thumbnail = await this.makeThumbnail()
