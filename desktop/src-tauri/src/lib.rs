@@ -604,6 +604,50 @@ fn is_xmind(path: &Path) -> bool {
     path.extension().and_then(|ext| ext.to_str()) == Some("xmind")
 }
 
+// —— 平台相关的系统调用 ——
+// 这几个动作在三个系统上没有共同的实现方式，各写一份比引第三方依赖更可控，
+// 也能保证任意平台上都不会因为缺某个命令而编不过。
+
+// 用系统默认程序打开文件或用文件管理器打开目录
+#[cfg(target_os = "macos")]
+fn open_external(path: &Path) -> Result<(), String> {
+    Command::new("open")
+        .arg(path)
+        .status()
+        .map(|_| ())
+        .map_err(|error| format!("无法打开：{error}"))
+}
+
+#[cfg(target_os = "windows")]
+fn open_external(path: &Path) -> Result<(), String> {
+    // start 走 ShellExecute：目录交给资源管理器，文件按关联程序打开
+    let mut command = Command::new("cmd");
+    command.args(["/C", "start", ""]).arg(path);
+    no_console_window(&mut command);
+    command
+        .status()
+        .map(|_| ())
+        .map_err(|error| format!("无法打开：{error}"))
+}
+
+// 桌面应用里调用 shell 命令不能弹控制台窗口，否则每次都会闪一下黑框
+#[cfg(target_os = "windows")]
+fn no_console_window(command: &mut Command) {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+    command.creation_flags(CREATE_NO_WINDOW);
+}
+
+#[cfg(all(unix, not(target_os = "macos")))]
+fn open_external(path: &Path) -> Result<(), String> {
+    Command::new("xdg-open")
+        .arg(path)
+        .status()
+        .map(|_| ())
+        .map_err(|error| format!("无法打开：{error}"))
+}
+
+#[cfg(target_os = "macos")]
 fn move_to_trash(path: &Path) -> Result<(), String> {
     let text = path.to_string_lossy().replace('\\', "\\\\").replace('"', "\\\"");
     let status = Command::new("osascript")
@@ -617,6 +661,45 @@ fn move_to_trash(path: &Path) -> Result<(), String> {
         Ok(())
     } else {
         Err("无法移到废纸篓".to_string())
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn move_to_trash(path: &Path) -> Result<(), String> {
+    // 回收站没有命令行原语，借 Microsoft.VisualBasic 的 FileSystem 走 Shell 的删除
+    let mut command = Command::new("powershell");
+    command
+        .args([
+            "-NoProfile",
+            "-NonInteractive",
+            "-Command",
+            "Add-Type -AssemblyName Microsoft.VisualBasic; \
+             [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($args[0], 'OnlyErrorDialogs', 'SendToRecycleBin')",
+        ])
+        .arg(path);
+    no_console_window(&mut command);
+    let status = command
+        .status()
+        .map_err(|error| format!("无法移到回收站：{error}"))?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err("无法移到回收站".to_string())
+    }
+}
+
+#[cfg(all(unix, not(target_os = "macos")))]
+fn move_to_trash(path: &Path) -> Result<(), String> {
+    // gio 随 glib 一起安装，而 glib 是 GTK/WebKitGTK 的硬依赖，桌面环境下必然存在
+    let status = Command::new("gio")
+        .arg("trash")
+        .arg(path)
+        .status()
+        .map_err(|error| format!("无法移到回收站（缺少 gio/glib2）：{error}"))?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err("无法移到回收站".to_string())
     }
 }
 
@@ -878,11 +961,7 @@ fn boot_log(_message: String) -> Result<(), String> {
 
 #[tauri::command]
 fn reveal_documents(state: State<AppState>) -> Result<(), String> {
-    std::process::Command::new("open")
-        .arg(&state.docs_dir)
-        .spawn()
-        .map_err(|error| error.to_string())?;
-    Ok(())
+    open_external(&state.docs_dir)
 }
 
 #[tauri::command]
@@ -899,6 +978,15 @@ fn take_pending_open(
         return Ok(None);
     };
     switch_to(&state, &app, path).map(Some)
+}
+
+// 同一个动作在三个系统里叫法不同，菜单文案跟着平台走
+fn reveal_label() -> &'static str {
+    if cfg!(target_os = "macos") {
+        "Show in Finder"
+    } else {
+        "Show in Folder"
+    }
 }
 
 fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
@@ -932,7 +1020,7 @@ fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
                 Some("CmdOrCtrl+Shift+S"),
             )?,
             &PredefinedMenuItem::separator(app)?,
-            &MenuItem::with_id(app, "reveal", "Show in Finder", true, None::<&str>)?,
+            &MenuItem::with_id(app, "reveal", reveal_label(), true, None::<&str>)?,
         ],
     )?;
     let edit_menu = Submenu::with_items(
@@ -1027,15 +1115,7 @@ fn ai_config_status(app: AppHandle) -> Result<AiConfigStatus, String> {
 fn reveal_ai_config(app: AppHandle) -> Result<(), String> {
     let path = ai_config_path(&app)?;
     write_ai_template(&path)?;
-    let status = std::process::Command::new("open")
-        .arg(&path)
-        .status()
-        .map_err(|error| error.to_string())?;
-    if status.success() {
-        Ok(())
-    } else {
-        Err(format!("无法打开配置文件：{status}"))
-    }
+    open_external(&path)
 }
 
 #[tauri::command]
@@ -1114,6 +1194,30 @@ fn dispatch_menu(app: &AppHandle, action: &str) {
     }
 }
 
+// “用本应用打开文件”只有 apple 平台会派发 RunEvent::Opened，
+// 该变体本身也是条件编译的，所以这里必须按平台分叉，否则 Windows/Linux 编译不过
+#[cfg(any(target_os = "macos", target_os = "ios", target_os = "android"))]
+fn handle_run_event(app: &AppHandle, event: tauri::RunEvent) {
+    if let tauri::RunEvent::Opened { urls } = event {
+        for url in urls {
+            let Ok(path) = url.to_file_path() else {
+                continue;
+            };
+            if let Some(state) = app.try_state::<AppState>() {
+                if let Ok(mut pending) = state.pending_open.lock() {
+                    *pending = Some(path);
+                }
+            }
+            dispatch_menu(app, "open-pending");
+        }
+    }
+}
+
+#[cfg(not(any(target_os = "macos", target_os = "ios", target_os = "android")))]
+fn handle_run_event(_app: &AppHandle, _event: tauri::RunEvent) {
+    // Windows/Linux 没有这个事件：文件关联要靠启动参数 + 单实例插件，暂未接入
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -1161,19 +1265,5 @@ pub fn run() {
         ])
         .build(tauri::generate_context!())
         .expect("failed to start Mind")
-        .run(|app, event| {
-            if let tauri::RunEvent::Opened { urls } = event {
-                for url in urls {
-                    let Ok(path) = url.to_file_path() else {
-                        continue;
-                    };
-                    if let Some(state) = app.try_state::<AppState>() {
-                        if let Ok(mut pending) = state.pending_open.lock() {
-                            *pending = Some(path);
-                        }
-                    }
-                    dispatch_menu(app, "open-pending");
-                }
-            }
-        });
+        .run(handle_run_event);
 }
