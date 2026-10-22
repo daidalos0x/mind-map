@@ -602,6 +602,18 @@ export default {
 
 <style lang="less" scoped>
 .toolbarContainer {
+  // 用 flex 居中，不用 left:50% + translateX(-50%)：
+  // 固定定位元素一旦带 transform 就会被提升为合成层，宽度为奇数时 -50% 会落在半个像素上，
+  // WebKit（桌面端 WKWebView）会按半像素合成，整条工具栏的文字就发虚。
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 20px;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+
   &.isDark {
     .toolbar {
       color: hsla(0, 0%, 100%, 0.9);
@@ -674,17 +686,17 @@ export default {
     }
   }
   .toolbar {
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    top: 20px;
+    position: relative;
     width: max-content;
+    flex-shrink: 0;
     display: flex;
+    pointer-events: auto;
     font-size: 12px;
-    font-family: PingFangSC-Regular, PingFang SC;
+    // 用系统字体栈：-apple-system 在 macOS 上会走 SF Pro（小字号更清晰），中文自动回落到苹方
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Arial,
+      sans-serif;
     font-weight: 400;
-    color: rgba(26, 26, 26, 0.8);
-    z-index: 2;
+    color: rgba(26, 26, 26, 0.9);
 
     .toolbarBlock {
       display: flex;
