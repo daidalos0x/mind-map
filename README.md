@@ -34,7 +34,11 @@ Prebuilt builds are on [Releases](https://github.com/phaethix/mind-map/releases)
 
 The Windows build is unsigned, so the first launch needs **More info → Run anyway**. Linux builds use the system WebKitGTK 4.1 (Ubuntu 20.04 will not start), and the AppImage also needs `libfuse2`.
 
-**macOS** — no prebuilt binary, build it locally: `make`.
+**macOS** — no prebuilt binary, build it locally:
+
+```bash
+make
+```
 
 ## Build from source
 
