@@ -331,6 +331,18 @@ export default {
     cover: '覆盖',
     reserve: '保留'
   },
+  home: {
+    new: '新建',
+    open: '打开',
+    rename: '重命名',
+    delete: '删除',
+    empty: '还没有导图',
+    deleteTip: '删除后无法恢复，确定删除这份导图吗？',
+    back: '首页',
+    name: '名称',
+    confirm: '确定',
+    cancel: '取消'
+  },
   toolbar: {
     undo: '回退',
     redo: '前进',

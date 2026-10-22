@@ -338,6 +338,18 @@ export default {
     cover: 'Cover',
     reserve: 'Reserve'
   },
+  home: {
+    new: 'New',
+    open: 'Open',
+    rename: 'Rename',
+    delete: 'Delete',
+    empty: 'No mind maps yet',
+    deleteTip: 'This mind map will be removed. Continue?',
+    back: 'Home',
+    name: 'Name',
+    confirm: 'OK',
+    cancel: 'Cancel'
+  },
   toolbar: {
     undo: 'Undo',
     redo: 'Redo',

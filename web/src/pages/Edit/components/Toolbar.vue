@@ -26,6 +26,10 @@
       </div>
       <!-- 导出 -->
       <div class="toolbarBlock">
+        <div class="toolbarBtn" @click="$bus.$emit('showFileHome')" v-if="!isDesktop">
+          <span class="icon iconfont iconzhuye"></span>
+          <span class="text">{{ $t('home.back') }}</span>
+        </div>
         <div class="toolbarBtn" @click="openDirectory" v-if="!isMobile">
           <span class="icon iconfont icondakai"></span>
           <span class="text">{{ $t('toolbar.directory') }}</span>
@@ -223,6 +227,9 @@ export default {
       openNodeRichText: state => state.localConfig.openNodeRichText,
       enableAi: state => state.localConfig.enableAi
     }),
+    isDesktop() {
+      return Boolean(window.takeOverApp)
+    },
 
     btnLit() {
       let res = [...defaultBtnList]

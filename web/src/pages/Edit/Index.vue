@@ -3,7 +3,8 @@
     class="container"
     :class="{ isDark: isDark, activeSidebar: activeSidebar }"
   >
-    <template v-if="show">
+    <FileHome v-if="show && screen === 'home'" @open="enterEditor"></FileHome>
+    <template v-if="show && screen === 'edit'">
       <Toolbar v-if="!isZenMode"></Toolbar>
       <Edit></Edit>
     </template>
@@ -13,17 +14,41 @@
 <script>
 import Toolbar from './components/Toolbar.vue'
 import Edit from './components/Edit.vue'
+import FileHome from './components/FileHome.vue'
 import { mapState, mapMutations } from 'vuex'
 import { getLocalConfig } from '@/api'
+import { browserFileLibrary } from '@/utils/fileLibrary'
+
+const shrinkThumbnail = dataUrl =>
+  new Promise(resolve => {
+    const image = new Image()
+    image.onload = () => {
+      const maxEdge = 480
+      const scale = Math.min(1, maxEdge / Math.max(image.width, image.height, 1))
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.max(1, Math.round(image.width * scale))
+      canvas.height = Math.max(1, Math.round(image.height * scale))
+      const context = canvas.getContext('2d')
+      context.fillStyle = '#ffffff'
+      context.fillRect(0, 0, canvas.width, canvas.height)
+      context.drawImage(image, 0, 0, canvas.width, canvas.height)
+      resolve(canvas.toDataURL('image/jpeg', 0.7))
+    }
+    image.onerror = () => resolve('')
+    image.src = dataUrl
+  })
 
 export default {
   components: {
     Toolbar,
-    Edit
+    Edit,
+    FileHome
   },
   data() {
     return {
-      show: false
+      show: false,
+      screen: 'home',
+      mindMap: null
     }
   },
   computed: {
@@ -39,6 +64,11 @@ export default {
     }
   },
   async created() {
+    this.screen = window.takeOverApp ? 'edit' : 'home'
+    this.$bus.$on('mindMapReady', mindMap => {
+      this.mindMap = mindMap
+    })
+    this.$bus.$on('showFileHome', this.leaveEditor)
     this.initLocalConfig()
     const loading = this.$loading({
       lock: true,
@@ -48,10 +78,47 @@ export default {
     loading.close()
     this.setBodyDark()
   },
+  beforeDestroy() {
+    this.$bus.$off('showFileHome', this.leaveEditor)
+  },
   methods: {
     ...mapMutations(['setLocalConfig']),
 
-    // 初始化本地配置
+    enterEditor() {
+      this.screen = 'edit'
+    },
+
+    async leaveEditor() {
+      if (window.takeOverApp) {
+        return
+      }
+      const library = browserFileLibrary()
+      const id = library.currentId()
+      if (id && this.mindMap) {
+        const data = this.mindMap.getData(true)
+        let thumbnail = ''
+        try {
+          const png = await this.mindMap.export('png', false, 'preview')
+          if (typeof png === 'string' && png.indexOf('data:') === 0) {
+            thumbnail = await shrinkThumbnail(png)
+          }
+        } catch (error) {
+          thumbnail = ''
+        }
+        try {
+          library.save(id, data, thumbnail)
+        } catch (error) {
+          try {
+            library.save(id, data, '')
+          } catch (again) {
+            console.log(again)
+          }
+        }
+      }
+      this.mindMap = null
+      this.screen = 'home'
+    },
+
     initLocalConfig() {
       let config = getLocalConfig()
       if (config) {

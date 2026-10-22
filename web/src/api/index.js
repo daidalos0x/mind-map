@@ -2,6 +2,7 @@ import exampleData from 'simple-mind-map/example/exampleData'
 import { simpleDeepClone } from 'simple-mind-map/src/utils/index'
 import Vue from 'vue'
 import vuexStore from '@/store'
+import { browserFileLibrary } from '@/utils/fileLibrary'
 
 const SIMPLE_MIND_MAP_DATA = 'SIMPLE_MIND_MAP_DATA'
 const SIMPLE_MIND_MAP_CONFIG = 'SIMPLE_MIND_MAP_CONFIG'
@@ -105,6 +106,10 @@ export const storeData = data => {
       return
     }
     localStorage.setItem(SIMPLE_MIND_MAP_DATA, JSON.stringify(originData))
+    const currentId = localStorage.getItem('SIMPLE_MIND_MAP_CURRENT_ID')
+    if (currentId) {
+      browserFileLibrary().save(currentId, originData)
+    }
   } catch (error) {
     console.log(error)
     if ('exceeded') {

@@ -336,6 +336,18 @@ export default {
     cover: 'Ghi đè',
     reserve: 'Giữ lại'
   },
+  home: {
+    new: 'Tạo mới',
+    open: 'Mở',
+    rename: 'Đổi tên',
+    delete: 'Xóa',
+    empty: 'Chưa có sơ đồ',
+    deleteTip: 'Sơ đồ này sẽ bị xóa. Tiếp tục?',
+    back: 'Trang chủ',
+    name: 'Tên',
+    confirm: 'OK',
+    cancel: 'Hủy'
+  },
   toolbar: {
     undo: 'Hoàn tác',
     redo: 'Làm lại',

@@ -332,6 +332,18 @@ export default {
     cover: '覆蓋',
     reserve: '保留'
   },
+  home: {
+    new: '新建',
+    open: '打開',
+    rename: '重新命名',
+    delete: '刪除',
+    empty: '還沒有導圖',
+    deleteTip: '刪除後無法復原，確定刪除這份導圖嗎？',
+    back: '首頁',
+    name: '名稱',
+    confirm: '確定',
+    cancel: '取消'
+  },
   toolbar: {
     undo: '復原',
     redo: '重做',

@@ -491,6 +491,7 @@ export default {
       if (window.takeOverApp) {
         this.$bus.$emit('app_inited', this.mindMap)
       }
+      this.$bus.$emit('mindMapReady', this.mindMap)
       // 解析url中的文件
       if (hasFileURL) {
         this.$bus.$emit('handle_file_url')

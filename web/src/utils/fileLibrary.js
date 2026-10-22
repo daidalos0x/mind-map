@@ -116,11 +116,11 @@ export function createFileLibrary(storage) {
   return {
     list,
     currentId: () => storage.getItem(CURRENT_ID_KEY),
-    create(data) {
+    create(data, name) {
       const items = ensure()
       const item = {
         id: createId(),
-        name: uniqueName(UNTITLED, items),
+        name: uniqueName(name || UNTITLED, items),
         updatedAt: Date.now(),
         data: clone(data || blankDocument()),
         thumbnail: ''
