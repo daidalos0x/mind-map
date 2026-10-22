@@ -6,12 +6,14 @@
     @dragover.stop.prevent
     @drop.stop.prevent
   >
-    <div
-      class="mindMapContainer"
-      id="mindMapContainer"
-      ref="mindMapContainer"
-    ></div>
-    <MermaidOfficialView v-if="mindMap" :mindMap="mindMap"></MermaidOfficialView>
+    <div class="canvasStage">
+      <div
+        class="mindMapContainer"
+        id="mindMapContainer"
+        ref="mindMapContainer"
+      ></div>
+      <MermaidOfficialView v-if="mindMap" :mindMap="mindMap"></MermaidOfficialView>
+    </div>
     <Count :mindMap="mindMap" v-if="!isZenMode"></Count>
     <Navigator v-if="mindMap" :mindMap="mindMap"></Navigator>
     <NavigatorToolbar :mindMap="mindMap" v-if="!isZenMode"></NavigatorToolbar>
@@ -663,6 +665,20 @@ export default {
     .dragTip {
       pointer-events: none;
       font-weight: bold;
+    }
+  }
+
+  .canvasStage {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+
+    &:fullscreen,
+    &:-webkit-full-screen {
+      background: #fff;
     }
   }
 

@@ -45,7 +45,8 @@ export default {
   methods: {
     // 全屏查看
     toFullscreenShow() {
-      fullScreen(this.mindMap.el)
+      const stage = this.mindMap.el.closest('.canvasStage') || this.mindMap.el
+      fullScreen(stage)
     },
 
     // 全屏编辑

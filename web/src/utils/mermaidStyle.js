@@ -243,13 +243,19 @@ const fitWhenReady = mindMap => {
 export const enableMermaidStyle = mindMap => {
   const stored = getData() || {}
   const full = mindMap.getData(true)
+  const alreadyOn = stored.mermaidStyle === true
   const baked =
+    !alreadyOn &&
     full.root &&
     full.root.data &&
     full.root.data.shape === 'circle' &&
     full.root.data.customLeft != null
-  const layoutBefore = stored.layoutBeforeMermaid || (baked ? 'logicalStructure' : full.layout)
-  const themeBefore = stored.themeBeforeMermaid || full.theme
+  const layoutBefore = alreadyOn
+    ? stored.layoutBeforeMermaid || full.layout
+    : full.layout
+  const themeBefore = alreadyOn
+    ? stored.themeBeforeMermaid || full.theme
+    : full.theme
   if (baked) {
     const root = stripMermaidStyle(full.root)
     mindMap.setFullData({
@@ -270,8 +276,8 @@ export const enableMermaidStyle = mindMap => {
   }
   storeData({
     mermaidStyle: true,
-    layoutBeforeMermaid: stored.layoutBeforeMermaid || full.layout,
-    themeBeforeMermaid: stored.themeBeforeMermaid || full.theme
+    layoutBeforeMermaid: layoutBefore,
+    themeBeforeMermaid: themeBefore
   })
 }
 
@@ -279,7 +285,7 @@ export const disableMermaidStyle = mindMap => {
   const stored = getData() || {}
   const full = mindMap.getData(true)
   const root = stripMermaidStyle(full.root)
-  const layout = stored.layoutBeforeMermaid || 'logicalStructure'
+  const layout = stored.layoutBeforeMermaid || full.layout
   const theme = stored.themeBeforeMermaid || full.theme
   fitWhenReady(mindMap)
   mindMap.setFullData({
