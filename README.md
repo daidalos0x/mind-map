@@ -24,12 +24,17 @@ Documents are `.xmind` files, stored locally.
 
 ## Install
 
-Prebuilt builds are on [Releases](https://github.com/phaethix/mind-map/releases); macOS builds from source.
+Prebuilt builds are on [Releases](https://github.com/phaethix/mind-map/releases).
 
-- **Windows 10 / 11 (x64)** — `Mind_*_x64-setup.exe`. Unsigned, so the first launch needs **More info → Run anyway**. Installs per user and fetches WebView2 automatically.
-- **Ubuntu 22.04+ / Debian 12+ (x64)** — `Mind_*_amd64.deb`: `sudo apt install ./*_amd64.deb`.
-- **AppImage (x64)** — `Mind_*_amd64.AppImage`: needs `libfuse2`, then `chmod +x ./*.AppImage && ./*.AppImage`. Requires WebKitGTK 4.1 — Ubuntu 20.04 ships 4.0 and will not start.
-- **macOS** — no prebuilt binary, build it locally: `make`.
+| System | File |
+| --- | --- |
+| Windows 10 / 11 (x64) | `Mind_<version>_x64-setup.exe` |
+| Ubuntu 22.04+ / Debian 12+ (x64) | `Mind_<version>_amd64.deb` |
+| Any distro with WebKitGTK 4.1 | `Mind_<version>_amd64.AppImage` |
+
+The Windows build is unsigned, so the first launch needs **More info → Run anyway**. Linux builds use the system WebKitGTK 4.1 (Ubuntu 20.04 will not start), and the AppImage also needs `libfuse2`.
+
+**macOS** — no prebuilt binary, build it locally: `make`.
 
 ## Build from source
 
