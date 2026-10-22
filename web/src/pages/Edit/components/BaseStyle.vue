@@ -1047,6 +1047,7 @@ export default {
       this.configData.rainbowLinesConfig = newConfig
       this.mindMap.rainbowLines.updateRainLinesConfig(newConfig)
       storeConfig(this.configData)
+      this.$bus.$emit('mapStyleChanged')
     },
 
     // 更新外框
@@ -1058,6 +1059,7 @@ export default {
       })
       storeConfig(this.configData)
       this.mindMap.render()
+      this.$bus.$emit('mapStyleChanged')
     },
 
     // 设置margin

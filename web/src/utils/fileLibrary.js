@@ -173,6 +173,19 @@ export function createFileLibrary(storage) {
         storage.setItem(DATA_KEY, JSON.stringify(item.data))
       }
       return item
+    },
+    saveThumbnail(id, thumbnail) {
+      if (typeof thumbnail !== 'string' || !thumbnail) {
+        return null
+      }
+      const items = ensure()
+      const item = items.find(entry => entry.id === id)
+      if (!item) {
+        return null
+      }
+      item.thumbnail = thumbnail
+      writeList(storage, items)
+      return item
     }
   }
 }

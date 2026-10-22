@@ -18,25 +18,10 @@ import FileHome from './components/FileHome.vue'
 import { mapState, mapMutations } from 'vuex'
 import { getLocalConfig } from '@/api'
 import { browserFileLibrary } from '@/utils/fileLibrary'
+import { isMermaidStyleOn } from '@/utils/mermaidStyle'
+import { mindMapPng, shrinkThumbnail, svgElementToThumbnail } from '@/utils/thumbnail'
 
-const shrinkThumbnail = dataUrl =>
-  new Promise(resolve => {
-    const image = new Image()
-    image.onload = () => {
-      const maxEdge = 480
-      const scale = Math.min(1, maxEdge / Math.max(image.width, image.height, 1))
-      const canvas = document.createElement('canvas')
-      canvas.width = Math.max(1, Math.round(image.width * scale))
-      canvas.height = Math.max(1, Math.round(image.height * scale))
-      const context = canvas.getContext('2d')
-      context.fillStyle = '#ffffff'
-      context.fillRect(0, 0, canvas.width, canvas.height)
-      context.drawImage(image, 0, 0, canvas.width, canvas.height)
-      resolve(canvas.toDataURL('image/jpeg', 0.7))
-    }
-    image.onerror = () => resolve('')
-    image.src = dataUrl
-  })
+const STYLE_COMMANDS = new Set(['SET_NODE_STYLE', 'SET_NODE_STYLES', 'SET_NODE_SHAPE'])
 
 export default {
   components: {
@@ -48,7 +33,12 @@ export default {
     return {
       show: false,
       screen: 'home',
-      mindMap: null
+      mindMap: null,
+      previewMindMap: null,
+      previewTimer: null,
+      previewToken: 0,
+      restoreThemeConfig: null,
+      restoreExec: null
     }
   },
   computed: {
@@ -65,9 +55,7 @@ export default {
   },
   async created() {
     this.screen = 'home'
-    this.$bus.$on('mindMapReady', mindMap => {
-      this.mindMap = mindMap
-    })
+    this.$bus.$on('mindMapReady', this.onMindMapReady)
     this.$bus.$on('showFileHome', this.leaveEditor)
     this.$bus.$on('enterEditor', this.enterEditor)
     this.initLocalConfig()
@@ -80,6 +68,9 @@ export default {
     this.setBodyDark()
   },
   beforeDestroy() {
+    clearTimeout(this.previewTimer)
+    this.unbindPreview()
+    this.$bus.$off('mindMapReady', this.onMindMapReady)
     this.$bus.$off('showFileHome', this.leaveEditor)
     this.$bus.$off('enterEditor', this.enterEditor)
   },
@@ -90,7 +81,141 @@ export default {
       this.screen = 'edit'
     },
 
+    onMindMapReady(mindMap) {
+      this.mindMap = mindMap
+      this.bindPreview(mindMap)
+    },
+
+    bindPreview(mindMap) {
+      this.unbindPreview()
+      this.previewMindMap = mindMap
+      this.onThemeChange = () => this.schedulePreview()
+      this.onLayoutChange = () => this.schedulePreview()
+      mindMap.on('view_theme_change', this.onThemeChange)
+      mindMap.on('layout_change', this.onLayoutChange)
+      this.$bus.$on('mermaidStyleChanged', this.schedulePreview)
+      this.$bus.$on('mermaidPreviewReady', this.schedulePreview)
+      this.$bus.$on('mapStyleChanged', this.schedulePreview)
+      this.$bus.$on('painter_end', this.schedulePreview)
+      const rawConfig = mindMap.setThemeConfig.bind(mindMap)
+      mindMap.setThemeConfig = (...args) => {
+        const result = rawConfig(...args)
+        this.schedulePreview()
+        return result
+      }
+      this.restoreThemeConfig = () => {
+        mindMap.setThemeConfig = rawConfig
+      }
+      const rawExec = mindMap.execCommand.bind(mindMap)
+      mindMap.execCommand = (...args) => {
+        const result = rawExec(...args)
+        if (STYLE_COMMANDS.has(args[0])) {
+          this.schedulePreview()
+        }
+        return result
+      }
+      this.restoreExec = () => {
+        mindMap.execCommand = rawExec
+      }
+    },
+
+    unbindPreview() {
+      clearTimeout(this.previewTimer)
+      this.previewTimer = null
+      const mindMap = this.previewMindMap
+      if (this.restoreThemeConfig) {
+        this.restoreThemeConfig()
+        this.restoreThemeConfig = null
+      }
+      if (this.restoreExec) {
+        this.restoreExec()
+        this.restoreExec = null
+      }
+      if (mindMap && this.onThemeChange) {
+        mindMap.off('view_theme_change', this.onThemeChange)
+        mindMap.off('layout_change', this.onLayoutChange)
+      }
+      this.previewMindMap = null
+      this.$bus.$off('mermaidStyleChanged', this.schedulePreview)
+      this.$bus.$off('mermaidPreviewReady', this.schedulePreview)
+      this.$bus.$off('mapStyleChanged', this.schedulePreview)
+      this.$bus.$off('painter_end', this.schedulePreview)
+    },
+
+    schedulePreview() {
+      if (this.screen !== 'edit' || !this.mindMap) {
+        return
+      }
+      clearTimeout(this.previewTimer)
+      this.previewTimer = setTimeout(() => {
+        this.previewTimer = null
+        this.storePreview()
+      }, 500)
+    },
+
+    async makeThumbnail() {
+      if (!this.mindMap) {
+        return ''
+      }
+      const token = ++this.previewToken
+      try {
+        let source = ''
+        if (isMermaidStyleOn()) {
+          const svg = document.querySelector('.mermaidOfficialView svg')
+          if (!svg) {
+            return ''
+          }
+          source = await svgElementToThumbnail(svg)
+        } else {
+          const png = await mindMapPng(this.mindMap)
+          if (typeof png === 'string' && png.indexOf('data:') === 0) {
+            source = await shrinkThumbnail(png)
+          }
+        }
+        if (token !== this.previewToken) {
+          return ''
+        }
+        return source
+      } catch (error) {
+        console.log(error)
+        return ''
+      }
+    },
+
+    async storePreview() {
+      const image = await this.makeThumbnail()
+      if (!image || this.screen !== 'edit') {
+        return
+      }
+      try {
+        await this.storeThumbnail(image)
+      } catch (error) {
+        console.log(error)
+      }
+    },
+
+    async storeThumbnail(image) {
+      if (
+        window.__TAURI_INTERNALS__ &&
+        window.__desktopSession &&
+        window.__desktopSession.path
+      ) {
+        await window.__TAURI_INTERNALS__.invoke('save_thumbnail', {
+          path: window.__desktopSession.path,
+          image
+        })
+        return
+      }
+      const library = browserFileLibrary()
+      const id = library.currentId()
+      if (id) {
+        library.saveThumbnail(id, image)
+      }
+    },
+
     async leaveEditor() {
+      clearTimeout(this.previewTimer)
+      this.previewTimer = null
       if (window.__TAURI_INTERNALS__ && window.__desktopSession) {
         if (this.mindMap && window.__desktopSession.path) {
           const data = this.mindMap.getData(true)
@@ -102,20 +227,18 @@ export default {
             console.log(error)
           }
           try {
-            const png = await this.mindMap.export('png', false, 'preview')
-            if (typeof png === 'string' && png.indexOf('data:') === 0) {
-              const image = await shrinkThumbnail(png)
-              if (image) {
-                await invoke('save_thumbnail', {
-                  path: window.__desktopSession.path,
-                  image
-                })
-              }
+            const image = await this.makeThumbnail()
+            if (image) {
+              await invoke('save_thumbnail', {
+                path: window.__desktopSession.path,
+                image
+              })
             }
           } catch (error) {
             console.log(error)
           }
         }
+        this.unbindPreview()
         this.mindMap = null
         this.screen = 'home'
         return
@@ -126,23 +249,25 @@ export default {
         const data = this.mindMap.getData(true)
         let thumbnail = ''
         try {
-          const png = await this.mindMap.export('png', false, 'preview')
-          if (typeof png === 'string' && png.indexOf('data:') === 0) {
-            thumbnail = await shrinkThumbnail(png)
-          }
+          thumbnail = await this.makeThumbnail()
         } catch (error) {
           thumbnail = ''
         }
         try {
-          library.save(id, data, thumbnail)
+          if (thumbnail) {
+            library.save(id, data, thumbnail)
+          } else {
+            library.save(id, data)
+          }
         } catch (error) {
           try {
-            library.save(id, data, '')
+            library.save(id, data)
           } catch (again) {
             console.log(again)
           }
         }
       }
+      this.unbindPreview()
       this.mindMap = null
       this.screen = 'home'
     },

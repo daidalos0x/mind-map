@@ -62,6 +62,7 @@ export default {
           return
         }
         this.$refs.host.innerHTML = svg
+        this.$bus.$emit('mermaidPreviewReady')
       } catch (error) {
         if (token !== this.token || !this.$refs.host) {
           return

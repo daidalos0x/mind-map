@@ -324,6 +324,7 @@ export default {
         }
       })
       this.mindMap.associativeLine.updateActiveLineStyle()
+      this.$bus.$emit('mapStyleChanged')
     }
   }
 }
