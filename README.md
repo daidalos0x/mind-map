@@ -13,9 +13,7 @@ A mind map app with a web editor and a Mac desktop app. Documents are `.xmind` f
 Use it online at https://phaethix.github.io/mind-map/.
 
 ```bash
-cd web
-npm ci
-NODE_OPTIONS=--openssl-legacy-provider npm run serve
+make web
 ```
 
 Open http://localhost:8080.
@@ -28,26 +26,9 @@ The web app uses Vue CLI 4. On Node 17 and newer, `NODE_OPTIONS=--openssl-legacy
 
 The Mac app is `Mind`. It stores files in `~/Documents/Mind`. New documents are named `未命名.xmind`.
 
-Run the installed app:
-
 ```bash
-open ~/Applications/Mind.app
+make install
+make open
 ```
 
-Build it from this repo:
-
-```bash
-cd desktop
-npm install
-npm run build
-```
-
-The app bundle is written to `desktop/src-tauri/target/release/bundle/macos/Mind.app`.
-
-For development, the desktop shell loads the web app:
-
-```bash
-cd desktop
-npm install
-npm run dev
-```
+`make install` builds `Mind.app` and copies it to `~/Applications`. `make dev` runs the desktop shell against the local web app. Rust is required: https://rustup.rs
