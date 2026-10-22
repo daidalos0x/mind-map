@@ -209,6 +209,8 @@ export default {
 
   &.isDark {
     background-color: #262a2e;
+    border-color: hsla(0, 0%, 100%, 0.1);
+    box-shadow: 0 0 16px rgba(0, 0, 0, 0.55);
   }
 
   .svgBox {

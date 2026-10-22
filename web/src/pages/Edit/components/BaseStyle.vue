@@ -1101,6 +1101,32 @@ export default {
         .curRainbowLine {
           color: hsla(0, 0%, 100%, 0.6);
         }
+
+        .block,
+        .curRainbowLine {
+          border-color: hsla(0, 0%, 100%, 0.16);
+        }
+      }
+    }
+
+    .styleBtn {
+      background-color: #363b3f;
+      border-color: hsla(0, 0%, 100%, 0.1);
+      color: hsla(0, 0%, 100%, 0.6);
+
+      &.actived {
+        background-color: #4a5056;
+        color: hsla(0, 0%, 100%, 0.9);
+      }
+    }
+
+    .bgList {
+      .bgItem {
+        border-color: hsla(0, 0%, 100%, 0.1);
+
+        &.active {
+          border-color: #409eff;
+        }
       }
     }
   }

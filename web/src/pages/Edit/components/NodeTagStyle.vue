@@ -183,7 +183,12 @@ export default {
 
   &.isDark {
     background-color: #262a2e;
-    border-left-color: hsla(0, 0%, 100%, 0.1);
+    border-color: hsla(0, 0%, 100%, 0.1);
+    box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.5);
+
+    .colorItem {
+      border-color: hsla(0, 0%, 100%, 0.16);
+    }
   }
 
   .row {

@@ -21,6 +21,10 @@ export default {
   color: #2c3e50;
 }
 
+body.isDark #app {
+  color: hsla(0, 0%, 100%, 0.9);
+}
+
 .customScrollbar {
   &::-webkit-scrollbar {
     width: 7px;

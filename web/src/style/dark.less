@@ -1,0 +1,1194 @@
+/**
+ * 全局深色主题。
+ *
+ * 说明：Element UI 的弹层（下拉框、气泡、对话框、消息、通知、表格等）默认挂载到
+ * document.body 下，组件内的 scoped + .isDark 规则无法命中，因此统一在这里用
+ * body.isDark 做全局覆盖。组件内只需要处理自己的私有类名。
+ *
+ * 色板（与 components 内已有的深色值保持一致）：
+ *   #161618  页面底色
+ *   #1c1c1e  画布 / 内容区
+ *   #262a2e  面板、对话框、卡片
+ *   #363b3f  输入框、菜单项、悬浮块
+ *   hsla(0,0%,100%,0.9/0.6/0.3)  一级 / 二级 / 三级文字
+ *   hsla(0,0%,100%,0.1)          边框
+ *   #409eff                      主色
+ */
+
+@dark-page: #161618;
+@dark-canvas: #1c1c1e;
+@dark-panel: #262a2e;
+@dark-field: #363b3f;
+@dark-border: hsla(0, 0%, 100%, 0.1);
+@dark-border-strong: hsla(0, 0%, 100%, 0.16);
+@dark-text: hsla(0, 0%, 100%, 0.9);
+@dark-text-secondary: hsla(0, 0%, 100%, 0.6);
+@dark-text-disabled: hsla(0, 0%, 100%, 0.3);
+@dark-hover: hsla(0, 0%, 100%, 0.06);
+@dark-shadow: 0 8px 24px 0 rgba(0, 0, 0, 0.45);
+@primary: #409eff;
+
+body.isDark {
+  background-color: @dark-page;
+  color: @dark-text;
+
+  /* ---------------- 全局滚动条 ---------------- */
+  &::-webkit-scrollbar,
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb,
+  ::-webkit-scrollbar-thumb {
+    background-color: hsla(0, 0%, 100%, 0.18);
+    border-radius: 8px;
+
+    &:hover {
+      background-color: hsla(0, 0%, 100%, 0.28);
+    }
+  }
+
+  &::-webkit-scrollbar-track,
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .customScrollbar {
+    &::-webkit-scrollbar-thumb {
+      background-color: hsla(0, 0%, 100%, 0.2);
+    }
+  }
+
+  /* ---------------- 文字与链接 ---------------- */
+  a {
+    color: @primary;
+  }
+
+  /* ---------------- el-button ---------------- */
+  .el-button {
+    background-color: @dark-field;
+    border-color: @dark-border;
+    color: @dark-text;
+
+    &:hover,
+    &:focus {
+      background-color: lighten(@dark-field, 6%);
+      border-color: @dark-border-strong;
+      color: @dark-text;
+    }
+  }
+
+  .el-button--primary {
+    background-color: @primary;
+    border-color: @primary;
+    color: #fff;
+
+    &:hover,
+    &:focus {
+      background-color: lighten(@primary, 8%);
+      border-color: lighten(@primary, 8%);
+      color: #fff;
+    }
+  }
+
+  .el-button--success {
+    background-color: #67c23a;
+    border-color: #67c23a;
+    color: #fff;
+  }
+
+  .el-button--warning {
+    background-color: #e6a23c;
+    border-color: #e6a23c;
+    color: #fff;
+  }
+
+  .el-button--danger {
+    background-color: #f56c6c;
+    border-color: #f56c6c;
+    color: #fff;
+  }
+
+  .el-button--info {
+    background-color: #909399;
+    border-color: #909399;
+    color: #fff;
+  }
+
+  .el-button--text {
+    background: transparent;
+    border-color: transparent;
+    color: @primary;
+
+    &:hover,
+    &:focus {
+      background: transparent;
+      color: lighten(@primary, 10%);
+    }
+  }
+
+  .el-button.is-plain {
+    background: transparent;
+    border-color: @dark-border-strong;
+    color: @dark-text;
+  }
+
+  .el-button.is-disabled,
+  .el-button.is-disabled:hover,
+  .el-button.is-disabled:focus {
+    background-color: darken(@dark-field, 4%);
+    border-color: @dark-border;
+    color: @dark-text-disabled;
+  }
+
+  .el-button--text.is-disabled,
+  .el-button--text.is-disabled:hover {
+    background: transparent;
+    color: @dark-text-disabled;
+  }
+
+  /* ---------------- 输入类 ---------------- */
+  .el-input__inner,
+  .el-textarea__inner {
+    background-color: @dark-field;
+    border-color: @dark-border;
+    color: @dark-text;
+
+    &::placeholder {
+      color: @dark-text-disabled;
+    }
+
+    &:hover {
+      border-color: @dark-border-strong;
+    }
+
+    &:focus {
+      border-color: @primary;
+    }
+  }
+
+  .el-textarea .el-input__count {
+    background-color: transparent;
+    color: @dark-text-disabled;
+  }
+
+  .el-input.is-disabled .el-input__inner,
+  .el-textarea.is-disabled .el-textarea__inner {
+    background-color: darken(@dark-field, 4%);
+    border-color: @dark-border;
+    color: @dark-text-disabled;
+  }
+
+  .el-input__prefix,
+  .el-input__suffix,
+  .el-input__icon,
+  .el-select .el-input .el-select__caret {
+    color: @dark-text-secondary;
+  }
+
+  .el-input-group__append,
+  .el-input-group__prepend {
+    background-color: @dark-field;
+    border-color: @dark-border;
+    color: @dark-text;
+
+    button.el-button {
+      color: @dark-text;
+    }
+  }
+
+  .el-input-number__decrease,
+  .el-input-number__increase {
+    background-color: darken(@dark-field, 2%);
+    border-color: @dark-border;
+    color: @dark-text-secondary;
+
+    &:hover {
+      color: @primary;
+    }
+  }
+
+  /* ---------------- el-select ---------------- */
+  .el-select-dropdown {
+    background-color: @dark-field;
+    border-color: @dark-border;
+    box-shadow: @dark-shadow;
+
+    .el-select-dropdown__item {
+      color: @dark-text-secondary;
+
+      &.hover,
+      &:hover {
+        background-color: @dark-hover;
+        color: @dark-text;
+      }
+
+      &.selected {
+        color: @primary;
+        font-weight: 700;
+      }
+    }
+
+    .el-select-group__title {
+      color: @dark-text-disabled;
+    }
+
+    .el-select-dropdown__empty {
+      color: @dark-text-secondary;
+    }
+
+    .el-popper__arrow::after {
+      background-color: @dark-field;
+      border-color: @dark-border;
+    }
+  }
+
+  /* ---------------- 下拉菜单 ---------------- */
+  .el-dropdown-menu {
+    background-color: @dark-field;
+    border-color: @dark-border;
+
+    .el-dropdown-menu__item {
+      color: @dark-text-secondary;
+
+      &:not(.is-disabled):hover,
+      &:focus {
+        background-color: @dark-hover;
+        color: @dark-text;
+      }
+
+      &.is-disabled {
+        color: @dark-text-disabled;
+      }
+    }
+
+    .el-dropdown-menu__item--divided::before {
+      background-color: @dark-border;
+    }
+  }
+
+  /* ---------------- 气泡 / 提示 ---------------- */
+  .el-popper {
+    background-color: @dark-field;
+    border-color: @dark-border;
+    color: @dark-text;
+  }
+
+  .el-popper[x-placement^='bottom'] .popper__arrow {
+    border-bottom-color: @dark-border;
+
+    &::after {
+      border-bottom-color: @dark-field;
+    }
+  }
+
+  .el-popper[x-placement^='top'] .popper__arrow {
+    border-top-color: @dark-border;
+
+    &::after {
+      border-top-color: @dark-field;
+    }
+  }
+
+  .el-popper[x-placement^='left'] .popper__arrow {
+    border-left-color: @dark-border;
+
+    &::after {
+      border-left-color: @dark-field;
+    }
+  }
+
+  .el-popper[x-placement^='right'] .popper__arrow {
+    border-right-color: @dark-border;
+
+    &::after {
+      border-right-color: @dark-field;
+    }
+  }
+
+  .el-popover,
+  .el-popconfirm {
+    background-color: @dark-field;
+    border-color: @dark-border;
+    color: @dark-text;
+  }
+
+  .el-popconfirm__main {
+    color: @dark-text;
+  }
+
+  .el-popconfirm__action {
+    .el-button--text {
+      color: @dark-text-secondary;
+    }
+  }
+
+  .el-tooltip__popper.is-light {
+    background: @dark-field;
+    border-color: @dark-border;
+    color: @dark-text;
+  }
+
+  /* 深色 effect 的 tooltip 保持 Element 原样，避免被上面的 .el-popper 覆盖 */
+  .el-tooltip__popper.is-dark {
+    background: #303133;
+    border-color: #303133;
+    color: #fff;
+  }
+
+  .el-tooltip__popper.is-dark[x-placement^='bottom'] .popper__arrow {
+    border-bottom-color: #303133;
+
+    &::after {
+      border-bottom-color: #303133;
+    }
+  }
+
+  .el-tooltip__popper.is-dark[x-placement^='top'] .popper__arrow {
+    border-top-color: #303133;
+
+    &::after {
+      border-top-color: #303133;
+    }
+  }
+
+  /* ---------------- el-dialog ---------------- */
+  .el-dialog {
+    background-color: @dark-panel;
+    box-shadow: @dark-shadow;
+
+    .el-dialog__header {
+      border-bottom: 1px solid @dark-border;
+    }
+
+    .el-dialog__title {
+      color: @dark-text;
+    }
+
+    .el-dialog__headerbtn .el-dialog__close {
+      color: @dark-text-secondary;
+
+      &:hover {
+        color: @primary;
+      }
+    }
+
+    .el-dialog__body {
+      background-color: @dark-panel;
+      color: @dark-text;
+    }
+
+    .el-dialog__footer {
+      border-top: 1px solid @dark-border;
+    }
+  }
+
+  .v-modal {
+    background: #000;
+  }
+
+  /* ---------------- el-message-box ---------------- */
+  .el-message-box {
+    background-color: @dark-panel;
+    border-color: @dark-border;
+    box-shadow: @dark-shadow;
+
+    .el-message-box__header {
+      border-bottom: 1px solid transparent;
+    }
+
+    .el-message-box__title {
+      color: @dark-text;
+    }
+
+    .el-message-box__headerbtn:hover .el-message-box__close {
+      color: @primary;
+    }
+
+    .el-message-box__content,
+    .el-message-box__message,
+    .el-message-box__container {
+      color: @dark-text-secondary;
+    }
+
+    .el-message-box__message p {
+      color: @dark-text-secondary;
+    }
+
+    .el-message-box__input {
+      .el-input__inner {
+        background-color: @dark-field;
+        border-color: @dark-border;
+        color: @dark-text;
+      }
+    }
+
+    .el-message-box__errormsg {
+      color: #f56c6c;
+    }
+  }
+
+  /* ---------------- el-message ---------------- */
+  .el-message {
+    background-color: @dark-field;
+    border-color: @dark-border;
+    box-shadow: @dark-shadow;
+
+    .el-message__content {
+      color: @dark-text;
+    }
+
+    .el-message__closeBtn {
+      color: @dark-text-secondary;
+    }
+
+    &--success {
+      background-color: #1f2d1f;
+      border-color: #2f4a2f;
+    }
+
+    &--warning {
+      background-color: #2f2718;
+      border-color: #4a3d21;
+    }
+
+    &--error {
+      background-color: #2f1c1c;
+      border-color: #4a2a2a;
+    }
+
+    &--info {
+      background-color: @dark-field;
+      border-color: @dark-border;
+    }
+  }
+
+  /* ---------------- el-notification ---------------- */
+  .el-notification {
+    background-color: @dark-field;
+    border-color: @dark-border;
+    box-shadow: @dark-shadow;
+
+    .el-notification__title {
+      color: @dark-text;
+    }
+
+    .el-notification__content {
+      color: @dark-text-secondary;
+    }
+
+    .el-notification__closeBtn {
+      color: @dark-text-secondary;
+
+      &:hover {
+        color: @dark-text;
+      }
+    }
+  }
+
+  /* ---------------- el-alert ---------------- */
+  .el-alert--info.is-light {
+    background-color: @dark-field;
+    color: @dark-text-secondary;
+  }
+
+  .el-alert--success.is-light {
+    background-color: #1f2d1f;
+    color: #9bca8d;
+  }
+
+  .el-alert--warning.is-light {
+    background-color: #2f2718;
+    color: #d8b473;
+  }
+
+  .el-alert--error.is-light {
+    background-color: #2f1c1c;
+    color: #ec9a9a;
+  }
+
+  /* ---------------- el-table ---------------- */
+  .el-table {
+    background-color: transparent;
+    color: @dark-text-secondary;
+
+    &::before,
+    &::after {
+      background-color: @dark-border;
+    }
+
+    th.el-table__cell,
+    th {
+      background-color: @dark-field;
+      border-bottom-color: @dark-border;
+      color: @dark-text;
+    }
+
+    tr,
+    td.el-table__cell,
+    td {
+      background-color: transparent;
+      border-bottom-color: @dark-border;
+    }
+
+    .el-table__header-wrapper th,
+    .el-table__fixed-header-wrapper th {
+      background-color: @dark-field;
+    }
+
+    .el-table__body tr:hover > td.el-table__cell,
+    .el-table__body tr:hover > td,
+    &--enable-row-hover .el-table__body tr:hover > td {
+      background-color: @dark-hover;
+    }
+
+    &--striped .el-table__body tr.el-table__row--striped td.el-table__cell,
+    &--striped .el-table__body tr.el-table__row--striped td {
+      background-color: hsla(0, 0%, 100%, 0.03);
+    }
+
+    .el-table__fixed::before,
+    .el-table__fixed-right::before {
+      background-color: @dark-border;
+    }
+
+    .el-table__fixed,
+    .el-table__fixed-right {
+      background-color: @dark-panel;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .el-table__empty-block {
+      background-color: transparent;
+    }
+
+    .el-table__empty-text {
+      color: @dark-text-disabled;
+    }
+
+    .el-table__expanded-cell {
+      background-color: transparent;
+    }
+  }
+
+  /* ---------------- el-pagination ---------------- */
+  .el-pagination {
+    color: @dark-text-secondary;
+
+    button,
+    .el-pager li {
+      background-color: @dark-field;
+      color: @dark-text-secondary;
+    }
+
+    button:disabled {
+      background-color: @dark-field;
+      color: @dark-text-disabled;
+    }
+
+    .el-pager li.active {
+      color: @primary;
+    }
+
+    .el-pager li:hover {
+      color: @primary;
+    }
+
+    .el-pagination__total,
+    .el-pagination__jump,
+    .el-pagination__sizes .el-input .el-input__inner {
+      color: @dark-text-secondary;
+    }
+  }
+
+  /* ---------------- el-tabs ---------------- */
+  .el-tabs__item {
+    color: @dark-text-secondary;
+
+    &:hover,
+    &.is-active {
+      color: @primary;
+    }
+  }
+
+  .el-tabs__nav-wrap::after {
+    background-color: @dark-border;
+  }
+
+  .el-tabs--border-card {
+    background-color: @dark-panel;
+    border-color: @dark-border;
+    box-shadow: none;
+
+    > .el-tabs__header {
+      background-color: @dark-field;
+      border-bottom-color: @dark-border;
+    }
+
+    > .el-tabs__content {
+      color: @dark-text;
+    }
+  }
+
+  /* ---------------- el-radio ---------------- */
+  .el-radio {
+    color: @dark-text-secondary;
+
+    &__label {
+      color: @dark-text-secondary;
+    }
+
+    &__inner {
+      background-color: @dark-field;
+      border-color: @dark-border-strong;
+    }
+
+    &.is-checked {
+      .el-radio__inner {
+        background-color: @primary;
+        border-color: @primary;
+      }
+
+      .el-radio__label {
+        color: @primary;
+      }
+    }
+
+    &.is-disabled {
+      .el-radio__inner {
+        background-color: darken(@dark-field, 4%);
+      }
+
+      .el-radio__label {
+        color: @dark-text-disabled;
+      }
+    }
+  }
+
+  .el-radio-group {
+    .el-radio-button__inner {
+      background-color: @dark-field;
+      border-color: @dark-border;
+      color: @dark-text-secondary;
+      box-shadow: none;
+    }
+
+    .el-radio-button__orig-radio:checked + .el-radio-button__inner {
+      background-color: @primary;
+      border-color: @primary;
+      color: #fff;
+      box-shadow: -1px 0 0 0 @primary;
+    }
+
+    .el-radio-button__orig-radio:disabled + .el-radio-button__inner {
+      background-color: darken(@dark-field, 4%);
+      border-color: @dark-border;
+      color: @dark-text-disabled;
+    }
+  }
+
+  /* ---------------- el-checkbox ---------------- */
+  .el-checkbox {
+    color: @dark-text-secondary;
+
+    &__label {
+      color: @dark-text-secondary;
+    }
+
+    &__inner {
+      background-color: @dark-field;
+      border-color: @dark-border-strong;
+    }
+
+    &.is-checked {
+      .el-checkbox__inner {
+        background-color: @primary;
+        border-color: @primary;
+      }
+
+      .el-checkbox__label {
+        color: @primary;
+      }
+    }
+
+    &.is-disabled {
+      .el-checkbox__inner {
+        background-color: darken(@dark-field, 4%);
+        border-color: @dark-border;
+      }
+
+      .el-checkbox__label {
+        color: @dark-text-disabled;
+      }
+    }
+  }
+
+  /* ---------------- el-switch ---------------- */
+  .el-switch__core {
+    background-color: @dark-field;
+    border-color: @dark-border-strong;
+  }
+
+  .el-switch.is-checked .el-switch__core {
+    background-color: @primary;
+    border-color: @primary;
+  }
+
+  .el-switch__label {
+    color: @dark-text-secondary;
+
+    &.is-active {
+      color: @primary;
+    }
+  }
+
+  /* ---------------- el-slider ---------------- */
+  .el-slider__runway {
+    background-color: hsla(0, 0%, 100%, 0.14);
+  }
+
+  .el-slider__bar {
+    background-color: @primary;
+  }
+
+  .el-slider__button {
+    background-color: @dark-panel;
+    border-color: @primary;
+  }
+
+  .el-slider__stop {
+    background-color: hsla(0, 0%, 100%, 0.4);
+  }
+
+  .el-slider__input .el-input__inner {
+    background-color: @dark-field;
+    border-color: @dark-border;
+    color: @dark-text;
+  }
+
+  .el-slider__button-wrapper .el-tooltip {
+    background-color: @dark-field;
+    border-color: @dark-border;
+    color: @dark-text;
+  }
+
+  /* ---------------- el-tree ---------------- */
+  .el-tree {
+    background-color: transparent;
+    color: @dark-text-secondary;
+
+    .el-tree-node__content:hover,
+    .el-tree-node:focus > .el-tree-node__content {
+      background-color: @dark-hover;
+    }
+
+    .el-tree-node__content {
+      color: @dark-text-secondary;
+    }
+
+    &.el-tree--highlight-current
+      .el-tree-node.is-current
+      > .el-tree-node__content {
+      background-color: hsla(0, 0%, 100%, 0.08);
+      color: @dark-text;
+    }
+
+    .el-tree-node__expand-icon {
+      color: @dark-text-secondary;
+    }
+
+    .el-tree__empty-text {
+      color: @dark-text-disabled;
+    }
+  }
+
+  /* ---------------- el-upload ---------------- */
+  .el-upload-dragger {
+    background-color: @dark-field;
+    border-color: @dark-border;
+
+    &:hover {
+      border-color: @primary;
+    }
+  }
+
+  .el-upload-list__item {
+    color: @dark-text-secondary;
+
+    &:hover {
+      background-color: @dark-hover;
+    }
+  }
+
+  .el-upload__tip {
+    color: @dark-text-disabled;
+  }
+
+  .el-upload-list__item-name {
+    color: @dark-text-secondary;
+  }
+
+  /* ---------------- el-form ---------------- */
+  .el-form-item__label {
+    color: @dark-text-secondary;
+  }
+
+  .el-form-item__error {
+    color: #f56c6c;
+  }
+
+  /* ---------------- el-card / collapse / tag / empty ---------------- */
+  .el-card {
+    background-color: @dark-panel;
+    border-color: @dark-border;
+    color: @dark-text;
+  }
+
+  .el-collapse {
+    border-color: @dark-border;
+
+    .el-collapse-item__header,
+    .el-collapse-item__wrap {
+      background-color: transparent;
+      border-color: @dark-border;
+      color: @dark-text;
+    }
+
+    .el-collapse-item__content {
+      color: @dark-text-secondary;
+    }
+  }
+
+  .el-tag {
+    background-color: @dark-field;
+    border-color: @dark-border;
+    color: @dark-text;
+  }
+
+  .el-empty__description p {
+    color: @dark-text-disabled;
+  }
+
+  .el-divider {
+    background-color: @dark-border;
+
+    .el-divider__text {
+      background-color: @dark-panel;
+      color: @dark-text-secondary;
+    }
+  }
+
+  .el-breadcrumb__inner,
+  .el-breadcrumb__separator {
+    color: @dark-text-disabled;
+  }
+
+  /* ---------------- el-date-picker / time-picker ---------------- */
+  .el-picker-panel {
+    background-color: @dark-field;
+    border-color: @dark-border;
+    color: @dark-text-secondary;
+    box-shadow: @dark-shadow;
+
+    .el-picker-panel__icon-btn,
+    .el-date-picker__header-label {
+      color: @dark-text-secondary;
+    }
+
+    .el-date-table th {
+      color: @dark-text-secondary;
+      border-bottom-color: @dark-border;
+    }
+
+    .el-date-table td.disabled div {
+      background-color: @dark-field;
+      color: @dark-text-disabled;
+    }
+
+    .el-date-table td.available:hover {
+      color: @primary;
+    }
+
+    .el-date-table td.today span {
+      color: @primary;
+    }
+
+    .el-date-table td.current:not(.disabled) span {
+      background-color: @primary;
+      color: #fff;
+    }
+
+    .el-date-table td.next-month,
+    .el-date-table td.prev-month {
+      color: @dark-text-disabled;
+    }
+
+    .el-time-spinner__item {
+      color: @dark-text-secondary;
+
+      &.active:not(.disabled) {
+        color: @dark-text;
+      }
+
+      &.disabled {
+        color: @dark-text-disabled;
+      }
+    }
+
+    .el-time-panel__content::before,
+    .el-time-panel__content::after {
+      border-top-color: @dark-border;
+      border-bottom-color: @dark-border;
+    }
+
+    .el-time-panel__footer {
+      border-top-color: @dark-border;
+    }
+
+    .el-picker-panel__footer {
+      background-color: @dark-field;
+      border-top-color: @dark-border;
+    }
+  }
+
+  .el-time-panel {
+    background-color: @dark-field;
+    border-color: @dark-border;
+  }
+
+  /* ---------------- el-drawer ---------------- */
+  .el-drawer {
+    background-color: @dark-panel;
+
+    .el-drawer__header {
+      color: @dark-text;
+    }
+
+    .el-drawer__body {
+      color: @dark-text;
+    }
+  }
+
+  /* ---------------- loading ---------------- */
+  .el-loading-mask {
+    background-color: rgba(0, 0, 0, 0.6);
+  }
+
+  .el-loading-spinner {
+    .path {
+      stroke: @primary;
+    }
+
+    .el-loading-text {
+      color: @dark-text-secondary;
+    }
+  }
+
+  /* ---------------- v-viewer 图片预览 ---------------- */
+  .viewer-container {
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+
+  .viewer-toolbar > ul > li {
+    background-color: rgba(255, 255, 255, 0.1);
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.22);
+    }
+  }
+
+  .viewer-navbar {
+    background-color: rgba(0, 0, 0, 0.6);
+  }
+
+  .viewer-title,
+  .viewer-list > ul > li {
+    color: hsla(0, 0%, 100%, 0.8);
+  }
+}
+
+/* ================= toast-ui 编辑器（节点备注） ================= */
+body.isDark {
+  .nodeNoteDialog {
+    .toastui-editor-defaultUI {
+      background-color: @dark-field;
+      border-color: @dark-border;
+    }
+
+    .toastui-editor-defaultUI-toolbar {
+      background-color: @dark-panel;
+      border-bottom-color: @dark-border;
+    }
+
+    .toastui-editor-toolbar-group::after {
+      background-color: @dark-border;
+    }
+
+    .toastui-editor-toolbar-icons {
+      border-color: transparent;
+
+      &:hover {
+        background-color: @dark-hover;
+      }
+    }
+
+    .toastui-editor-main,
+    .toastui-editor-md-container,
+    .toastui-editor-ww-container,
+    .toastui-editor-main-container {
+      background-color: @dark-field;
+    }
+
+    .toastui-editor-contents,
+    .ProseMirror {
+      color: @dark-text;
+    }
+
+    .toastui-editor-contents p,
+    .toastui-editor-contents h1,
+    .toastui-editor-contents h2,
+    .toastui-editor-contents h3,
+    .toastui-editor-contents li,
+    .toastui-editor-contents blockquote {
+      color: @dark-text;
+    }
+
+    .toastui-editor-contents blockquote {
+      border-left-color: @dark-border-strong;
+    }
+
+    .toastui-editor-mode-switch {
+      background-color: @dark-panel;
+      border-top-color: @dark-border;
+    }
+
+    .toastui-editor-mode-switch .tab-item {
+      background-color: @dark-panel;
+      border-color: @dark-border;
+      color: @dark-text-secondary;
+
+      &.active {
+        background-color: @dark-field;
+        color: @dark-text;
+      }
+    }
+
+    .toastui-editor-md-preview,
+    .toastui-editor-md-container .toastui-editor {
+      background-color: @dark-field;
+    }
+
+    .toastui-editor-popup {
+      background-color: @dark-field;
+      border-color: @dark-border;
+    }
+  }
+
+  .toastui-editor-popup-body {
+    color: @dark-text-secondary;
+  }
+
+  /* AI 配置对话框 */
+  .aiConfigBox {
+    .desc {
+      border-left-color: hsla(0, 0%, 100%, 0.16);
+      color: @dark-text-secondary;
+    }
+  }
+
+  /* 节点图标 / 图片位置 / 备注气泡等浮动面板 */
+  .nodeIconToolbar {
+    background: @dark-panel;
+    border-color: @dark-border;
+    box-shadow: @dark-shadow;
+    color: @dark-text;
+
+    .btnBox {
+      border-top-color: @dark-border;
+
+      .btn {
+        color: @dark-text;
+
+        &:hover {
+          color: @primary;
+        }
+      }
+    }
+  }
+
+  .nodeImgPlacementToolbar {
+    background: @dark-panel;
+    border-color: @dark-border;
+    box-shadow: @dark-shadow;
+    color: @dark-text;
+
+    .imgPlacementItem {
+      color: @dark-text-secondary;
+
+      &:hover {
+        background-color: @dark-hover;
+      }
+    }
+  }
+
+  .noteContentViewer {
+    background-color: @dark-panel;
+    border-color: @dark-border;
+    box-shadow: @dark-shadow;
+    color: @dark-text;
+
+    .toastui-editor-contents,
+    .toastui-editor-contents p,
+    .toastui-editor-contents li,
+    .toastui-editor-contents h1,
+    .toastui-editor-contents h2,
+    .toastui-editor-contents h3,
+    .toastui-editor-contents h4,
+    .toastui-editor-contents h5,
+    .toastui-editor-contents h6,
+    .toastui-editor-contents blockquote {
+      color: @dark-text;
+    }
+
+    .toastui-editor-contents blockquote {
+      border-left-color: @dark-border-strong;
+    }
+
+    .toastui-editor-contents code {
+      background-color: hsla(0, 0%, 100%, 0.1);
+    }
+
+    .toastui-editor-contents pre {
+      background-color: hsla(0, 0%, 100%, 0.06);
+    }
+  }
+
+  /* 图片上传组件（节点图片） */
+  .imgUploadContainer {
+    background-color: rgba(28, 28, 30, 0.92);
+
+    .imgUploadPanel {
+      color: @dark-text-secondary;
+
+      .title {
+        color: @dark-text;
+      }
+
+      .imgUploadInputArea {
+        color: @dark-text-secondary;
+        background-color: @dark-field;
+        border: 1px dashed @dark-border-strong;
+      }
+
+      .uploadInfoBox {
+        background-color: @dark-field;
+      }
+
+      .delBtn {
+        background-color: @dark-panel;
+        color: @dark-text;
+      }
+    }
+  }
+}

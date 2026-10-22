@@ -1,6 +1,7 @@
 <template>
   <div
     class="editContainer"
+    :class="{ isDark: isDark }"
     @dragenter.stop.prevent="onDragenter"
     @dragleave.stop.prevent
     @dragover.stop.prevent
@@ -210,6 +211,7 @@ export default {
   computed: {
     ...mapState({
       isZenMode: state => state.localConfig.isZenMode,
+      isDark: state => state.localConfig.isDark,
       openNodeRichText: state => state.localConfig.openNodeRichText,
       isShowScrollbar: state => state.localConfig.isShowScrollbar,
       enableDragImport: state => state.localConfig.enableDragImport,
@@ -649,6 +651,32 @@ export default {
   right: 0;
   top: 0;
   bottom: 0;
+
+  &.isDark {
+    .dragMask {
+      background-color: rgba(28, 28, 30, 0.86);
+      color: hsla(0, 0%, 100%, 0.9);
+    }
+
+    .canvasStage {
+      background: #1c1c1e;
+
+      &:fullscreen,
+      &:-webkit-full-screen {
+        background: #1c1c1e;
+      }
+    }
+
+    /**
+     * simple-mind-map 会通过 Style.setBackgroundStyle 把主题的 backgroundColor
+     * 写成 #mindMapContainer 的内联样式（classic7 等浅色主题是 #fff），
+     * 内联样式优先级高于类选择器，这里只能用 !important 覆盖。
+     * 只覆盖背景色，用户自定义的背景图片仍然保留。
+     */
+    .mindMapContainer {
+      background-color: #1c1c1e !important;
+    }
+  }
 
   .dragMask {
     position: absolute;

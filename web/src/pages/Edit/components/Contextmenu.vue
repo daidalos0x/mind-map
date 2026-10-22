@@ -529,6 +529,7 @@ export default {
 
   &.isDark {
     background: #363b3f;
+    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.5);
   }
 }
 .contextmenuContainer {
@@ -541,9 +542,25 @@ export default {
   &.isDark {
     color: #fff;
 
+    .splitLine {
+      background-color: hsla(0, 0%, 100%, 0.1);
+    }
+
     .item {
       &:hover {
         background: hsla(0, 0%, 100%, 0.05);
+      }
+
+      .desc {
+        color: hsla(0, 0%, 100%, 0.45);
+      }
+
+      &.disabled {
+        color: hsla(0, 0%, 100%, 0.3);
+
+        &:hover {
+          background: transparent;
+        }
       }
     }
   }

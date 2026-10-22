@@ -30,7 +30,11 @@
 <script>
 import Sidebar from './Sidebar.vue'
 import { storeData } from '@/api'
-import { disableMermaidStyle, isMermaidStyleOn } from '@/utils/mermaidStyle'
+import {
+  disableMermaidStyle,
+  isMermaidStyleOn,
+  isThemeDarkSyncSuppressed
+} from '@/utils/mermaidStyle'
 import { mapState, mapMutations } from 'vuex'
 import themeImgMap from 'simple-mind-map-plugin-themes/themeImgMap'
 import themeList from 'simple-mind-map-plugin-themes/themeList'
@@ -105,6 +109,10 @@ export default {
 
     handleViewThemeChange() {
       this.theme = this.mindMap.getTheme()
+      // mermaid 开关内部恢复主题时，不应该顺带改掉用户选择的明暗模式
+      if (isThemeDarkSyncSuppressed()) {
+        return
+      }
       this.handleDark()
     },
 
@@ -203,8 +211,12 @@ export default {
       let target = [...this.themeList, ...extendThemeList].find(item => {
         return item.value === this.theme
       })
+      // 扩展主题可能没有 dark 字段，找不到时保持现状，避免把界面切成亮色
+      if (!target) {
+        return
+      }
       this.setLocalConfig({
-        isDark: target.dark
+        isDark: Boolean(target.dark)
       })
     }
   }
@@ -221,6 +233,12 @@ export default {
   &.isDark {
     .name {
       color: #fff;
+    }
+
+    .themeListTheme {
+      .themeItem {
+        border-bottom-color: hsla(0, 0%, 100%, 0.1);
+      }
     }
   }
 

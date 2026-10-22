@@ -129,6 +129,12 @@ export default {
 
     .formulaList {
       .formulaItem {
+        border-color: hsla(0, 0%, 100%, 0.1);
+
+        &:last-of-type {
+          border-bottom-color: hsla(0, 0%, 100%, 0.1);
+        }
+
         .overview,
         .text {
           color: #fff;
@@ -136,6 +142,7 @@ export default {
 
         .text {
           background-color: #363b3f;
+          border-left-color: hsla(0, 0%, 100%, 0.1);
         }
       }
     }

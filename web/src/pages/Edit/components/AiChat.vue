@@ -175,6 +175,49 @@ export default {
   flex-direction: column;
 
   &.isDark {
+    .chatHeader {
+      border-bottom-color: hsla(0, 0%, 100%, 0.1);
+      color: hsla(0, 0%, 100%, 0.9);
+    }
+
+    .chatResBox {
+      .chatItem {
+        .chatItemInner {
+          .avatar {
+            background-color: #262a2e;
+          }
+
+          /deep/ .content {
+            color: hsla(0, 0%, 100%, 0.75);
+
+            pre {
+              background-color: hsla(0, 0%, 100%, 0.08);
+            }
+
+            code {
+              background-color: hsla(0, 0%, 100%, 0.08);
+            }
+
+            pre code {
+              background-color: transparent;
+            }
+          }
+        }
+      }
+    }
+
+    .chatInputBox {
+      border-top-color: hsla(0, 0%, 100%, 0.1);
+
+      textarea {
+        background-color: transparent;
+        color: hsla(0, 0%, 100%, 0.9);
+
+        &::placeholder {
+          color: hsla(0, 0%, 100%, 0.3);
+        }
+      }
+    }
   }
 
   .chatHeader {

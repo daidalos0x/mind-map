@@ -523,6 +523,11 @@ export default {
   padding: 20px;
 
   &.isDark {
+    .btn {
+      background-color: #262a2e;
+      color: hsla(0, 0%, 100%, 0.6);
+    }
+
     .panelHeader {
       .name {
         color: #fff;
@@ -535,12 +540,27 @@ export default {
           .name {
             color: hsla(0, 0%, 100%, 0.6);
           }
+
+          .block {
+            border-color: hsla(0, 0%, 100%, 0.16);
+          }
         }
 
         .styleBtn {
           background-color: #363b3f;
           color: hsla(0, 0%, 100%, 0.6);
           border-color: hsla(0, 0%, 100%, 0.1);
+
+          &.actived {
+            background-color: #4a5056;
+            color: hsla(0, 0%, 100%, 0.9);
+          }
+
+          &.disabled {
+            background-color: #2f3337 !important;
+            border-color: hsla(0, 0%, 100%, 0.06) !important;
+            color: hsla(0, 0%, 100%, 0.25) !important;
+          }
         }
       }
     }

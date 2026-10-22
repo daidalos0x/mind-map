@@ -281,6 +281,8 @@ export default {
 
   &.isDark {
     background: #363b3f;
+    border-color: hsla(0, 0%, 100%, 0.08);
+    box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.45);
 
     .btn {
       color: #fff;

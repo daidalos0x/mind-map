@@ -1,8 +1,14 @@
 <template>
-  <div v-show="visible" class="mermaidOfficialView" ref="host"></div>
+  <div
+    v-show="visible"
+    class="mermaidOfficialView"
+    :class="{ isDark: isDark }"
+    ref="host"
+  ></div>
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import { isMermaidStyleOn, mermaidSourceFor, renderMermaidSvg } from '@/utils/mermaidStyle'
 
 export default {
@@ -17,6 +23,19 @@ export default {
       visible: false,
       token: 0,
       timer: null
+    }
+  },
+  computed: {
+    ...mapState({
+      isDark: state => state.localConfig.isDark
+    })
+  },
+  watch: {
+    // 切换暗色模式后需要用新的 mermaid 主题重绘
+    isDark() {
+      if (this.visible) {
+        this.schedule()
+      }
     }
   },
   created() {
@@ -89,6 +108,10 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+
+  &.isDark {
+    background: #1c1c1e;
+  }
 
   /deep/ svg,
   /deep/ svg * {

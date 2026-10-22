@@ -356,6 +356,12 @@ export default {
         return
       }
       this.scheduleRender()
+    },
+    // 切换暗色模式后需要用新的 mermaid 主题重绘预览
+    isDark() {
+      if (this.visible && this.previewReady) {
+        this.paint()
+      }
     }
   }
 }

@@ -575,9 +575,16 @@ export default {
       color: hsla(0, 0%, 100%, 0.9);
       .toolbarBlock {
         background-color: #262a2e;
+        border-color: hsla(0, 0%, 100%, 0.08);
+        box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.45);
 
         .fileTreeBox {
           background-color: #262a2e;
+          box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.45);
+
+          .fileTreeToolbar {
+            border-bottom-color: hsla(0, 0%, 100%, 0.1);
+          }
 
           /deep/ .el-tree {
             background-color: #262a2e;

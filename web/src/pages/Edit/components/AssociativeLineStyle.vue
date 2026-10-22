@@ -345,6 +345,10 @@ export default {
         .name {
           color: hsla(0, 0%, 100%, 0.6);
         }
+
+        .block {
+          border-color: hsla(0, 0%, 100%, 0.16);
+        }
       }
     }
   }

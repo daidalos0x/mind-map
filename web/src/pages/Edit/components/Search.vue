@@ -263,6 +263,11 @@ export default {
       color: #fff;
       background-color: #363b3f;
     }
+
+    .searchResultList {
+      background-color: #363b3f;
+      box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.5);
+    }
   }
 
   &.show {

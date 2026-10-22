@@ -311,6 +311,19 @@ export default {
       background: #1c1c1f;
     }
 
+    .cover span {
+      color: #f0f0f2;
+    }
+
+    .newCard {
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .plus {
+      border-color: rgba(255, 255, 255, 0.16);
+      color: rgba(255, 255, 255, 0.55);
+    }
+
     .secondary,
     .more {
       background: #2c2c2e;
@@ -318,7 +331,15 @@ export default {
       border-color: rgba(255, 255, 255, 0.08);
     }
 
+    .more span {
+      background: #f5f5f7;
+    }
+
     .time {
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    .empty {
       color: rgba(255, 255, 255, 0.45);
     }
   }

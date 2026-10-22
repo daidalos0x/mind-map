@@ -97,6 +97,12 @@ export default {
       .groupName {
         color: #fff;
       }
+
+      .layoutList {
+        .layoutItem {
+          border-color: hsla(0, 0%, 100%, 0.1);
+        }
+      }
     }
   }
 

@@ -20,11 +20,17 @@ const STYLE_KEYS = [
   'customTop'
 ]
 
-export const ensureOfficialMermaid = () => {
+// 当前是否处于暗色模式：Index.vue 会把 isDark 类挂在 document.body 上
+export const isDarkMode = () =>
+  typeof document !== 'undefined' &&
+  Boolean(document.body && document.body.classList.contains('isDark'))
+
+export const ensureOfficialMermaid = (dark = isDarkMode()) => {
   mermaid.initialize({
     startOnLoad: false,
     securityLevel: 'strict',
-    theme: 'default',
+    // 暗色模式下必须用 dark 主题，否则连线/文字是深色，在深色画布上看不见
+    theme: dark ? 'dark' : 'default',
     fontFamily: '"trebuchet ms", verdana, arial, sans-serif',
     mindmap: {
       useMaxWidth: true,
@@ -32,6 +38,26 @@ export const ensureOfficialMermaid = () => {
       maxNodeWidth: 200
     }
   })
+}
+
+/**
+ * mermaid 开关内部会用 setFullData 恢复「进入 mermaid 之前的主题」，
+ * 这会触发 view_theme_change。Theme.vue 监听到该事件后会按「主题是否暗色」
+ * 反过来改写用户的 isDark 设置，导致关掉 mermaid 时整个界面从暗色跳回亮色。
+ * 这里用一个标志位把这个自动同步屏蔽掉。
+ */
+let suppressThemeDarkSync = false
+
+export const isThemeDarkSyncSuppressed = () => suppressThemeDarkSync
+
+const withoutThemeDarkSync = fn => {
+  const prev = suppressThemeDarkSync
+  suppressThemeDarkSync = true
+  try {
+    return fn()
+  } finally {
+    suppressThemeDarkSync = prev
+  }
 }
 
 export const isMermaidStyleOn = () => {
@@ -207,8 +233,9 @@ const separateMindmapOverlaps = svg => {
   svg.style.maxWidth = width + 'px'
 }
 
-export const renderMermaidSvg = async source => {
-  ensureOfficialMermaid()
+export const renderMermaidSvg = async (source, options = {}) => {
+  const dark = options.dark === undefined ? isDarkMode() : Boolean(options.dark)
+  ensureOfficialMermaid(dark)
   const id = 'mind-official-' + ++renderSerial
   const host = document.createElement('div')
   host.style.cssText = 'position:fixed;left:0;top:0;opacity:0;pointer-events:none;z-index:-1;'
@@ -222,10 +249,13 @@ export const renderMermaidSvg = async source => {
     }
     return host.innerHTML
   } catch (error) {
-    const failed = document.getElementById(id)
-    if (failed && failed.parentNode) {
-      failed.parentNode.removeChild(failed)
-    }
+    // mermaid v10 的临时容器 id 是 "d" + id，异常路径下它自己不会清理
+    ;[id, 'd' + id].forEach(nodeId => {
+      const failed = document.getElementById(nodeId)
+      if (failed && failed.parentNode) {
+        failed.parentNode.removeChild(failed)
+      }
+    })
     throw error
   } finally {
     host.remove()
@@ -258,12 +288,14 @@ export const enableMermaidStyle = mindMap => {
     : full.theme
   if (baked) {
     const root = stripMermaidStyle(full.root)
-    mindMap.setFullData({
-      root,
-      layout: layoutBefore,
-      theme: themeBefore,
-      view: null
-    })
+    withoutThemeDarkSync(() =>
+      mindMap.setFullData({
+        root,
+        layout: layoutBefore,
+        theme: themeBefore,
+        view: null
+      })
+    )
     storeData({
       mermaidStyle: true,
       layoutBeforeMermaid: layoutBefore,
@@ -288,12 +320,14 @@ export const disableMermaidStyle = mindMap => {
   const layout = stored.layoutBeforeMermaid || full.layout
   const theme = stored.themeBeforeMermaid || full.theme
   fitWhenReady(mindMap)
-  mindMap.setFullData({
-    root,
-    layout,
-    theme,
-    view: null
-  })
+  withoutThemeDarkSync(() =>
+    mindMap.setFullData({
+      root,
+      layout,
+      theme,
+      view: null
+    })
+  )
   storeData({
     mermaidStyle: false,
     root,

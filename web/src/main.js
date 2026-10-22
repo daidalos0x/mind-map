@@ -6,6 +6,8 @@ import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 import '@/assets/icon-font/iconfont.css'
 import 'viewerjs/dist/viewer.css'
+// 全局深色主题，必须在 element-ui / 第三方样式之后引入
+import '@/style/dark.less'
 import VueViewer from 'v-viewer'
 import i18n from './i18n'
 import { getLang } from '@/api'
