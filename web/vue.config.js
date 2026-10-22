@@ -40,6 +40,18 @@ module.exports = {
     output: {
       hashFunction: 'sha256'
     },
+    /**
+     * webpack 默认的 244KiB 预算是给普通网页的，对一个内嵌整个思维导图引擎的编辑器
+     * 并不适用。这里按实测基线设定预算，既能反映真实体积，又能在继续膨胀时报警：
+     *   入口（app + vendors + css）≈ 0.95MiB
+     *   编辑器核心 chunk           ≈ 2.25MiB
+     *   mermaid 按需 chunk         ≈ 3.19MiB（只有开启 Mermaid 时才下载）
+     */
+    performance: {
+      hints: 'warning',
+      maxEntrypointSize: 1.5 * 1024 * 1024,
+      maxAssetSize: 3.5 * 1024 * 1024
+    },
     module: {
       noParse: /[\\/]mermaid[\\/]dist[\\/]mermaid\.min\.js$/
     },

@@ -1,6 +1,21 @@
-import mermaid from 'mermaid/dist/mermaid.min.js'
 import { getData, storeData } from '@/api'
 import { forMermaidRender, mermaidDiagramSource, stringifyMermaidMindmap } from '@/utils/mermaidMindmap'
+
+/**
+ * mermaid 压缩前约 3.2MB，是编辑器最大的单点依赖，但只有开启 Mermaid 样式时才会用到。
+ * 这里改成首次真正渲染时才动态加载，避免整个 /edit 路由为它买单。
+ */
+let mermaidModulePromise = null
+
+const loadMermaid = () => {
+  if (!mermaidModulePromise) {
+    mermaidModulePromise = import(
+      /* webpackChunkName: "mermaid" */
+      'mermaid/dist/mermaid.min.js'
+    ).then(module => module.default || module)
+  }
+  return mermaidModulePromise
+}
 
 const STYLE_KEYS = [
   'fillColor',
@@ -25,7 +40,9 @@ export const isDarkMode = () =>
   typeof document !== 'undefined' &&
   Boolean(document.body && document.body.classList.contains('isDark'))
 
-export const ensureOfficialMermaid = (dark = isDarkMode()) => {
+export const ensureOfficialMermaid = async (dark = isDarkMode()) => {
+  const mermaid = await loadMermaid()
+
   mermaid.initialize({
     startOnLoad: false,
     securityLevel: 'strict',
@@ -38,6 +55,8 @@ export const ensureOfficialMermaid = (dark = isDarkMode()) => {
       maxNodeWidth: 200
     }
   })
+
+  return mermaid
 }
 
 /**
@@ -235,7 +254,7 @@ const separateMindmapOverlaps = svg => {
 
 export const renderMermaidSvg = async (source, options = {}) => {
   const dark = options.dark === undefined ? isDarkMode() : Boolean(options.dark)
-  ensureOfficialMermaid(dark)
+  const mermaid = await ensureOfficialMermaid(dark)
   const id = 'mind-official-' + ++renderSerial
   const host = document.createElement('div')
   host.style.cssText = 'position:fixed;left:0;top:0;opacity:0;pointer-events:none;z-index:-1;'

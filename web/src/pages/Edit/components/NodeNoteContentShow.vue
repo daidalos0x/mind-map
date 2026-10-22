@@ -18,8 +18,7 @@
 </template>
 
 <script>
-import Viewer from '@toast-ui/editor/dist/toastui-editor-viewer'
-import '@toast-ui/editor/dist/toastui-editor-viewer.css'
+// toast-ui 的 viewer 体积较大，改成首次显示备注时再动态加载
 
 // 节点备注内容显示
 export default {
@@ -34,6 +33,8 @@ export default {
   data() {
     return {
       editor: null,
+      editorPromise: null,
+      showToken: 0,
       show: false,
       left: 0,
       top: 0,
@@ -52,7 +53,6 @@ export default {
   },
   mounted() {
     this.mindMap.el.appendChild(this.$refs.noteContentViewer)
-    this.initEditor()
   },
   beforeDestroy() {
     this.$bus.$off('showNoteContent', this.onShowNoteContent)
@@ -77,9 +77,15 @@ export default {
     },
 
     // 显示备注浮层
-    onShowNoteContent(content, left, top, node) {
+    async onShowNoteContent(content, left, top, node) {
       this.node = node
-      this.editor.setMarkdown(content)
+      const token = ++this.showToken
+      const editor = await this.initEditor()
+      // 加载期间浮层可能已经隐藏，或用户已经移到别的节点
+      if (!editor || token !== this.showToken) {
+        return
+      }
+      editor.setMarkdown(content)
       this.handleALink()
       this.updateNoteContentPosition(left, top)
       this.show = true
@@ -110,16 +116,39 @@ export default {
 
     // 隐藏备注浮层
     hideNoteContent() {
+      this.showToken += 1
       this.show = false
     },
 
-    // 初始化编辑器
+    // 初始化编辑器，按需加载 toast-ui viewer
     initEditor() {
-      if (!this.editor) {
-        this.editor = new Viewer({
-          el: this.$refs.noteContentWrap
+      if (this.editor) {
+        return Promise.resolve(this.editor)
+      }
+      if (!this.editorPromise) {
+        this.editorPromise = Promise.all([
+          import(
+            /* webpackChunkName: "toastui-editor" */
+            '@toast-ui/editor/dist/toastui-editor-viewer'
+          ),
+          import(
+            /* webpackChunkName: "toastui-editor" */
+            '@toast-ui/editor/dist/toastui-editor-viewer.css'
+          )
+        ]).then(([viewerModule]) => {
+          if (!this.$refs.noteContentWrap) {
+            // 容器还没渲染，下次调用时重试
+            this.editorPromise = null
+            return null
+          }
+          const Viewer = viewerModule.default || viewerModule
+          this.editor = new Viewer({
+            el: this.$refs.noteContentWrap
+          })
+          return this.editor
         })
       }
+      return this.editorPromise
     }
   }
 }

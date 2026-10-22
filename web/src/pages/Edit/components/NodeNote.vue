@@ -25,8 +25,6 @@
 </template>
 
 <script>
-import Editor from '@toast-ui/editor'
-import '@toast-ui/editor/dist/toastui-editor.css' // Editor's Style
 import { isMobile } from 'simple-mind-map/src/utils/index'
 
 // 节点备注内容设置
@@ -84,8 +82,21 @@ export default {
       })
     },
 
-    initEditor() {
+    // toast-ui 编辑器约 1.3MB，改成打开备注弹窗时才加载
+    async initEditor() {
       if (!this.editor) {
+        const [editorModule] = await Promise.all([
+          import(/* webpackChunkName: "toastui-editor" */ '@toast-ui/editor'),
+          import(
+            /* webpackChunkName: "toastui-editor" */
+            '@toast-ui/editor/dist/toastui-editor.css'
+          )
+        ])
+        // 加载期间弹窗可能已经被关闭
+        if (!this.$refs.noteEditor) {
+          return
+        }
+        const Editor = editorModule.default || editorModule
         this.editor = new Editor({
           el: this.$refs.noteEditor,
           height: '500px',
@@ -105,6 +116,11 @@ export default {
     },
 
     confirm() {
+      // 编辑器还在按需加载时点了确定，直接关闭，保留原备注
+      if (!this.editor) {
+        this.cancel()
+        return
+      }
       this.note = this.editor.getMarkdown()
       if (this.appointNode) {
         this.appointNode.setNote(this.note)

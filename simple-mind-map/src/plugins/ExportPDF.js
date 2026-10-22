@@ -1,6 +1,15 @@
 // import JsPDF from '../utils/jspdf'
-import { PDFDocument } from 'pdf-lib'
 import { readBlob } from '../utils/index'
+
+// pdf-lib 约 900KB，只有真正导出 PDF 时才需要，改成按需加载
+let pdfLibPromise = null
+
+const loadPdfLib = () => {
+  if (!pdfLibPromise) {
+    pdfLibPromise = import(/* webpackChunkName: "pdf-lib" */ 'pdf-lib')
+  }
+  return pdfLibPromise
+}
 
 //  导出PDF插件，需要通过Export插件使用
 class ExportPDF {
@@ -16,6 +25,7 @@ class ExportPDF {
       image.onload = async () => {
         const imageWidth = image.width
         const imageHeight = image.height
+        const { PDFDocument } = await loadPdfLib()
         // 创建pdf页面，尺寸设置为图片的大小
         const pdfDoc = await PDFDocument.create()
         const page = pdfDoc.addPage()
