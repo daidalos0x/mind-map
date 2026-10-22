@@ -42,14 +42,6 @@ make dev       # run against the local dev server
 make bootstrap # toolchain only
 ```
 
-### Icon
-
-```bash
-cd desktop && npx tauri icon ../assets/icon/icon.svg
-```
-
-A private icon can be dropped at `assets/icon/local/icon.icns` (or `icon.png`); it is git-ignored and only applied to local builds.
-
 ## AI
 
 AI generation reads `baseUrl`, `model` and `apiKey` from `ai.json` in the app config folder.
