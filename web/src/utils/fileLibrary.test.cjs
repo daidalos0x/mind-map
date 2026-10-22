@@ -80,4 +80,36 @@ assert.strictEqual(library.list()[0].name, '个人知识管理')
 const empty = api.createFileLibrary(memoryStorage({}))
 assert.strictEqual(empty.list().length, 0)
 
+// 首次打开网页时内置示例导图
+const demoStore = memoryStorage({})
+const demo = api.seedDemoDocument(demoStore)
+assert.strictEqual(demo.name, '示例 · Personal Knowledge Management')
+assert.strictEqual(demo.data.layout, 'mindMap')
+assert.strictEqual(demo.data.theme.template, 'classic7')
+assert.strictEqual(demo.data.root.data.text, 'Personal Knowledge Management')
+assert.strictEqual(demo.data.root.children.length, 5)
+assert.strictEqual(
+  demo.data.root.children[0].children[0].children[2].data.text,
+  'Research Papers'
+)
+const demoLibrary = api.createFileLibrary(demoStore)
+assert.strictEqual(demoLibrary.list().length, 1)
+assert.strictEqual(demoLibrary.currentId(), demo.id)
+// 删除示例后不再重新内置
+demoLibrary.remove(demo.id)
+assert.strictEqual(api.seedDemoDocument(demoStore), null)
+
+// 已有文件时不内置示例
+const busyStore = memoryStorage({
+  SIMPLE_MIND_MAP_LIBRARY: JSON.stringify([
+    { id: 'a', name: '已有文件', updatedAt: 1, data: {}, thumbnail: '' }
+  ])
+})
+assert.strictEqual(api.seedDemoDocument(busyStore), null)
+
+// 旧版本缓存会先迁移成文件，此时也不内置示例
+const legacyStore = memoryStorage(stored)
+assert.strictEqual(api.seedDemoDocument(legacyStore), null)
+assert.strictEqual(api.createFileLibrary(legacyStore).list().length, 1)
+
 console.log('file library ok')

@@ -17,12 +17,14 @@ import Edit from './components/Edit.vue'
 import FileHome from './components/FileHome.vue'
 import { mapState, mapMutations } from 'vuex'
 import { getData, getLocalConfig } from '@/api'
-import { browserFileLibrary } from '@/utils/fileLibrary'
+import { browserFileLibrary, seedDemoDocument } from '@/utils/fileLibrary'
 import { isMermaidStyleOn, mermaidSourceFor, renderMermaidSvg } from '@/utils/mermaidStyle'
 import { mindMapPng, shrinkThumbnail, svgMarkupToThumbnail } from '@/utils/thumbnail'
 
 const STYLE_COMMANDS = new Set(['SET_NODE_STYLE', 'SET_NODE_STYLES', 'SET_NODE_SHAPE'])
 const MERMAID_KEYS = ['mermaidStyle', 'mermaidSource', 'layoutBeforeMermaid', 'themeBeforeMermaid']
+// 保存文档时除节点树外需要原样保留的字段
+const PASS_THROUGH_KEYS = ['demo', ...MERMAID_KEYS]
 
 export default {
   components: {
@@ -62,6 +64,7 @@ export default {
     this.$bus.$on('saveMindMap', this.saveCurrent)
     window.addEventListener('keydown', this.onKeydownSave, true)
     this.initLocalConfig()
+    this.openDemoOnFirstVisit()
     const loading = this.$loading({
       lock: true,
       text: this.$t('other.loading')
@@ -84,6 +87,24 @@ export default {
 
     enterEditor() {
       this.screen = 'edit'
+    },
+
+    // 首次打开网页时直接进入内置示例导图
+    openDemoOnFirstVisit() {
+      if (
+        window.takeOverApp ||
+        typeof window.__TAURI_INTERNALS__ !== 'undefined' ||
+        this.$route.query.fileURL
+      ) {
+        return
+      }
+      try {
+        if (seedDemoDocument(localStorage)) {
+          this.screen = 'edit'
+        }
+      } catch (error) {
+        console.log(error)
+      }
     },
 
     // Cmd / Ctrl + S 保存当前文件
@@ -265,7 +286,7 @@ export default {
     documentData() {
       const data = this.mindMap.getData(true)
       const stored = getData() || {}
-      MERMAID_KEYS.forEach(key => {
+      PASS_THROUGH_KEYS.forEach(key => {
         if (Object.prototype.hasOwnProperty.call(stored, key)) {
           data[key] = stored[key]
         }

@@ -1,6 +1,9 @@
+import { DEMO_NAME, demoDocument } from './demoDocument'
+
 const LIBRARY_KEY = 'SIMPLE_MIND_MAP_LIBRARY'
 const CURRENT_ID_KEY = 'SIMPLE_MIND_MAP_CURRENT_ID'
 const DATA_KEY = 'SIMPLE_MIND_MAP_DATA'
+const DEMO_KEY = 'SIMPLE_MIND_MAP_DEMO'
 const UNTITLED = '未命名'
 
 const clone = value => JSON.parse(JSON.stringify(value))
@@ -215,3 +218,17 @@ export function createFileLibrary(storage) {
 }
 
 export const browserFileLibrary = () => createFileLibrary(localStorage)
+
+// 首次打开网页时内置一个示例导图，已有文件或已经内置过时返回 null
+export function seedDemoDocument(storage) {
+  if (storage.getItem(DEMO_KEY)) {
+    return null
+  }
+  const library = createFileLibrary(storage)
+  if (library.list().length > 0) {
+    return null
+  }
+  const item = library.create(demoDocument(), DEMO_NAME)
+  storage.setItem(DEMO_KEY, item.id)
+  return item
+}

@@ -365,7 +365,8 @@ export default {
       this.mindMap = new MindMap({
         el: this.$refs.mindMapContainer,
         data: root,
-        fit: false,
+        // 内置示例导图节点较多，初始化时缩放到合适大小
+        fit: this.mindMapData.demo === true,
         layout: layout,
         theme: theme.template,
         themeConfig: theme.config,
