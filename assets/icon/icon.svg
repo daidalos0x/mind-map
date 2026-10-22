@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
+  <!--
+    Mind 应用图标
+    - 底色：奶油白 squircle，深色 Dock 里辨识度高
+    - 图形：粗体字母 M，中间的折角即思维导图的分支点
+    - 强调：折角处的珊瑚色圆点代表节点
+    改色改形只改这一个文件，然后执行：
+      cd desktop && npx tauri icon ../assets/icon/icon.svg
+  -->
+  <rect x="80" y="80" width="864" height="864" rx="192" fill="#F4EEE4"/>
+  <path d="M320 732V292L512 552L704 292V732"
+        stroke="#1A1D24" stroke-width="92" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="512" cy="552" r="64" fill="#FF6B4A"/>
+</svg>
