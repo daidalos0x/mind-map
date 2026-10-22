@@ -1,0 +1,30 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Permissions for the mind map window",
+  "windows": ["main"],
+  "remote": {
+    "urls": [
+      "http://localhost:8080",
+      "http://localhost:8080/*",
+      "http://127.0.0.1:8080",
+      "http://127.0.0.1:8080/*",
+      "http://127.0.0.1:17321",
+      "http://127.0.0.1:17321/*"
+    ]
+  },
+  "permissions": [
+    "core:default",
+    "allow-bootstrap",
+    "allow-save-mind-map",
+    "allow-save-config",
+    "allow-save-lang",
+    "allow-save-local-config",
+    "allow-new-file",
+    "allow-open-file",
+    "allow-save-file-as",
+    "allow-reveal-documents",
+    "allow-take-pending-open",
+    "allow-boot-log"
+  ]
+}

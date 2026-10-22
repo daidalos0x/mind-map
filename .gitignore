@@ -4,3 +4,6 @@ dist_electron
 simple-mind-map/dist
 simple-mind-map/types
 utools/dist
+desktop/node_modules
+desktop/src-tauri/target
+desktop-dist
