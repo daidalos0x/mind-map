@@ -8,13 +8,19 @@ const repoDir = path.resolve(desktopDir, '..')
 const webDir = path.join(repoDir, 'web')
 const outputDir = path.join(repoDir, 'desktop-dist')
 
+// Windows 上可执行文件是 npm.cmd，Node 18+ 不再自动补扩展名，需要显式交给 shell
+const isWindows = process.platform === 'win32'
+const NPM = isWindows ? 'npm.cmd' : 'npm'
+
 function run(command, args, cwd, env) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, {
       cwd,
       env,
-      stdio: 'inherit'
+      stdio: 'inherit',
+      shell: isWindows
     })
+    child.on('error', reject)
     child.on('exit', code => {
       if (code === 0) {
         resolve()
@@ -26,7 +32,7 @@ function run(command, args, cwd, env) {
 }
 
 // md4 兼容由 web/build/md4-fallback.js 在构建进程内处理，不需要 NODE_OPTIONS
-await run('npm', ['run', 'build'], webDir, process.env)
+await run(NPM, ['run', 'build'], webDir, process.env)
 
 fs.rmSync(outputDir, { recursive: true, force: true })
 fs.mkdirSync(outputDir, { recursive: true })

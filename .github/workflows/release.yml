@@ -1,0 +1,175 @@
+name: Release desktop app
+
+# 推送 v* tag 时自动构建并发布；也可以在 Actions 页面手动填 tag 重跑。
+#
+# 只发布 Windows / Linux：这两个平台不签名也能直接运行，用户不必自己准备
+# MSVC + WebView2 或 WebKitGTK 开发包。macOS 用户走仓库里的 `make`，
+# 本地编译后装进 ~/Applications，完全绕开 Gatekeeper 和公证。
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: '要发布的 tag（例如 v0.2.0）'
+        required: true
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  # 构建和发布两处都要算 tag，统一放在这里，避免表达式各写一遍
+  RELEASE_TAG: ${{ github.event.inputs.tag || github.ref_name }}
+
+jobs:
+  build:
+    name: build ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows
+            os: windows-latest
+            bundles: nsis
+            artifact: windows
+          # 用 22.04 而不是 latest：glibc 基线压到 2.35，新发行版向下兼容；
+          # 也是第一个带 webkit2gtk-4.1 的 LTS，Tauri v2 需要它
+          - name: linux
+            os: ubuntu-22.04
+            bundles: deb,appimage
+            artifact: linux
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # 手动触发时默认只取分支，这里显式取 tag，保证打出来的包版本号对得上
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            web/package-lock.json
+            desktop/package-lock.json
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('desktop/src-tauri/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+
+      - name: Install web dependencies
+        working-directory: web
+        run: npm ci --no-audit --no-fund
+
+      - name: Install desktop dependencies
+        working-directory: desktop
+        run: npm ci --no-audit --no-fund
+
+      # 放在 npm ci 之后：它会改 web/package.json 的 version，避免和 lockfile 的校验撞上。
+      # 用 GitHub 表达式而不是 ${VAR}：Windows runner 默认是 pwsh，读不到 bash 风格的变量
+      - name: Sync version into manifests
+        run: node scripts/sync-version.mjs "${{ env.RELEASE_TAG }}"
+
+      # tauri build 会先跑 beforeBuildCommand（desktop/prepare-dist.mjs），
+      # 把 web 产物打包进 desktop-dist 再编译；--bundles 覆盖 tauri.conf 里的 targets，
+      # 因为配置里的 "app" 是 macOS 专用的产物类型
+      - name: Build bundles
+        working-directory: desktop
+        env:
+          CI: true
+          # Runner 里没有 FUSE 时，linuxdeploy / appimagetool 需要自解压才能跑
+          APPIMAGE_EXTRACT_AND_RUN: 1
+        run: npx tauri build --bundles ${{ matrix.bundles }}
+
+      - name: Collect bundles
+        shell: bash
+        run: |
+          mkdir -p out
+          find desktop/src-tauri/target/release/bundle -type f \
+            \( -name '*.exe' -o -name '*.deb' -o -name '*.AppImage' \) -exec cp {} out/ \;
+          ls -lh out
+          test -n "$(ls -A out)"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: out/*
+          if-no-files-found: error
+
+  publish:
+    name: publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: List files
+        run: ls -lh dist
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: Mind ${{ env.RELEASE_TAG }}
+          files: dist/*
+          fail_on_unmatched_files: true
+          body: |
+            macOS 用户不需要下载这里的包：克隆仓库后执行 `make`，会在本地编译并安装到
+            `~/Applications/Mind.app`，不涉及签名和公证。
+
+            ### 下载
+
+            | 系统 | 选择 |
+            | --- | --- |
+            | Windows 10 / 11（x64） | `Mind_*_x64-setup.exe` |
+            | Ubuntu 22.04+ / Debian 12+（x64） | `*_amd64.deb` |
+            | 其他发行版（x64） | `*_amd64.AppImage` |
+
+            ### Windows 安装
+
+            安装包没有代码签名，第一次运行会被 SmartScreen 拦一下：
+
+            1. 双击安装包，出现「Windows 已保护你的电脑」时点「更多信息」→「仍要运行」
+            2. 装完从开始菜单打开 **Mind**
+
+            WebView2 运行时 Windows 11 自带；Windows 10 一般随 Edge 装好了，缺失时系统会提示。
+
+            ### Linux 安装
+
+            桌面端依赖系统自带的 WebKitGTK 4.1，Ubuntu 22.04+ / Debian 12+ / Fedora 39+
+            才有，更老的发行版（例如 Ubuntu 20.04）会启动不起来。
+
+            ```bash
+            # deb
+            sudo apt install ./*_amd64.deb
+
+            # AppImage（Ubuntu 22.04 起默认只有 fuse3，要先补 libfuse2）
+            sudo apt install libfuse2
+            chmod +x ./*.AppImage && ./*.AppImage
+            ```
