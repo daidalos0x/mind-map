@@ -20,6 +20,30 @@ export function blankDocument() {
   }
 }
 
+export function asDocument(data) {
+  if (data && data.root && data.root.data) {
+    return {
+      ...data,
+      layout: data.layout || 'logicalStructure',
+      theme:
+        data.theme && data.theme.template
+          ? data.theme
+          : { template: 'classic7', config: {} },
+      view: data.view == null ? null : data.view
+    }
+  }
+  const root =
+    data && (data.data || data.children)
+      ? data
+      : { data: { text: '根节点' }, children: [] }
+  return {
+    layout: 'logicalStructure',
+    root,
+    theme: { template: 'classic7', config: {} },
+    view: null
+  }
+}
+
 export function plainTitle(data) {
   const raw =
     data && data.root && data.root.data && data.root.data.text

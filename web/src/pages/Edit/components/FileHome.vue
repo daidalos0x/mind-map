@@ -77,7 +77,7 @@
 <script>
 import xmind from 'simple-mind-map/src/parse/xmind.js'
 import markdown from 'simple-mind-map/src/parse/markdown.js'
-import { blankDocument, browserFileLibrary } from '@/utils/fileLibrary'
+import { asDocument, blankDocument, browserFileLibrary } from '@/utils/fileLibrary'
 
 export default {
   data() {
@@ -209,17 +209,17 @@ export default {
         const data = await xmind.parseXmindFile(file, content => {
           return this.chooseCanvas(content)
         })
-        return { name, data }
+        return { name, data: asDocument(data) }
       }
       const text = await file.text()
       if (/\.md$/i.test(file.name)) {
-        return { name, data: markdown.transformMarkdownTo(text) }
+        return { name, data: asDocument(markdown.transformMarkdownTo(text)) }
       }
       const data = JSON.parse(text)
       if (!data || typeof data !== 'object') {
         throw new Error('invalid')
       }
-      return { name, data }
+      return { name, data: asDocument(data) }
     },
     chooseCanvas(content) {
       if (!content || content.length <= 1) {

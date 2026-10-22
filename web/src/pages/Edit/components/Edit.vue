@@ -104,6 +104,7 @@ import Contextmenu from './Contextmenu.vue'
 import RichTextToolbar from './RichTextToolbar.vue'
 import NodeNoteContentShow from './NodeNoteContentShow.vue'
 import { getData, getConfig, storeData } from '@/api'
+import { asDocument } from '@/utils/fileLibrary'
 import Navigator from './Navigator.vue'
 import NodeImgPreview from './NodeImgPreview.vue'
 import SidebarTrigger from './SidebarTrigger.vue'
@@ -235,8 +236,13 @@ export default {
   },
   mounted() {
     showLoading()
-    this.getData()
-    this.init()
+    try {
+      this.getData()
+      this.init()
+    } catch (error) {
+      console.error(error)
+      hideLoading()
+    }
     this.$bus.$on('execCommand', this.execCommand)
     this.$bus.$on('paddingChange', this.onPaddingChange)
     this.$bus.$on('export', this.export)
@@ -311,7 +317,7 @@ export default {
 
     // 获取思维导图数据，实际应该调接口获取
     getData() {
-      this.mindMapData = getData()
+      this.mindMapData = asDocument(getData())
       this.mindMapConfig = getConfig() || {}
     },
 

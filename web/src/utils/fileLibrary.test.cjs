@@ -56,6 +56,21 @@ assert.strictEqual(refreshed.data.theme.template, 'classic7')
 assert.strictEqual(library.saveThumbnail(created.id, ''), null)
 assert.strictEqual(library.saveThumbnail('missing', 'data:image/jpeg;base64,x'), null)
 
+const wrapped = api.asDocument({
+  data: { text: 'AI Agent 入门' },
+  children: []
+})
+assert.strictEqual(wrapped.root.data.text, 'AI Agent 入门')
+assert.strictEqual(wrapped.theme.template, 'classic7')
+assert.strictEqual(wrapped.layout, 'logicalStructure')
+const kept = api.asDocument({
+  root: { data: { text: '保持' }, children: [] },
+  layout: 'mindMap',
+  theme: { template: 'classic4', config: {} }
+})
+assert.strictEqual(kept.theme.template, 'classic4')
+assert.strictEqual(kept.layout, 'mindMap')
+
 library.remove(created.id)
 assert.strictEqual(library.currentId(), again.id)
 library.remove(again.id)
