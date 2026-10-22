@@ -38,7 +38,7 @@ The Windows build is unsigned, so the first launch needs **More info → Run any
 
 ## Build from source
 
-The only prerequisite is the Xcode Command Line Tools (`xcode-select --install`). Node and Rust are installed into your home directory by `scripts/bootstrap.sh` when missing — no `sudo`, no Homebrew. `make` builds `Mind.app` into `~/Applications`; documents live in `~/Documents/Mind` and new files are named `未命名.xmind`.
+Requires only the Xcode Command Line Tools (`xcode-select --install`); `scripts/bootstrap.sh` installs Node and Rust if missing. `make` installs `Mind.app` to `~/Applications`; documents live in `~/Documents/Mind`.
 
 ```bash
 make open      # launch the installed app
