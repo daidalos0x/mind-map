@@ -483,7 +483,7 @@ export const sidebarTriggerList = [
 // Danh sách các loại tải xuống
 export const downTypeList = [
   {
-    name: '思绪Tài liệu',
+    name: 'Tệp Mind',
     type: 'smm',
     icon: 'iconwenjian',
     desc: 'SimpleMindMap Định dạng riêng tư, có thể được sử dụng để nhập lại, có thể được chỉnh sửa trực tiếp bởi khách hàng'

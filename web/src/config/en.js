@@ -459,7 +459,7 @@ export const sidebarTriggerList = [
 // 下载类型列表
 export const downTypeList = [
   {
-    name: '思绪 file',
+    name: 'Mind file',
     type: 'smm',
     icon: 'iconwenjian',
     desc:

@@ -561,7 +561,7 @@ export const sidebarTriggerList = [
 // 下载类型列表
 export const downTypeList = [
   {
-    name: '思绪文件',
+    name: 'Mind 文件',
     type: 'smm',
     icon: 'iconwenjian',
     desc: 'SimpleMindMap私有格式，可用于再次导入，客户端可直接编辑'

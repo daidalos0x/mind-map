@@ -156,7 +156,7 @@ export default {
   data() {
     return {
       dialogVisible: false,
-      exportType: 'smm',
+      exportType: 'xmind',
       fileName: this.$t('export.defaultFileName'),
       widthConfig: true,
       isTransparent: false,
