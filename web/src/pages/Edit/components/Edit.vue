@@ -1,7 +1,7 @@
 <template>
   <div
     class="editContainer"
-    :class="{ isDark: isDark }"
+    :class="{ isDark: isDark, zen: isZenMode }"
     @dragenter.stop.prevent="onDragenter"
     @dragleave.stop.prevent
     @dragover.stop.prevent
@@ -712,8 +712,15 @@ export default {
     position: absolute;
     left: 0px;
     top: 0px;
-    width: 100%;
     height: 100%;
+    // 右侧的 SidebarTrigger 是浮层（宽 60px），这里给画布留出同样的宽度，
+    // 否则自适应居中后最右边的节点会压到工具条下面
+    right: 60px;
+  }
+
+  // 禅模式下没有右侧浮层，画布还原为整宽
+  &.zen .mindMapContainer {
+    right: 0;
   }
 }
 </style>
