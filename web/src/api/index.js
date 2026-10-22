@@ -38,7 +38,7 @@ export const storeData = data => {
   try {
     let originData = null
     if (window.takeOverApp) {
-      originData = mindMapData
+      originData = window.takeOverAppMethods.getMindMapData()
     } else {
       originData = getData()
     }
@@ -70,8 +70,7 @@ export const storeData = data => {
 // 获取思维导图配置数据
 export const getConfig = () => {
   if (window.takeOverApp) {
-    window.takeOverAppMethods.getMindMapConfig()
-    return
+    return window.takeOverAppMethods.getMindMapConfig()
   }
   let config = localStorage.getItem(SIMPLE_MIND_MAP_CONFIG)
   if (config) {

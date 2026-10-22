@@ -355,8 +355,22 @@ export default {
       }
     },
 
+    runDesktopAction(action) {
+      if (
+        window.__TAURI_INTERNALS__ &&
+        typeof window.__desktopOnMenu === 'function'
+      ) {
+        window.__desktopOnMenu(action)
+        return true
+      }
+      return false
+    },
+
     // 扫描本地文件夹
     openDirectory() {
+      if (this.runDesktopAction('reveal')) {
+        return
+      }
       this.fileTreeVisible = false
       this.fileTreeExpand = true
       this.rootDirName = ''
@@ -389,6 +403,9 @@ export default {
 
     // 打开本地文件
     async openLocalFile() {
+      if (this.runDesktopAction('open')) {
+        return
+      }
       try {
         let [_fileHandle] = await window.showOpenFilePicker({
           types: [
@@ -481,11 +498,17 @@ export default {
 
     // 创建本地文件
     async createNewLocalFile() {
+      if (this.runDesktopAction('new')) {
+        return
+      }
       await this.createLocalFile(exampleData)
     },
 
     // 另存为
     async saveLocalFile() {
+      if (this.runDesktopAction('save-as')) {
+        return
+      }
       let data = getData()
       await this.createLocalFile(data)
     },

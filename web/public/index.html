@@ -8,28 +8,40 @@
       content="width=device-width,user-scalable=no,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0"
     />
     <link rel="icon" href="dist/logo.ico" />
-    <title>思绪思维导图</title>
+    <title>Mind</title>
     <script>
       // 自定义静态资源的路径
       window.externalPublicPath = './dist/'
-      // 接管应用
+      // 接管应用。Mac 客户端里由 Tauri 注入；浏览器里保持关闭
       window.takeOverApp = false
-    </script>
-    <script
-      charset="UTF-8"
-      id="LA_COLLECT"
-      src="//sdk.51.la/js-sdk-pro.min.js"
-    ></script>
-    <script>
-      try {
-        LA.init({
-          id: 'KRO0WxK8GT66tYCQ',
-          ck: 'KRO0WxK8GT66tYCQ',
-          autoTrack: false
-        })
-      } catch (error) {
-        console.log(error)
+      if (typeof window.__TAURI_INTERNALS__ !== 'undefined') {
+        window.takeOverApp = true
       }
+      window.__bootLog = function (message) {
+        try {
+          if (window.__TAURI_INTERNALS__) {
+            window.__TAURI_INTERNALS__.invoke('boot_log', {
+              message: String(message)
+            })
+          }
+        } catch (error) {}
+      }
+      window.addEventListener('error', function (event) {
+        window.__bootLog(
+          'error ' +
+            event.message +
+            ' ' +
+            (event.filename || '') +
+            ':' +
+            event.lineno
+        )
+      })
+      window.addEventListener('unhandledrejection', function (event) {
+        var reason = event.reason
+        window.__bootLog(
+          'rejection ' + (reason && reason.stack ? reason.stack : reason)
+        )
+      })
     </script>
   </head>
   <body>
@@ -104,19 +116,106 @@
           console.log(config)
         }
       }
+      const invokeDesktop = (command, args) => {
+        return window.__TAURI_INTERNALS__.invoke(command, args || {})
+      }
+      const reportDesktopError = error => {
+        const message = error && error.message ? error.message : String(error)
+        window.alert(message)
+      }
+      const applyDesktopSession = session => {
+        window.__desktopSession = session
+        document.title = session.fileName
+        window.takeOverAppMethods = {
+          getMindMapData: () => window.__desktopSession.mindMapData,
+          saveMindMapData: data => {
+            window.__desktopSession.mindMapData = data
+            invokeDesktop('save_mind_map', { data }).catch(reportDesktopError)
+          },
+          getMindMapConfig: () => window.__desktopSession.mindMapConfig || {},
+          saveMindMapConfig: config => {
+            window.__desktopSession.mindMapConfig = config
+            invokeDesktop('save_config', { config }).catch(reportDesktopError)
+          },
+          getLanguage: () => window.__desktopSession.lang || 'zh',
+          saveLanguage: lang => {
+            window.__desktopSession.lang = lang
+            invokeDesktop('save_lang', { lang }).catch(reportDesktopError)
+          },
+          getLocalConfig: () => window.__desktopSession.localConfig,
+          saveLocalConfig: config => {
+            window.__desktopSession.localConfig = config
+            invokeDesktop('save_local_config', { config }).catch(
+              reportDesktopError
+            )
+          }
+        }
+      }
+      const showDesktopDocument = session => {
+        applyDesktopSession(session)
+        if (window.$bus) {
+          window.$bus.$emit('setData', session.mindMapData)
+        }
+      }
+      window.__desktopOnMenu = async action => {
+        try {
+          if (action === 'save') {
+            await invokeDesktop('save_mind_map', {
+              data: window.__desktopSession.mindMapData
+            })
+            return
+          }
+          if (action === 'reveal') {
+            await invokeDesktop('reveal_documents')
+            return
+          }
+          let next = null
+          if (action === 'new') {
+            next = await invokeDesktop('new_file')
+          } else if (action === 'open') {
+            next = await invokeDesktop('open_file')
+          } else if (action === 'save-as') {
+            next = await invokeDesktop('save_file_as', {
+              data: window.__desktopSession.mindMapData
+            })
+          } else if (action === 'open-pending') {
+            next = await invokeDesktop('take_pending_open')
+          }
+          if (next) {
+            showDesktopDocument(next)
+          }
+        } catch (error) {
+          reportDesktopError(error)
+        }
+      }
+      window.__desktopBootstrap = async () => {
+        const session = await invokeDesktop('bootstrap')
+        applyDesktopSession(session)
+        return session
+      }
       window.onload = async () => {
         if (!window.takeOverApp) return
-        // 请求数据
-        const data = await getDataFromBackend()
-        // 设置全局的方法
-        setTakeOverAppMethods(data)
+        let data = null
+        if (typeof window.__TAURI_INTERNALS__ !== 'undefined') {
+          try {
+            data = await window.__desktopBootstrap()
+          } catch (error) {
+            reportDesktopError(error)
+            return
+          }
+        } else {
+          data = await getDataFromBackend()
+          setTakeOverAppMethods(data)
+        }
         // 思维导图实例创建完成事件
-        window.$bus.$on('app_inited', mindMap => {
-          console.log(mindMap)
-        })
-        // 可以通过window.$bus.$on()来监听应用的一些事件
+        window.$bus.$on('app_inited', () => {})
         // 实例化页面
-        window.initApp()
+        try {
+          window.initApp()
+          window.__bootLog('initApp done')
+        } catch (error) {
+          window.__bootLog('initApp failed ' + (error && error.stack ? error.stack : error))
+        }
       }
     </script>
   </body>
