@@ -9,18 +9,15 @@
 <p align="center">
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License" /></a>
   <a href="https://github.com/phaethix/mind-map/releases"><img src="https://img.shields.io/github/v/release/phaethix/mind-map?label=release" alt="Release" /></a>
-  <a href="https://github.com/phaethix/mind-map/actions/workflows/release.yml"><img src="https://github.com/phaethix/mind-map/actions/workflows/release.yml/badge.svg" alt="Build" /></a>
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows%20%7C%20Linux-blue" alt="Platform" />
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/github/stars/phaethix/mind-map?color=yellow" alt="Stars" />
-  <img src="https://img.shields.io/github/downloads/phaethix/mind-map/total?color=orange" alt="Downloads" />
   <img src="https://img.shields.io/badge/Tauri-2-24C8D8?logo=tauri&logoColor=white" alt="Tauri" />
   <img src="https://img.shields.io/badge/Vue-2-4FC08D?logo=vuedotjs&logoColor=white" alt="Vue" />
 </p>
 
 Documents are `.xmind` files, stored locally.
+
+| Mind map | Mermaid mode |
+| --- | --- |
+| ![Mind map](./assets/screenshots/mind-map.png) | ![Mermaid mode](./assets/screenshots/mermaid.png) |
 
 ## Install
 
