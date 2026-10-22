@@ -140,36 +140,24 @@ jobs:
           files: dist/*
           fail_on_unmatched_files: true
           body: |
-            macOS 用户不需要下载这里的包：克隆仓库后执行 `make`，会在本地编译并安装到
-            `~/Applications/Mind.app`，不涉及签名和公证。
+            macOS has no prebuilt binary: clone the repository and run `make`.
 
-            ### 下载
+            **Windows 10 / 11 (x64)** — `Mind_*_x64-setup.exe`
 
-            | 系统 | 选择 |
-            | --- | --- |
-            | Windows 10 / 11（x64） | `Mind_*_x64-setup.exe` |
-            | Ubuntu 22.04+ / Debian 12+（x64） | `*_amd64.deb` |
-            | 其他发行版（x64） | `*_amd64.AppImage` |
+            Unsigned, so the first launch needs **More info → Run anyway**. Installs per user and
+            fetches WebView2 automatically.
 
-            ### Windows 安装
-
-            安装包没有代码签名，第一次运行会被 SmartScreen 拦一下：
-
-            1. 双击安装包，出现「Windows 已保护你的电脑」时点「更多信息」→「仍要运行」
-            2. 装完从开始菜单打开 **Mind**
-
-            WebView2 运行时 Windows 11 自带；Windows 10 一般随 Edge 装好了，缺失时系统会提示。
-
-            ### Linux 安装
-
-            桌面端依赖系统自带的 WebKitGTK 4.1，Ubuntu 22.04+ / Debian 12+ / Fedora 39+
-            才有，更老的发行版（例如 Ubuntu 20.04）会启动不起来。
+            **Ubuntu 22.04+ / Debian 12+ (x64)** — `Mind_*_amd64.deb`
 
             ```bash
-            # deb
             sudo apt install ./*_amd64.deb
+            ```
 
-            # AppImage（Ubuntu 22.04 起默认只有 fuse3，要先补 libfuse2）
+            **Any distro with WebKitGTK 4.1** — `Mind_*_amd64.AppImage`
+
+            ```bash
             sudo apt install libfuse2
             chmod +x ./*.AppImage && ./*.AppImage
             ```
+
+            Older releases such as Ubuntu 20.04 ship WebKitGTK 4.0 and will not start.
