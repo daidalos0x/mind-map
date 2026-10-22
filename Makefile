@@ -5,40 +5,55 @@ CARGO_TARGET_DIR ?= $(ROOT)/desktop/src-tauri/target
 APP := $(CARGO_TARGET_DIR)/release/bundle/macos/Mind.app
 INSTALL_DIR := $(HOME)/Applications
 
-.PHONY: help web desktop dev install open
+# bootstrap installs node and rust into the home directory; make sure later steps see them
+export PATH := $(HOME)/.local/bin:$(HOME)/.cargo/bin:$(PATH)
+
+.PHONY: help bootstrap bootstrap-node web desktop dev install open
 
 help:
 	@printf '%s\n' \
-		'make            Build Mind.app and copy it to ~/Applications' \
-		'make desktop    Build Mind.app only' \
-		'make dev        Run the desktop shell against the local web app' \
-		'make web        Run the web app at http://localhost:8080' \
-		'make open       Open ~/Applications/Mind.app'
+		'make             check the toolchain, build Mind.app, install it to ~/Applications' \
+		'make web         run the web app at http://localhost:8080' \
+		'make desktop     build Mind.app without installing' \
+		'make dev         run the desktop shell against the local web app' \
+		'make open        open ~/Applications/Mind.app' \
+		'make bootstrap   only check/install the toolchain, do not build'
 
-web/node_modules: web/package.json web/package-lock.json
-	cd web && npm ci
+# Check the toolchain only, installing whatever is missing
+bootstrap:
+	@sh scripts/bootstrap.sh rust
+
+bootstrap-node:
+	@sh scripts/bootstrap.sh node
+
+# npm prints a warn line for every deprecated transitive dependency of the vue-cli 4
+# toolchain. Those cannot be fixed from this repository, so keep the install quiet
+# and let only errors through.
+# 只认 lockfile：改 package.json 的脚本之类不该触发整包重装
+web/node_modules: bootstrap-node web/package-lock.json
+	@printf '  web: installing dependencies...\n'
+	@cd web && npm ci --no-audit --no-fund --loglevel=error
 	@touch $@
 
-desktop/node_modules: desktop/package.json desktop/package-lock.json
-	cd desktop && npm ci
+desktop/node_modules: desktop/package-lock.json
+	@printf '  desktop: installing dependencies...\n'
+	@cd desktop && npm ci --no-audit --no-fund --loglevel=error
 	@touch $@
 
-# md4 兼容由 web/build/md4-fallback.js 在构建进程内处理，不再需要 NODE_OPTIONS
 web: web/node_modules
 	cd web && npm run serve
 
-desktop: web/node_modules desktop/node_modules
-	@command -v cargo >/dev/null || { echo 'Install Rust first: https://rustup.rs'; exit 1; }
+desktop: bootstrap web/node_modules desktop/node_modules
 	cd desktop && npm run build
 
-dev: web/node_modules desktop/node_modules
-	@command -v cargo >/dev/null || { echo 'Install Rust first: https://rustup.rs'; exit 1; }
+dev: bootstrap web/node_modules desktop/node_modules
 	cd desktop && npm run dev
 
 install: desktop
 	mkdir -p "$(INSTALL_DIR)"
 	rm -rf "$(INSTALL_DIR)/Mind.app"
 	ditto "$(APP)" "$(INSTALL_DIR)/Mind.app"
+	@printf 'Installed %s/Mind.app\n' "$(INSTALL_DIR)"
 
 open:
 	open "$(INSTALL_DIR)/Mind.app"
