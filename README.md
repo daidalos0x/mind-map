@@ -17,6 +17,12 @@ Documents are `.xmind` files, stored locally.
 
 ## Features
 
+- **Lightweight** — Tauri 2 on the system WebView instead of a bundled Chromium: 10 MB on macOS, roughly 70 MB of RAM at idle.
+- **Local-first** — documents are plain `.xmind` files on disk, no account, nothing uploaded.
+- **Two views of one document** — a classic mind map, or a Mermaid `mindmap` source with live preview.
+- **Full editor** — 14 layouts, 50+ themes, dark mode, rich text, notes, tags, images, formulas and an outline view.
+- **AI assisted** — generate a diagram from a prompt through your own OpenAI-compatible endpoint.
+
 ![Mind map](./assets/screenshots/mind-map.png)
 
 *Mind map view*
@@ -24,12 +30,6 @@ Documents are `.xmind` files, stored locally.
 ![Mermaid mode](./assets/screenshots/mermaid.png)
 
 *Mermaid view*
-
-- **Lightweight** — Tauri 2 on the system WebView instead of a bundled Chromium: 10 MB on macOS, about 5 MB on Windows, roughly 70 MB of RAM at idle.
-- **Local-first** — documents are plain `.xmind` files on disk, no account, nothing uploaded.
-- **Two views of one document** — a classic mind map, or a Mermaid `mindmap` source with live preview.
-- **Full editor** — 14 layouts, 50+ themes, dark mode, rich text, notes, tags, images, formulas and an outline view.
-- **AI assisted** — generate a diagram from a prompt through your own OpenAI-compatible endpoint.
 
 ## Install
 
