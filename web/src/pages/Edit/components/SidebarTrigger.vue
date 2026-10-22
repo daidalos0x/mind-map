@@ -85,6 +85,9 @@ export default {
       if (val) {
         this.setActiveSidebar(null)
       }
+    },
+    show(val) {
+      document.body.classList.toggle('mindSidebarTriggerHidden', !val)
     }
   },
   created() {
@@ -92,10 +95,12 @@ export default {
     this.updateSize()
     this.mermaidStyle = isMermaidStyleOn()
     this.$bus.$on('mermaidStyleChanged', this.onMermaidStyleChanged)
+    document.body.classList.toggle('mindSidebarTriggerHidden', !this.show)
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.onResize)
     this.$bus.$off('mermaidStyleChanged', this.onMermaidStyleChanged)
+    document.body.classList.remove('mindSidebarTriggerHidden')
   },
   methods: {
     ...mapMutations(['setActiveSidebar']),
@@ -171,8 +176,8 @@ export default {
     right: 0;
   }
 
-  &.hasActive {
-    right: 305px;
+  &.hasActive .trigger {
+    border-radius: 0;
   }
 
   .toggleShowBtn {
@@ -216,7 +221,7 @@ export default {
     border-color: #eee;
     background-color: #fff;
     box-shadow: 0 2px 16px 0 rgba(0, 0, 0, 0.06);
-    border-radius: 6px;
+    border-radius: 6px 0 0 6px;
     max-height: 100%;
     overflow-y: auto;
     overflow-x: hidden;

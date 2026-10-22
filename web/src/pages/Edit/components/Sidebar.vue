@@ -41,7 +41,8 @@ export default {
   watch: {
     show(val, oldVal) {
       if (val && !oldVal) {
-        this.zIndex = store.sidebarZIndex++
+        const next = store.sidebarZIndex++
+        this.zIndex = next < 2 ? 2 : next
       }
     }
   },
@@ -98,7 +99,7 @@ export default {
   }
 
   &.show {
-    right: 0;
+    right: 60px;
   }
 
   .closeBtn {
@@ -125,5 +126,11 @@ export default {
     height: 100%;
     overflow: auto;
   }
+}
+</style>
+
+<style lang="less">
+body.mindSidebarTriggerHidden .sidebarContainer.show {
+  right: 0;
 }
 </style>
