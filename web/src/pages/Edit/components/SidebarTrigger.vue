@@ -106,6 +106,10 @@ export default {
     ...mapMutations(['setActiveSidebar']),
 
     trigger(item) {
+      if (this.activeSidebar === item.value) {
+        this.setActiveSidebar(null)
+        return
+      }
       this.setActiveSidebar(item.value)
     },
 
