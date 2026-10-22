@@ -45,7 +45,7 @@ fn empty_document() -> Value {
             "children": []
         },
         "theme": {
-            "template": "default",
+            "template": "classic7",
             "config": {}
         },
         "view": null
@@ -426,7 +426,7 @@ fn xmind_content_to_document(content: &Value) -> Value {
     json!({
         "layout": "logicalStructure",
         "root": root,
-        "theme": { "template": "default", "config": {} },
+        "theme": { "template": "classic7", "config": {} },
         "view": null
     })
 }

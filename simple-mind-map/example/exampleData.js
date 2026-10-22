@@ -924,7 +924,7 @@ export default {
     ...data5,
     // ...rootData,
     "theme": {
-        "template": "classic4",
+        "template": "classic7",
         "config": {
             // 自定义配置...
         }
