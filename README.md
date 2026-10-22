@@ -17,9 +17,13 @@ Documents are `.xmind` files, stored locally.
 
 ## Features
 
-| Mind map | Mermaid mode |
-| --- | --- |
-| ![Mind map](./assets/screenshots/mind-map.png) | ![Mermaid mode](./assets/screenshots/mermaid.png) |
+![Mind map](./assets/screenshots/mind-map.png)
+
+*Mind map view*
+
+![Mermaid mode](./assets/screenshots/mermaid.png)
+
+*Mermaid view*
 
 - **Lightweight** — Tauri 2 instead of Electron; the Windows installer is about 5 MB.
 - **Local-first** — documents are plain `.xmind` files on disk, no account, nothing uploaded.
