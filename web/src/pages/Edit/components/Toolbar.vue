@@ -1,29 +1,6 @@
 <template>
   <div class="toolbarContainer" :class="{ isDark: isDark }">
     <div class="toolbar" ref="toolbarRef">
-      <!-- 节点操作 -->
-      <div class="toolbarBlock">
-        <ToolbarNodeBtnList :list="horizontalList"></ToolbarNodeBtnList>
-        <!-- 更多 -->
-        <el-popover
-          v-model="popoverShow"
-          placement="bottom-end"
-          width="120"
-          trigger="hover"
-          v-if="showMoreBtn"
-          :style="{ marginLeft: horizontalList.length > 0 ? '20px' : 0 }"
-        >
-          <ToolbarNodeBtnList
-            dir="v"
-            :list="verticalList"
-            @click.native="popoverShow = false"
-          ></ToolbarNodeBtnList>
-          <div slot="reference" class="toolbarBtn">
-            <span class="icon iconfont icongongshi"></span>
-            <span class="text">{{ $t('toolbar.more') }}</span>
-          </div>
-        </el-popover>
-      </div>
       <!-- 导出 -->
       <div class="toolbarBlock">
         <div class="toolbarBtn" @click="$bus.$emit('showFileHome')">
@@ -141,6 +118,29 @@
             </el-tree>
           </div>
         </div>
+      </div>
+      <!-- 节点操作 -->
+      <div class="toolbarBlock">
+        <ToolbarNodeBtnList :list="horizontalList"></ToolbarNodeBtnList>
+        <!-- 更多 -->
+        <el-popover
+          v-model="popoverShow"
+          placement="bottom-end"
+          width="120"
+          trigger="hover"
+          v-if="showMoreBtn"
+          :style="{ marginLeft: horizontalList.length > 0 ? '20px' : 0 }"
+        >
+          <ToolbarNodeBtnList
+            dir="v"
+            :list="verticalList"
+            @click.native="popoverShow = false"
+          ></ToolbarNodeBtnList>
+          <div slot="reference" class="toolbarBtn">
+            <span class="icon iconfont icongongshi"></span>
+            <span class="text">{{ $t('toolbar.more') }}</span>
+          </div>
+        </el-popover>
       </div>
     </div>
     <NodeImage></NodeImage>
