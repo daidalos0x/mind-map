@@ -34,8 +34,6 @@ jobs:
 
       - name: Build web app
         working-directory: web
-        env:
-          NODE_OPTIONS: --openssl-legacy-provider
         run: npm run build
 
       - name: Assemble site

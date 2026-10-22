@@ -42,16 +42,22 @@ module.exports = {
     },
     /**
      * webpack 默认的 244KiB 预算是给普通网页的，对一个内嵌整个思维导图引擎的编辑器
-     * 并不适用。这里按实测基线设定预算，既能反映真实体积，又能在继续膨胀时报警：
+     * 并不适用。这里按**生产构建**的实测基线设定预算：
      *   入口（app + vendors + css）≈ 0.95MiB
      *   编辑器核心 chunk           ≈ 2.25MiB
      *   mermaid 按需 chunk         ≈ 3.19MiB（只有开启 Mermaid 时才下载）
+     *
+     * 开发服务器和库构建产出的都是未压缩代码（体积是生产的好几倍），拿生产预算去卡
+     * 它们只会每次重编译都刷一屏告警，所以只在生产构建里启用。
      */
-    performance: {
-      hints: 'warning',
-      maxEntrypointSize: 1.5 * 1024 * 1024,
-      maxAssetSize: 3.5 * 1024 * 1024
-    },
+    performance:
+      isDev || isLibrary
+        ? { hints: false }
+        : {
+            hints: 'warning',
+            maxEntrypointSize: 1.5 * 1024 * 1024,
+            maxAssetSize: 3.5 * 1024 * 1024
+          },
     module: {
       noParse: /[\\/]mermaid[\\/]dist[\\/]mermaid\.min\.js$/
     },
@@ -69,6 +75,12 @@ module.exports = {
     }
   },
   devServer: {
+    /**
+     * 关闭 webpack 的进度输出。它会把正在编译的模块路径整行打印出来，
+     * 长路径（例如 assets/img/图片加载失败.svg）会被截断成
+     * "...web/src/assets/img/图片加载失"，看起来像在报错。
+     */
+    progress: false,
     proxy: {
       '^/api/v3/': {
         target: 'http://ark.cn-beijing.volces.com',

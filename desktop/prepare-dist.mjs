@@ -25,10 +25,8 @@ function run(command, args, cwd, env) {
   })
 }
 
-await run('npm', ['run', 'build'], webDir, {
-  ...process.env,
-  NODE_OPTIONS: '--openssl-legacy-provider'
-})
+// md4 兼容由 web/build/md4-fallback.js 在构建进程内处理，不需要 NODE_OPTIONS
+await run('npm', ['run', 'build'], webDir, process.env)
 
 fs.rmSync(outputDir, { recursive: true, force: true })
 fs.mkdirSync(outputDir, { recursive: true })

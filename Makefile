@@ -23,8 +23,9 @@ desktop/node_modules: desktop/package.json desktop/package-lock.json
 	cd desktop && npm ci
 	@touch $@
 
+# md4 兼容由 web/build/md4-fallback.js 在构建进程内处理，不再需要 NODE_OPTIONS
 web: web/node_modules
-	cd web && NODE_OPTIONS=--openssl-legacy-provider npm run serve
+	cd web && npm run serve
 
 desktop: web/node_modules desktop/node_modules
 	@command -v cargo >/dev/null || { echo 'Install Rust first: https://rustup.rs'; exit 1; }
