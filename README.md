@@ -10,6 +10,8 @@ A mind map app with a web editor and a Mac desktop app. Documents are `.xmind` f
 
 ## Web
 
+Use it online at https://phaethix.github.io/mind-map/.
+
 ```bash
 cd web
 npm ci
