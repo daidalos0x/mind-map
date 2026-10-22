@@ -140,24 +140,6 @@ jobs:
           files: dist/*
           fail_on_unmatched_files: true
           body: |
-            macOS has no prebuilt binary: clone the repository and run `make`.
+            🎉 A lightweight, minimal, and customizable mind map.
 
-            **Windows 10 / 11 (x64)** — `Mind_*_x64-setup.exe`
-
-            Unsigned, so the first launch needs **More info → Run anyway**. Installs per user and
-            fetches WebView2 automatically.
-
-            **Ubuntu 22.04+ / Debian 12+ (x64)** — `Mind_*_amd64.deb`
-
-            ```bash
-            sudo apt install ./*_amd64.deb
-            ```
-
-            **Any distro with WebKitGTK 4.1** — `Mind_*_amd64.AppImage`
-
-            ```bash
-            sudo apt install libfuse2
-            chmod +x ./*.AppImage && ./*.AppImage
-            ```
-
-            Older releases such as Ubuntu 20.04 ship WebKitGTK 4.0 and will not start.
+            Install instructions are in the [README](https://github.com/phaethix/mind-map#install).
