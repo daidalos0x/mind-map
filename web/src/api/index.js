@@ -7,8 +7,33 @@ const SIMPLE_MIND_MAP_DATA = 'SIMPLE_MIND_MAP_DATA'
 const SIMPLE_MIND_MAP_CONFIG = 'SIMPLE_MIND_MAP_CONFIG'
 const SIMPLE_MIND_MAP_LANG = 'SIMPLE_MIND_MAP_LANG'
 const SIMPLE_MIND_MAP_LOCAL_CONFIG = 'SIMPLE_MIND_MAP_LOCAL_CONFIG'
+const SIMPLE_MIND_MAP_DEFAULT_THEME = 'SIMPLE_MIND_MAP_DEFAULT_THEME'
+const DEFAULT_THEME = 'classic7'
 
 let mindMapData = null
+
+// 已经打开过网页的浏览器会一直用本地缓存。旧默认主题只迁移一次。
+const migrateStoredTheme = data => {
+  if (localStorage.getItem(SIMPLE_MIND_MAP_DEFAULT_THEME) === DEFAULT_THEME) {
+    return data
+  }
+  const theme = data && data.theme
+  const config = (theme && theme.config) || {}
+  const usesOldDefault =
+    theme &&
+    Object.keys(config).length === 0 &&
+    (theme.template === 'classic4' || theme.template === 'default')
+  if (usesOldDefault) {
+    data.theme = {
+      ...theme,
+      template: DEFAULT_THEME,
+      config
+    }
+    localStorage.setItem(SIMPLE_MIND_MAP_DATA, JSON.stringify(data))
+  }
+  localStorage.setItem(SIMPLE_MIND_MAP_DEFAULT_THEME, DEFAULT_THEME)
+  return data
+}
 
 // 获取缓存的思维导图数据
 export const getData = () => {
@@ -23,10 +48,20 @@ export const getData = () => {
   }
   let store = localStorage.getItem(SIMPLE_MIND_MAP_DATA)
   if (store === null) {
+    try {
+      localStorage.setItem(SIMPLE_MIND_MAP_DEFAULT_THEME, DEFAULT_THEME)
+    } catch (error) {
+      console.log(error)
+    }
     return simpleDeepClone(exampleData)
   } else {
     try {
-      return JSON.parse(store)
+      const data = JSON.parse(store)
+      try {
+        return migrateStoredTheme(data)
+      } catch (error) {
+        return data
+      }
     } catch (error) {
       return simpleDeepClone(exampleData)
     }
