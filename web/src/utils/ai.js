@@ -1,3 +1,5 @@
+import { chatCompletionsUrl } from '@/utils/mermaidMindmap'
+
 class Ai {
   constructor(options = {}) {
     this.options = options
@@ -73,22 +75,28 @@ class Ai {
 
   async postMsg(data) {
     this.controller = new AbortController()
-    const res = await fetch(`http://localhost:${this.options.port}/ai/chat`, {
+    const res = await fetch(chatCompletionsUrl(this.baseData.api), {
       signal: this.controller.signal,
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        Authorization: this.baseData.headers.Authorization
       },
       body: JSON.stringify({
-        ...this.baseData,
-        data: {
-          ...this.baseData.data,
-          ...data
-        }
+        model: this.baseData.data.model,
+        stream: true,
+        messages: data.messages
       })
     })
-    if (res.status && res.status !== 200) {
-      throw new Error('请求失败')
+    if (!res.ok) {
+      let message = '请求失败'
+      try {
+        const payload = await res.json()
+        message = (payload.error && payload.error.message) || message
+      } catch (error) {
+        message = '请求失败'
+      }
+      throw new Error(message)
     }
     return res.body.getReader()
   }

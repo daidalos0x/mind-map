@@ -33,6 +33,9 @@ module.exports = {
     }
   },
   configureWebpack: {
+    module: {
+      noParse: /[\\/]mermaid[\\/]dist[\\/]mermaid\.min\.js$/
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src/'),

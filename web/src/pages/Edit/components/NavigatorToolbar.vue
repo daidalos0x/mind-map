@@ -255,6 +255,7 @@ export default {
 .navigatorContainer {
   padding: 0 12px;
   position: fixed;
+  z-index: 2;
   right: 20px;
   bottom: 20px;
   background: hsla(0, 0%, 100%, 0.8);

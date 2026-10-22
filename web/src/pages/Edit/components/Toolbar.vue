@@ -60,13 +60,20 @@
           <span class="icon iconfont icondaoru"></span>
           <span class="text">{{ $t('toolbar.import') }}</span>
         </div>
-        <div
-          class="toolbarBtn"
-          @click="$bus.$emit('showExport')"
-          style="margin-right: 0;"
-        >
+        <div class="toolbarBtn" @click="$bus.$emit('showExport')">
           <span class="icon iconfont iconexport"></span>
           <span class="text">{{ $t('toolbar.export') }}</span>
+        </div>
+        <div class="toolbarBtn" @click="$bus.$emit('showMermaid')">
+          <span class="icon mermaidIcon">
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+              <circle cx="3" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.4" />
+              <circle cx="12" cy="4" r="1.7" fill="none" stroke="currentColor" stroke-width="1.4" />
+              <circle cx="12" cy="12" r="1.7" fill="none" stroke="currentColor" stroke-width="1.4" />
+              <path d="M5 7.2 L10.2 4.6 M5 8.8 L10.2 11.4" fill="none" stroke="currentColor" stroke-width="1.4" />
+            </svg>
+          </span>
+          <span class="text">{{ $t('toolbar.mermaid') }}</span>
         </div>
         <!-- 本地文件树 -->
         <div
@@ -779,6 +786,15 @@ export default {
         flex-direction: column;
         text-align: center;
         padding: 0 5px;
+      }
+
+      .mermaidIcon {
+        align-items: center;
+        padding: 0;
+
+        svg {
+          display: block;
+        }
       }
 
       .text {

@@ -28,7 +28,7 @@ const store = new Vuex.Store({
     extraTextOnExport: '', // 导出时底部添加的文字
     isDragOutlineTreeNode: false, // 当前是否正在拖拽大纲树的节点
     aiConfig: {
-      api: 'http://ark.cn-beijing.volces.com/api/v3/chat/completions',
+      api: 'https://api.openai.com/v1',
       key: '',
       model: '',
       port: 3456,

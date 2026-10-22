@@ -11,6 +11,7 @@
       id="mindMapContainer"
       ref="mindMapContainer"
     ></div>
+    <MermaidOfficialView v-if="mindMap" :mindMap="mindMap"></MermaidOfficialView>
     <Count :mindMap="mindMap" v-if="!isZenMode"></Count>
     <Navigator v-if="mindMap" :mindMap="mindMap"></Navigator>
     <NavigatorToolbar :mindMap="mindMap" v-if="!isZenMode"></NavigatorToolbar>
@@ -35,7 +36,7 @@
       :mindMap="mindMap"
     ></NodeNoteContentShow>
     <NodeImgPreview v-if="mindMap" :mindMap="mindMap"></NodeImgPreview>
-    <SidebarTrigger v-if="!isZenMode"></SidebarTrigger>
+    <SidebarTrigger v-if="!isZenMode" :mindMap="mindMap"></SidebarTrigger>
     <Search v-if="mindMap" :mindMap="mindMap"></Search>
     <NodeIconSidebar v-if="mindMap" :mindMap="mindMap"></NodeIconSidebar>
     <NodeIconToolbar v-if="mindMap" :mindMap="mindMap"></NodeIconToolbar>
@@ -52,6 +53,7 @@
     <NodeNoteSidebar v-if="mindMap" :mindMap="mindMap"></NodeNoteSidebar>
     <AiCreate v-if="mindMap && enableAi" :mindMap="mindMap"></AiCreate>
     <AiChat v-if="enableAi"></AiChat>
+    <MermaidEditor v-if="mindMap" :mindMap="mindMap"></MermaidEditor>
     <div
       class="dragMask"
       v-if="showDragMask"
@@ -126,6 +128,8 @@ import NodeImgPlacementToolbar from './NodeImgPlacementToolbar.vue'
 import NodeNoteSidebar from './NodeNoteSidebar.vue'
 import AiCreate from './AiCreate.vue'
 import AiChat from './AiChat.vue'
+import MermaidEditor from './MermaidEditor.vue'
+import MermaidOfficialView from './MermaidOfficialView.vue'
 
 // 注册插件
 MindMap.usePlugin(MiniMap)
@@ -185,7 +189,9 @@ export default {
     NodeImgPlacementToolbar,
     NodeNoteSidebar,
     AiCreate,
-    AiChat
+    AiChat,
+    MermaidEditor,
+    MermaidOfficialView
   },
   data() {
     return {

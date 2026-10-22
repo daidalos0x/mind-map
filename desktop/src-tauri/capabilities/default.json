@@ -25,6 +25,9 @@
     "allow-save-file-as",
     "allow-reveal-documents",
     "allow-take-pending-open",
-    "allow-boot-log"
+    "allow-boot-log",
+    "allow-ai-config-status",
+    "allow-reveal-ai-config",
+    "allow-ai-complete"
   ]
 }

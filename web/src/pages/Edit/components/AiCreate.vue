@@ -189,31 +189,9 @@ export default {
 
     // 检测ai是否可用
     async aiTest() {
-      // 检查配置
-      if (
-        !(
-          this.aiConfig.api &&
-          this.aiConfig.key &&
-          this.aiConfig.model &&
-          this.aiConfig.port
-        )
-      ) {
+      if (!(this.aiConfig.api && this.aiConfig.key && this.aiConfig.model)) {
         this.showAiConfigDialog()
         throw new Error(this.$t('ai.configurationMissing'))
-      }
-      // 检查连接
-      let isConnect = false
-      try {
-        await fetch(`http://localhost:${this.aiConfig.port}/ai/test`, {
-          method: 'GET'
-        })
-        isConnect = true
-      } catch (error) {
-        console.log(error)
-        this.clientTipDialogVisible = true
-      }
-      if (!isConnect) {
-        throw new Error(this.$t('ai.connectFailed'))
       }
     },
 

@@ -30,6 +30,7 @@
 <script>
 import Sidebar from './Sidebar.vue'
 import { storeData } from '@/api'
+import { disableMermaidStyle, isMermaidStyleOn } from '@/utils/mermaidStyle'
 import { mapState, mapMutations } from 'vuex'
 import themeImgMap from 'simple-mind-map-plugin-themes/themeImgMap'
 import themeList from 'simple-mind-map-plugin-themes/themeList'
@@ -153,6 +154,10 @@ export default {
     },
 
     useTheme(theme) {
+      if (isMermaidStyleOn()) {
+        disableMermaidStyle(this.mindMap)
+        this.$bus.$emit('mermaidStyleChanged', false)
+      }
       if (theme.value === this.theme) return
       this.theme = theme.value
       this.handleDark()

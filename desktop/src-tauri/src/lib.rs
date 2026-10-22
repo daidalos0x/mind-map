@@ -698,6 +698,163 @@ fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
     Menu::with_items(app, &[&app_menu, &file_menu, &edit_menu])
 }
 
+#[derive(Debug, Deserialize)]
+struct ChatMessage {
+    role: String,
+    content: String,
+}
+
+fn ai_config_path(app: &AppHandle) -> Result<PathBuf, String> {
+    let dir = app.path().app_data_dir().map_err(|error| error.to_string())?;
+    fs::create_dir_all(&dir).map_err(|error| error.to_string())?;
+    Ok(dir.join("ai.json"))
+}
+
+fn load_ai_value(path: &Path) -> Result<Value, String> {
+    if !path.exists() {
+        return Ok(json!({}));
+    }
+    let text = fs::read_to_string(path).map_err(|error| error.to_string())?;
+    serde_json::from_str(&text).map_err(|error| error.to_string())
+}
+
+fn ai_text(value: &Value, key: &str) -> String {
+    value
+        .get(key)
+        .and_then(|item| item.as_str())
+        .unwrap_or("")
+        .trim()
+        .to_string()
+}
+
+fn chat_completions_url(base_url: &str) -> String {
+    let trimmed = base_url.trim().trim_end_matches('/');
+    if trimmed.ends_with("/chat/completions") {
+        trimmed.to_string()
+    } else {
+        format!("{trimmed}/chat/completions")
+    }
+}
+
+fn write_ai_template(path: &Path) -> Result<(), String> {
+    if path.exists() {
+        return Ok(());
+    }
+    let text = serde_json::to_string_pretty(&json!({
+        "baseUrl": "https://api.openai.com/v1",
+        "model": "gpt-4o-mini",
+        "apiKey": ""
+    }))
+    .map_err(|error| error.to_string())?;
+    fs::write(path, text + "\n").map_err(|error| error.to_string())
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct AiConfigStatus {
+    configured: bool,
+    base_url: String,
+    model: String,
+}
+
+#[tauri::command]
+fn ai_config_status(app: AppHandle) -> Result<AiConfigStatus, String> {
+    let path = ai_config_path(&app)?;
+    let value = load_ai_value(&path)?;
+    let base_url = ai_text(&value, "baseUrl");
+    let model = ai_text(&value, "model");
+    let api_key = ai_text(&value, "apiKey");
+    Ok(AiConfigStatus {
+        configured: !base_url.is_empty() && !model.is_empty() && !api_key.is_empty(),
+        base_url,
+        model,
+    })
+}
+
+#[tauri::command]
+fn reveal_ai_config(app: AppHandle) -> Result<(), String> {
+    let path = ai_config_path(&app)?;
+    write_ai_template(&path)?;
+    let status = std::process::Command::new("open")
+        .arg(&path)
+        .status()
+        .map_err(|error| error.to_string())?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err(format!("无法打开配置文件：{status}"))
+    }
+}
+
+#[tauri::command]
+async fn ai_complete(app: AppHandle, messages: Vec<ChatMessage>) -> Result<String, String> {
+    if messages.is_empty() || messages.len() > 8 {
+        return Err("请求内容无效".to_string());
+    }
+    for message in &messages {
+        if message.role != "system" && message.role != "user" && message.role != "assistant" {
+            return Err("请求内容无效".to_string());
+        }
+        if message.content.chars().count() > 20000 {
+            return Err("请求内容过长".to_string());
+        }
+    }
+    let path = ai_config_path(&app)?;
+    let value = load_ai_value(&path)?;
+    let base_url = ai_text(&value, "baseUrl");
+    let model = ai_text(&value, "model");
+    let api_key = ai_text(&value, "apiKey");
+    if base_url.is_empty() || model.is_empty() || api_key.is_empty() {
+        return Err("还没有配置 API Key".to_string());
+    }
+    let url = chat_completions_url(&base_url);
+    let parsed = reqwest::Url::parse(&url).map_err(|error| error.to_string())?;
+    let host = parsed.host_str().unwrap_or("");
+    let allowed = match parsed.scheme() {
+        "https" => true,
+        "http" => host == "localhost" || host == "127.0.0.1" || host == "::1",
+        _ => false,
+    };
+    if !allowed {
+        return Err("只接受 https 接口，或本机的 http 接口".to_string());
+    }
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(90))
+        .build()
+        .map_err(|error| error.to_string())?;
+    let response = client
+        .post(parsed)
+        .bearer_auth(api_key)
+        .json(&json!({
+            "model": model,
+            "messages": messages
+                .iter()
+                .map(|message| json!({
+                    "role": message.role,
+                    "content": message.content
+                }))
+                .collect::<Vec<_>>()
+        }))
+        .send()
+        .await
+        .map_err(|error| error.to_string())?;
+    let status = response.status();
+    let body = response.text().await.map_err(|error| error.to_string())?;
+    if !status.is_success() {
+        let clipped: String = body.chars().take(500).collect();
+        return Err(format!("模型接口返回 {status}: {clipped}"));
+    }
+    let payload: Value = serde_json::from_str(&body).map_err(|error| error.to_string())?;
+    let content = payload["choices"][0]["message"]["content"]
+        .as_str()
+        .unwrap_or("")
+        .to_string();
+    if content.trim().is_empty() {
+        return Err("模型没有返回内容".to_string());
+    }
+    Ok(content)
+}
+
 fn dispatch_menu(app: &AppHandle, action: &str) {
     if let Some(window) = app.get_webview_window("main") {
         let script = format!("window.__desktopOnMenu && window.__desktopOnMenu({action:?})");
@@ -740,7 +897,10 @@ pub fn run() {
             save_file_as,
             reveal_documents,
             take_pending_open,
-            boot_log
+            boot_log,
+            ai_config_status,
+            reveal_ai_config,
+            ai_complete
         ])
         .build(tauri::generate_context!())
         .expect("failed to start Mind")

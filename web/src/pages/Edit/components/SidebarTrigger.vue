@@ -9,6 +9,15 @@
       <span class="iconfont iconjiantouyou"></span>
     </div>
     <div class="trigger customScrollbar">
+      <div class="triggerItem mermaidStyleSwitch" @click.stop>
+        <el-switch
+          :value="mermaidStyle"
+          :disabled="!mindMap || switching"
+          active-color="#409eff"
+          @change="onToggle"
+        ></el-switch>
+        <div class="triggerName">{{ $t('toolbar.mermaid') }}</div>
+      </div>
       <div
         class="triggerItem"
         v-for="item in triggerList"
@@ -26,13 +35,26 @@
 <script>
 import { mapState, mapMutations } from 'vuex'
 import { sidebarTriggerList } from '@/config'
+import {
+  disableMermaidStyle,
+  enableMermaidStyle,
+  isMermaidStyleOn
+} from '@/utils/mermaidStyle'
 
 // 侧边栏触发器
 export default {
+  props: {
+    mindMap: {
+      type: Object,
+      default: null
+    }
+  },
   data() {
     return {
       show: true,
-      maxHeight: 0
+      maxHeight: 0,
+      mermaidStyle: false,
+      switching: false
     }
   },
   computed: {
@@ -68,15 +90,42 @@ export default {
   created() {
     window.addEventListener('resize', this.onResize)
     this.updateSize()
+    this.mermaidStyle = isMermaidStyleOn()
+    this.$bus.$on('mermaidStyleChanged', this.onMermaidStyleChanged)
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.onResize)
+    this.$bus.$off('mermaidStyleChanged', this.onMermaidStyleChanged)
   },
   methods: {
     ...mapMutations(['setActiveSidebar']),
 
     trigger(item) {
       this.setActiveSidebar(item.value)
+    },
+
+    onMermaidStyleChanged(enabled) {
+      this.mermaidStyle = enabled
+    },
+
+    async onToggle(enabled) {
+      if (!this.mindMap || this.switching || enabled === this.mermaidStyle) {
+        return
+      }
+      this.mermaidStyle = enabled
+      this.switching = true
+      try {
+        if (enabled) {
+          await enableMermaidStyle(this.mindMap)
+        } else {
+          disableMermaidStyle(this.mindMap)
+        }
+        this.$bus.$emit('mermaidStyleChanged', enabled)
+      } catch (error) {
+        this.mermaidStyle = !enabled
+      } finally {
+        this.switching = false
+      }
     },
 
     onResize() {
@@ -95,6 +144,7 @@ export default {
 <style lang="less" scoped>
 .sidebarTriggerContainer {
   position: fixed;
+  z-index: 3;
   top: 110px;
   bottom: 80px;
   right: -60px;
@@ -199,6 +249,11 @@ export default {
       .triggerName {
         font-size: 13px;
       }
+    }
+
+    .mermaidStyleSwitch {
+      height: 68px;
+      border-bottom: 1px solid #f0f0f0;
     }
   }
 }

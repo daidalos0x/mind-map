@@ -3,7 +3,7 @@
     class="aiConfigDialog"
     :title="$t('ai.AIConfiguration')"
     :visible.sync="aiConfigDialogVisible"
-    width="550px"
+    width="640px"
     append-to-body
   >
     <div class="aiConfigBox">
@@ -13,16 +13,23 @@
         ref="ruleFormRef"
         label-width="100px"
       >
-        <p class="title">{{ $t('ai.VolcanoArkLargeModelConfiguration') }}</p>
-        <p class="desc">
-          {{ $t('ai.configTip') }}<a href="https://mp.weixin.qq.com/s/JNb7PH4sCjWzIZ9G8wStGQ" target="_blank">{{ $t('ai.course') }}</a
-          >。
-        </p>
-        <el-form-item label="API Key" prop="key">
-          <el-input v-model="ruleForm.key"></el-input>
+        <p class="desc">{{ $t('ai.configTip') }}</p>
+        <el-form-item label="Base URL" prop="api">
+          <el-input
+            v-model="ruleForm.api"
+            placeholder="https://api.openai.com/v1"
+          ></el-input>
         </el-form-item>
         <el-form-item :label="$t('ai.inferenceAccessPoint')" prop="model">
-          <el-input v-model="ruleForm.model"></el-input>
+          <el-input v-model="ruleForm.model" placeholder="gpt-4o-mini"></el-input>
+        </el-form-item>
+        <el-form-item label="API Key" prop="key">
+          <el-input
+            v-model="ruleForm.key"
+            type="password"
+            show-password
+            autocomplete="off"
+          ></el-input>
         </el-form-item>
         <!-- <el-form-item label="接口" prop="api">
           <el-input v-model="ruleForm.api"></el-input>
@@ -93,20 +100,6 @@ export default {
             message: this.$t('ai.modelValidateTip'),
             trigger: 'blur'
           }
-        ],
-        port: [
-          {
-            required: true,
-            message: this.$t('ai.portValidateTip'),
-            trigger: 'blur'
-          }
-        ],
-        method: [
-          {
-            required: true,
-            message: this.$t('ai.methodValidateTip'),
-            trigger: 'blur'
-          }
         ]
       }
     }
@@ -117,6 +110,9 @@ export default {
   watch: {
     visible(val) {
       this.aiConfigDialogVisible = val
+      if (val) {
+        this.initFormData()
+      }
     },
     aiConfigDialogVisible(val, oldVal) {
       if (!val && oldVal) {

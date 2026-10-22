@@ -20,6 +20,8 @@ NODE_OPTIONS=--openssl-legacy-provider npm run serve
 
 Open http://localhost:8080.
 
+The toolbar includes Mermaid. It edits a `mindmap` diagram with a live preview, then applies it to the canvas. On the website, the AI key is entered in that window and stored only in the browser. The Mac app reads `baseUrl`, `model`, and `apiKey` from `ai.json` in its application support folder and does not show the key.
+
 The web app uses Vue CLI 4. On Node 17 and newer, `NODE_OPTIONS=--openssl-legacy-provider` is required.
 
 ## Desktop

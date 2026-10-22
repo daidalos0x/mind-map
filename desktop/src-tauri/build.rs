@@ -13,6 +13,9 @@ fn main() {
                 "reveal_documents",
                 "take_pending_open",
                 "boot_log",
+                "ai_config_status",
+                "reveal_ai_config",
+                "ai_complete",
             ]),
         ),
     )
