@@ -5,7 +5,38 @@ const path = require('path')
 const isDev = process.env.NODE_ENV === 'development'
 const isLibrary = process.env.NODE_ENV === 'library'
 
-const WebpackDynamicPublicPathPlugin = require('webpack-dynamic-public-path')
+/**
+ * 等价于 webpack-dynamic-public-path@1.0.8，但去掉了它 emit 阶段那句
+ * `console.log('WebpackDynamicPublicPath: publicPath replaced.')`。
+ * 行为完全一致：把产物里写死的 output.publicPath 换成全局变量，
+ * 让 Mac 客户端可以在运行时指定资源路径。
+ */
+class DynamicPublicPathPlugin {
+  constructor(options) {
+    this.options = options
+  }
+
+  apply(compiler) {
+    let placeholder = ''
+
+    compiler.hooks.afterPlugins.tap('DynamicPublicPath', () => {
+      placeholder = `"${compiler.options.output.publicPath}"`
+    })
+
+    compiler.hooks.emit.tap('DynamicPublicPath', compilation => {
+      compilation.chunks.forEach(chunk => {
+        const file = (chunk.files || []).find(name => /\.js$/.test(name))
+        if (!file || !compilation.assets[file]) {
+          return
+        }
+        const asset = compilation.assets[file]
+        const source = asset.source()
+        asset.source = () =>
+          source.replace(placeholder, this.options.externalPublicPath)
+      })
+    })
+  }
+}
 
 module.exports = {
   publicPath: isDev ? '' : './dist',
@@ -23,7 +54,7 @@ module.exports = {
     if (!isDev) {
       config
         .plugin('dynamicPublicPathPlugin')
-        .use(WebpackDynamicPublicPathPlugin, [
+        .use(DynamicPublicPathPlugin, [
           { externalPublicPath: 'window.externalPublicPath' }
         ])
     }
