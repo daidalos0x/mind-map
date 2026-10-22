@@ -250,7 +250,8 @@ export const renderMermaidSvg = async (source, options = {}) => {
     return host.innerHTML
   } catch (error) {
     // mermaid v10 的临时容器 id 是 "d" + id，异常路径下它自己不会清理
-    ;[id, 'd' + id].forEach(nodeId => {
+    const staleIds = [id, 'd' + id]
+    staleIds.forEach(nodeId => {
       const failed = document.getElementById(nodeId)
       if (failed && failed.parentNode) {
         failed.parentNode.removeChild(failed)
