@@ -38,7 +38,10 @@ The Windows build is unsigned, so the first launch needs **More info → Run any
 
 ## Build from source
 
-Requires only the Xcode Command Line Tools (`xcode-select --install`); `scripts/bootstrap.sh` installs Node and Rust if missing. `make` installs `Mind.app` to `~/Applications`; documents live in `~/Documents/Mind`.
+- **Requires** — Xcode Command Line Tools: `xcode-select --install`
+- **Toolchain** — `scripts/bootstrap.sh` installs Node and Rust if missing
+- **Install** — `make`, then `Mind.app` sits in `~/Applications`
+- **Documents** — `~/Documents/Mind`
 
 ```bash
 make open      # launch the installed app
