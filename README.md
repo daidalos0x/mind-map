@@ -1,10 +1,10 @@
 # Mind
 
-[![release](https://img.shields.io/badge/release-v0.1.0-blue?style=for-the-badge)](https://github.com/phaethix/mind-map)
-[![license](https://img.shields.io/badge/license-MIT-green?style=for-the-badge)](./LICENSE)
-[![GitHub](https://img.shields.io/badge/GitHub-phaethix%2Fmind--map-181717?style=for-the-badge&logo=github)](https://github.com/phaethix/mind-map)
-[![node](https://img.shields.io/badge/node-17%2B-blue?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org)
-[![PRs](https://img.shields.io/badge/PRs-welcome-green?style=for-the-badge)](https://github.com/phaethix/mind-map/pulls)
+<a href="https://github.com/phaethix/mind-map/releases"><img src="https://img.shields.io/badge/release-v0.1.0-blue" alt="Release" /></a>
+<a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License" /></a>
+<a href="https://github.com/phaethix/mind-map"><img src="https://img.shields.io/badge/GitHub-phaethix%2Fmind--map-181717?logo=github" alt="GitHub" /></a>
+<a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-17%2B-blue?logo=nodedotjs&logoColor=white" alt="Node" /></a>
+<a href="https://github.com/phaethix/mind-map/pulls"><img src="https://img.shields.io/badge/PRs-welcome-green" alt="PRs welcome" /></a>
 
 A mind map app with a web editor and a Mac desktop app. Documents are `.xmind` files.
 
