@@ -1,3 +1,6 @@
+// 必须最先引入：给 OpenSSL 3 补上 md4，早于 webpack / terser 加载
+require('./build/md4-fallback')
+
 const path = require('path')
 const isDev = process.env.NODE_ENV === 'development'
 const isLibrary = process.env.NODE_ENV === 'library'
@@ -33,6 +36,10 @@ module.exports = {
     }
   },
   configureWebpack: {
+    // 用 sha256 替代 webpack 4 默认的 md4，避免依赖 --openssl-legacy-provider
+    output: {
+      hashFunction: 'sha256'
+    },
     module: {
       noParse: /[\\/]mermaid[\\/]dist[\\/]mermaid\.min\.js$/
     },
