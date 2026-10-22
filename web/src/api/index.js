@@ -7,14 +7,25 @@ const SIMPLE_MIND_MAP_DATA = 'SIMPLE_MIND_MAP_DATA'
 const SIMPLE_MIND_MAP_CONFIG = 'SIMPLE_MIND_MAP_CONFIG'
 const SIMPLE_MIND_MAP_LANG = 'SIMPLE_MIND_MAP_LANG'
 const SIMPLE_MIND_MAP_LOCAL_CONFIG = 'SIMPLE_MIND_MAP_LOCAL_CONFIG'
-const SIMPLE_MIND_MAP_DEFAULT_THEME = 'SIMPLE_MIND_MAP_DEFAULT_THEME'
+const SIMPLE_MIND_MAP_THEME_MIGRATED = 'SIMPLE_MIND_MAP_THEME_MIGRATED'
 const DEFAULT_THEME = 'classic7'
 
 let mindMapData = null
 
+const withDefaultTheme = data => {
+  const next = simpleDeepClone(data)
+  const config = (next.theme && next.theme.config) || {}
+  next.theme = {
+    ...(next.theme || {}),
+    template: DEFAULT_THEME,
+    config
+  }
+  return next
+}
+
 // 已经打开过网页的浏览器会一直用本地缓存。旧默认主题只迁移一次。
 const migrateStoredTheme = data => {
-  if (localStorage.getItem(SIMPLE_MIND_MAP_DEFAULT_THEME) === DEFAULT_THEME) {
+  if (localStorage.getItem(SIMPLE_MIND_MAP_THEME_MIGRATED) === DEFAULT_THEME) {
     return data
   }
   const theme = data && data.theme
@@ -31,7 +42,7 @@ const migrateStoredTheme = data => {
     }
     localStorage.setItem(SIMPLE_MIND_MAP_DATA, JSON.stringify(data))
   }
-  localStorage.setItem(SIMPLE_MIND_MAP_DEFAULT_THEME, DEFAULT_THEME)
+  localStorage.setItem(SIMPLE_MIND_MAP_THEME_MIGRATED, DEFAULT_THEME)
   return data
 }
 
@@ -49,11 +60,11 @@ export const getData = () => {
   let store = localStorage.getItem(SIMPLE_MIND_MAP_DATA)
   if (store === null) {
     try {
-      localStorage.setItem(SIMPLE_MIND_MAP_DEFAULT_THEME, DEFAULT_THEME)
+      localStorage.setItem(SIMPLE_MIND_MAP_THEME_MIGRATED, DEFAULT_THEME)
     } catch (error) {
       console.log(error)
     }
-    return simpleDeepClone(exampleData)
+    return withDefaultTheme(exampleData)
   } else {
     try {
       const data = JSON.parse(store)
@@ -63,7 +74,7 @@ export const getData = () => {
         return data
       }
     } catch (error) {
-      return simpleDeepClone(exampleData)
+      return withDefaultTheme(exampleData)
     }
   }
 }

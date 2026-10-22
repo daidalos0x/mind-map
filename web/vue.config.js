@@ -37,7 +37,11 @@ module.exports = {
       alias: {
         '@': path.resolve(__dirname, './src/'),
         // 页面直接使用仓库里的库源码，改 simple-mind-map 会立刻进到开发服务
-        'simple-mind-map/src': path.resolve(__dirname, '../simple-mind-map/src')
+        'simple-mind-map/src': path.resolve(__dirname, '../simple-mind-map/src'),
+        'simple-mind-map/example': path.resolve(
+          __dirname,
+          '../simple-mind-map/example'
+        )
       },
       modules: [path.resolve(__dirname, 'node_modules'), 'node_modules']
     }
