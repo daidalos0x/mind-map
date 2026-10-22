@@ -64,11 +64,12 @@ export default {
     }
   },
   async created() {
-    this.screen = window.takeOverApp ? 'edit' : 'home'
+    this.screen = 'home'
     this.$bus.$on('mindMapReady', mindMap => {
       this.mindMap = mindMap
     })
     this.$bus.$on('showFileHome', this.leaveEditor)
+    this.$bus.$on('enterEditor', this.enterEditor)
     this.initLocalConfig()
     const loading = this.$loading({
       lock: true,
@@ -80,6 +81,7 @@ export default {
   },
   beforeDestroy() {
     this.$bus.$off('showFileHome', this.leaveEditor)
+    this.$bus.$off('enterEditor', this.enterEditor)
   },
   methods: {
     ...mapMutations(['setLocalConfig']),
@@ -89,7 +91,33 @@ export default {
     },
 
     async leaveEditor() {
-      if (window.takeOverApp) {
+      if (window.__TAURI_INTERNALS__ && window.__desktopSession) {
+        if (this.mindMap && window.__desktopSession.path) {
+          const data = this.mindMap.getData(true)
+          window.__desktopSession.mindMapData = data
+          const invoke = window.__TAURI_INTERNALS__.invoke
+          try {
+            await invoke('save_mind_map', { data })
+          } catch (error) {
+            console.log(error)
+          }
+          try {
+            const png = await this.mindMap.export('png', false, 'preview')
+            if (typeof png === 'string' && png.indexOf('data:') === 0) {
+              const image = await shrinkThumbnail(png)
+              if (image) {
+                await invoke('save_thumbnail', {
+                  path: window.__desktopSession.path,
+                  image
+                })
+              }
+            }
+          } catch (error) {
+            console.log(error)
+          }
+        }
+        this.mindMap = null
+        this.screen = 'home'
         return
       }
       const library = browserFileLibrary()

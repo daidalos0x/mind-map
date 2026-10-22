@@ -125,7 +125,9 @@
       }
       const applyDesktopSession = session => {
         window.__desktopSession = session
-        document.title = session.fileName
+        if (session.fileName) {
+          document.title = session.fileName
+        }
         window.takeOverAppMethods = {
           getMindMapData: () => window.__desktopSession.mindMapData,
           saveMindMapData: data => {
@@ -154,9 +156,11 @@
       const showDesktopDocument = session => {
         applyDesktopSession(session)
         if (window.$bus) {
+          window.$bus.$emit('enterEditor')
           window.$bus.$emit('setData', session.mindMapData)
         }
       }
+      window.__desktopShow = showDesktopDocument
       window.__desktopOnMenu = async action => {
         try {
           if (action === 'save') {

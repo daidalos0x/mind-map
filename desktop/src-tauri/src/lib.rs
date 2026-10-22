@@ -1,7 +1,9 @@
+use std::collections::HashSet;
 use std::fs;
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::sync::Mutex;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
@@ -17,6 +19,17 @@ struct SessionFile {
     lang: String,
     mind_map_config: Value,
     local_config: Value,
+    #[serde(default)]
+    recent: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct FileCard {
+    path: String,
+    name: String,
+    modified_ms: u64,
+    thumbnail: String,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -462,11 +475,149 @@ fn switch_to(state: &AppState, app: &AppHandle, path: PathBuf) -> Result<Desktop
         create_document(&path)?
     };
     let mut session = state.session.lock().map_err(|error| error.to_string())?;
-    session.current_path = path.to_string_lossy().into_owned();
+    let current = path.to_string_lossy().into_owned();
+    session.current_path = current.clone();
+    remember_recent(&mut session, &current);
     persist_session(state, &session)?;
     let view = session_view(&session, document);
     set_window_title(app, &view.file_name);
     Ok(view)
+}
+
+fn remember_recent(session: &mut SessionFile, path: &str) {
+    session.recent.retain(|item| item != path);
+    session.recent.insert(0, path.to_string());
+    session.recent.truncate(50);
+}
+
+fn display_name(path: &Path) -> String {
+    let name = file_name_of(path);
+    name.strip_suffix(".xmind")
+        .unwrap_or(&name)
+        .to_string()
+}
+
+fn modified_ms(path: &Path) -> u64 {
+    fs::metadata(path)
+        .and_then(|meta| meta.modified())
+        .ok()
+        .and_then(|time| time.duration_since(UNIX_EPOCH).ok())
+        .map(|duration| duration.as_millis() as u64)
+        .unwrap_or(0)
+}
+
+fn thumbnails_dir(state: &AppState) -> PathBuf {
+    state
+        .session_path
+        .parent()
+        .unwrap_or_else(|| Path::new("."))
+        .join("thumbnails")
+}
+
+fn thumbnail_file(state: &AppState, path: &str) -> PathBuf {
+    let name: String = path.bytes().map(|byte| format!("{byte:02x}")).collect();
+    thumbnails_dir(state).join(format!("{name}.jpg"))
+}
+
+fn encode_base64(data: &[u8]) -> String {
+    const TABLE: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut out = String::new();
+    let mut index = 0;
+    while index + 3 <= data.len() {
+        let n = ((data[index] as u32) << 16) | ((data[index + 1] as u32) << 8) | data[index + 2] as u32;
+        out.push(TABLE[((n >> 18) & 63) as usize] as char);
+        out.push(TABLE[((n >> 12) & 63) as usize] as char);
+        out.push(TABLE[((n >> 6) & 63) as usize] as char);
+        out.push(TABLE[(n & 63) as usize] as char);
+        index += 3;
+    }
+    if index < data.len() {
+        let mut n = (data[index] as u32) << 16;
+        out.push(TABLE[((n >> 18) & 63) as usize] as char);
+        if index + 1 < data.len() {
+            n |= (data[index + 1] as u32) << 8;
+            out.push(TABLE[((n >> 12) & 63) as usize] as char);
+            out.push(TABLE[((n >> 6) & 63) as usize] as char);
+            out.push('=');
+        } else {
+            out.push(TABLE[((n >> 12) & 63) as usize] as char);
+            out.push('=');
+            out.push('=');
+        }
+    }
+    out
+}
+
+fn decode_base64(input: &str) -> Result<Vec<u8>, String> {
+    fn value(byte: u8) -> Result<u8, String> {
+        match byte {
+            b'A'..=b'Z' => Ok(byte - b'A'),
+            b'a'..=b'z' => Ok(byte - b'a' + 26),
+            b'0'..=b'9' => Ok(byte - b'0' + 52),
+            b'+' => Ok(62),
+            b'/' => Ok(63),
+            _ => Err("缩略图无法解析".to_string()),
+        }
+    }
+    let bytes: Vec<u8> = input.bytes().filter(|byte| !byte.is_ascii_whitespace()).collect();
+    if bytes.len() % 4 != 0 {
+        return Err("缩略图无法解析".to_string());
+    }
+    let mut out = Vec::new();
+    for chunk in bytes.chunks(4) {
+        let pad = chunk.iter().filter(|byte| **byte == b'=').count();
+        let a = value(chunk[0])?;
+        let b = value(chunk[1])?;
+        let c = if chunk[2] == b'=' { 0 } else { value(chunk[2])? };
+        let d = if chunk[3] == b'=' { 0 } else { value(chunk[3])? };
+        let n = ((a as u32) << 18) | ((b as u32) << 12) | ((c as u32) << 6) | d as u32;
+        out.push((n >> 16) as u8);
+        if pad < 2 {
+            out.push((n >> 8) as u8);
+        }
+        if pad < 1 {
+            out.push(n as u8);
+        }
+    }
+    Ok(out)
+}
+
+fn thumbnail_data_url(state: &AppState, path: &str) -> String {
+    let file = thumbnail_file(state, path);
+    let Ok(bytes) = fs::read(&file) else {
+        return String::new();
+    };
+    format!("data:image/jpeg;base64,{}", encode_base64(&bytes))
+}
+
+fn file_card(state: &AppState, path: &Path) -> FileCard {
+    let text = path.to_string_lossy().into_owned();
+    FileCard {
+        name: display_name(path),
+        modified_ms: modified_ms(path),
+        thumbnail: thumbnail_data_url(state, &text),
+        path: text,
+    }
+}
+
+fn is_xmind(path: &Path) -> bool {
+    path.extension().and_then(|ext| ext.to_str()) == Some("xmind")
+}
+
+fn move_to_trash(path: &Path) -> Result<(), String> {
+    let text = path.to_string_lossy().replace('\\', "\\\\").replace('"', "\\\"");
+    let status = Command::new("osascript")
+        .arg("-e")
+        .arg(format!(
+            "tell application \"Finder\" to delete POSIX file \"{text}\""
+        ))
+        .status()
+        .map_err(|error| error.to_string())?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err("无法移到废纸篓".to_string())
+    }
 }
 
 fn pick_file(app: &AppHandle, directory: PathBuf, save: bool) -> Result<Option<PathBuf>, String> {
@@ -506,6 +657,7 @@ fn initial_state(app: &AppHandle) -> Result<AppState, String> {
         lang: "zh".to_string(),
         mind_map_config: json!({}),
         local_config: Value::Null,
+        recent: Vec::new(),
     });
     if session.current_path.contains("/思维导图/") {
         let migrated = session.current_path.replace("/思维导图/", "/Mind/");
@@ -537,27 +689,16 @@ fn initial_state(app: &AppHandle) -> Result<AppState, String> {
 }
 
 #[tauri::command]
-fn bootstrap(app: AppHandle, state: State<AppState>) -> Result<DesktopSession, String> {
-    let pending = state
-        .pending_open
-        .lock()
-        .map_err(|error| error.to_string())?
-        .take();
-    let path = pending.unwrap_or_else(|| {
-        PathBuf::from(
-            state
-                .session
-                .lock()
-                .map(|session| session.current_path.clone())
-                .unwrap_or_else(|_| String::new()),
-        )
-    });
-    let path = if path.as_os_str().is_empty() {
-        next_untitled(&state.docs_dir)
-    } else {
-        path
-    };
-    switch_to(&state, &app, path)
+fn bootstrap(state: State<AppState>) -> Result<DesktopSession, String> {
+    let session = state.session.lock().map_err(|error| error.to_string())?;
+    Ok(DesktopSession {
+        path: String::new(),
+        file_name: String::new(),
+        mind_map_data: Value::Null,
+        mind_map_config: session.mind_map_config.clone(),
+        lang: session.lang.clone(),
+        local_config: session.local_config.clone(),
+    })
 }
 
 #[tauri::command]
@@ -612,11 +753,122 @@ fn save_file_as(
     };
     write_document(&path, &data)?;
     let mut session = state.session.lock().map_err(|error| error.to_string())?;
-    session.current_path = path.to_string_lossy().into_owned();
+    let current = path.to_string_lossy().into_owned();
+    session.current_path = current.clone();
+    remember_recent(&mut session, &current);
     persist_session(&state, &session)?;
     let view = session_view(&session, data);
     set_window_title(&app, &view.file_name);
     Ok(Some(view))
+}
+
+#[tauri::command]
+fn list_files(state: State<AppState>) -> Result<Vec<FileCard>, String> {
+    let mut seen = HashSet::new();
+    let mut cards = Vec::new();
+    let mut push = |path: PathBuf| {
+        if !is_xmind(&path) || !path.is_file() {
+            return;
+        }
+        let text = path.to_string_lossy().into_owned();
+        if !seen.insert(text) {
+            return;
+        }
+        cards.push(file_card(&state, &path));
+    };
+    if let Ok(entries) = fs::read_dir(&state.docs_dir) {
+        for entry in entries.flatten() {
+            push(entry.path());
+        }
+    }
+    let recent = state
+        .session
+        .lock()
+        .map_err(|error| error.to_string())?
+        .recent
+        .clone();
+    for path in recent {
+        push(PathBuf::from(path));
+    }
+    cards.sort_by(|a, b| b.modified_ms.cmp(&a.modified_ms));
+    Ok(cards)
+}
+
+#[tauri::command]
+fn open_path(app: AppHandle, state: State<AppState>, path: String) -> Result<DesktopSession, String> {
+    switch_to(&state, &app, PathBuf::from(path))
+}
+
+#[tauri::command]
+fn rename_file(state: State<AppState>, path: String, name: String) -> Result<FileCard, String> {
+    let source = PathBuf::from(&path);
+    let trimmed = name.trim();
+    if trimmed.is_empty() || trimmed.contains('/') || trimmed.contains('\\') {
+        return Err("名称无效".to_string());
+    }
+    let file_name = if trimmed.ends_with(".xmind") {
+        trimmed.to_string()
+    } else {
+        format!("{trimmed}.xmind")
+    };
+    let parent = source
+        .parent()
+        .ok_or_else(|| "名称无效".to_string())?;
+    let dest = parent.join(file_name);
+    if dest != source && dest.exists() {
+        return Err("已有同名文件".to_string());
+    }
+    if dest != source {
+        fs::rename(&source, &dest).map_err(|error| error.to_string())?;
+        let old_thumb = thumbnail_file(&state, &path);
+        if old_thumb.exists() {
+            let _ = fs::rename(old_thumb, thumbnail_file(&state, &dest.to_string_lossy()));
+        }
+    }
+    let dest_text = dest.to_string_lossy().into_owned();
+    let mut session = state.session.lock().map_err(|error| error.to_string())?;
+    if session.current_path == path {
+        session.current_path = dest_text.clone();
+    }
+    for item in session.recent.iter_mut() {
+        if item == &path {
+            *item = dest_text.clone();
+        }
+    }
+    persist_session(&state, &session)?;
+    Ok(file_card(&state, &dest))
+}
+
+#[tauri::command]
+fn delete_file(state: State<AppState>, path: String) -> Result<(), String> {
+    let source = PathBuf::from(&path);
+    if source.exists() {
+        move_to_trash(&source)?;
+    }
+    let thumb = thumbnail_file(&state, &path);
+    if thumb.exists() {
+        let _ = fs::remove_file(thumb);
+    }
+    let mut session = state.session.lock().map_err(|error| error.to_string())?;
+    session.recent.retain(|item| item != &path);
+    if session.current_path == path {
+        session.current_path.clear();
+    }
+    persist_session(&state, &session)
+}
+
+#[tauri::command]
+fn save_thumbnail(state: State<AppState>, path: String, image: String) -> Result<(), String> {
+    let payload = image
+        .split_once(',')
+        .map(|(_, data)| data)
+        .unwrap_or(image.as_str());
+    let bytes = decode_base64(payload)?;
+    let dest = thumbnail_file(&state, &path);
+    if let Some(parent) = dest.parent() {
+        fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+    }
+    fs::write(dest, bytes).map_err(|error| error.to_string())
 }
 
 #[tauri::command]
@@ -898,6 +1150,11 @@ pub fn run() {
             reveal_documents,
             take_pending_open,
             boot_log,
+            list_files,
+            open_path,
+            rename_file,
+            delete_file,
+            save_thumbnail,
             ai_config_status,
             reveal_ai_config,
             ai_complete

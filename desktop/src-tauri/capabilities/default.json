@@ -26,6 +26,11 @@
     "allow-reveal-documents",
     "allow-take-pending-open",
     "allow-boot-log",
+    "allow-list-files",
+    "allow-open-path",
+    "allow-rename-file",
+    "allow-delete-file",
+    "allow-save-thumbnail",
     "allow-ai-config-status",
     "allow-reveal-ai-config",
     "allow-ai-complete"

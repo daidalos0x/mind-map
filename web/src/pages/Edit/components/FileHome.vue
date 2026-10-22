@@ -90,10 +90,31 @@ export default {
     this.refresh()
   },
   methods: {
+    isDesktop() {
+      return typeof window.__TAURI_INTERNALS__ !== 'undefined'
+    },
+    invoke(command, args) {
+      return window.__TAURI_INTERNALS__.invoke(command, args || {})
+    },
     library() {
       return browserFileLibrary()
     },
-    refresh() {
+    async refresh() {
+      if (this.isDesktop()) {
+        try {
+          const files = await this.invoke('list_files')
+          this.files = (files || []).map(file => ({
+            id: file.path,
+            name: file.name,
+            updatedAt: file.modifiedMs,
+            thumbnail: file.thumbnail
+          }))
+        } catch (error) {
+          console.log(error)
+          this.files = []
+        }
+        return
+      }
       this.files = this.library().list()
     },
     formatTime(value) {
@@ -102,17 +123,56 @@ export default {
       }
       return new Date(value).toLocaleString()
     },
-    create() {
+    async create() {
+      if (this.isDesktop()) {
+        try {
+          const session = await this.invoke('new_file')
+          if (window.__desktopShow) {
+            window.__desktopShow(session)
+          }
+          this.$emit('open')
+        } catch (error) {
+          window.alert(error && error.message ? error.message : error)
+        }
+        return
+      }
       const item = this.library().create(blankDocument())
       this.$emit('open', item)
     },
-    open(file) {
+    async open(file) {
+      if (this.isDesktop()) {
+        try {
+          const session = await this.invoke('open_path', { path: file.id })
+          if (window.__desktopShow) {
+            window.__desktopShow(session)
+          }
+          this.$emit('open')
+        } catch (error) {
+          window.alert(error && error.message ? error.message : error)
+        }
+        return
+      }
       const item = this.library().open(file.id)
       if (item) {
         this.$emit('open', item)
       }
     },
-    pick() {
+    async pick() {
+      if (this.isDesktop()) {
+        try {
+          const session = await this.invoke('open_file')
+          if (!session) {
+            return
+          }
+          if (window.__desktopShow) {
+            window.__desktopShow(session)
+          }
+          this.$emit('open')
+        } catch (error) {
+          window.alert(error && error.message ? error.message : error)
+        }
+        return
+      }
       this.$refs.file.value = ''
       this.$refs.file.click()
     },
@@ -175,11 +235,19 @@ export default {
             confirmButtonText: this.$t('home.confirm'),
             cancelButtonText: this.$t('home.cancel')
           })
-          this.library().rename(file.id, value)
+          if (this.isDesktop()) {
+            await this.invoke('rename_file', { path: file.id, name: value })
+          } else {
+            this.library().rename(file.id, value)
+          }
           this.refresh()
         } catch (error) {
-          return
+          if (error === 'cancel' || error === 'close') {
+            return
+          }
+          window.alert(error && error.message ? error.message : String(error))
         }
+        return
       }
       if (command === 'delete') {
         try {
@@ -191,7 +259,16 @@ export default {
         } catch (error) {
           return
         }
-        this.library().remove(file.id)
+        try {
+          if (this.isDesktop()) {
+            await this.invoke('delete_file', { path: file.id })
+          } else {
+            this.library().remove(file.id)
+          }
+        } catch (error) {
+          window.alert(error && error.message ? error.message : error)
+          return
+        }
         this.refresh()
         this.$emit('deleted', file)
       }
