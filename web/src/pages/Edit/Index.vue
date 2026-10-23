@@ -8,6 +8,7 @@
       <Toolbar v-if="!isZenMode"></Toolbar>
       <Edit></Edit>
     </template>
+    <Updater></Updater>
   </div>
 </template>
 
@@ -15,6 +16,7 @@
 import Toolbar from './components/Toolbar.vue'
 import Edit from './components/Edit.vue'
 import FileHome from './components/FileHome.vue'
+import Updater from './components/Updater.vue'
 import { mapState, mapMutations } from 'vuex'
 import { getData, getLocalConfig } from '@/api'
 import { browserFileLibrary, seedDemoDocument } from '@/utils/fileLibrary'
@@ -47,7 +49,8 @@ export default {
   components: {
     Toolbar,
     Edit,
-    FileHome
+    FileHome,
+    Updater
   },
   data() {
     return {

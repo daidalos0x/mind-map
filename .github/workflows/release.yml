@@ -2,9 +2,13 @@ name: Release desktop app
 
 # 推送 v* tag 时自动构建并发布；也可以在 Actions 页面手动填 tag 重跑。
 #
-# 只发布 Windows / Linux：这两个平台不签名也能直接运行，用户不必自己准备
-# MSVC + WebView2 或 WebKitGTK 开发包。macOS 用户走仓库里的 `make`，
-# 本地编译后装进 ~/Applications，完全绕开 Gatekeeper 和公证。
+# Windows / Linux 发布安装包，macOS 只发布更新包（.app.tar.gz）：首次安装仍走
+# 仓库里的 `make`，本地编译后装进 ~/Applications，绕开 Gatekeeper 和公证；
+# 之后的新版本由应用内 updater 直接替换，不经过浏览器的下载隔离标记。
+#
+# 自动更新依赖签名：仓库 secrets 里要有 TAURI_SIGNING_PRIVATE_KEY
+# （以及可选的 TAURI_SIGNING_PRIVATE_KEY_PASSWORD）。没有密钥时构建出的包
+# 无法通过 updater 校验，latest.json 会在 publish 环节报错中断。
 on:
   push:
     tags: ['v*']
@@ -37,12 +41,21 @@ jobs:
             os: windows-latest
             bundles: nsis
             artifact: windows
+            # 平台键带 installer 后缀，deb 用户才不会误用 AppImage 的更新包
+            platform: windows-x86_64-nsis
           # 用 22.04 而不是 latest：glibc 基线压到 2.35，新发行版向下兼容；
           # 也是第一个带 webkit2gtk-4.1 的 LTS，Tauri v2 需要它
           - name: linux
             os: ubuntu-22.04
             bundles: deb,appimage
             artifact: linux
+            platform: linux-x86_64-appimage
+          # 固定 macos-14：它一定是 Apple Silicon，不会随 latest 迁移换架构
+          - name: macos
+            os: macos-14
+            bundles: app
+            artifact: macos
+            platform: darwin-aarch64-app
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -101,23 +114,68 @@ jobs:
 
       # tauri build 会先跑 beforeBuildCommand（desktop/prepare-dist.mjs），
       # 把 web 产物打包进 desktop-dist 再编译；--bundles 覆盖 tauri.conf 里的 targets，
-      # 因为配置里的 "app" 是 macOS 专用的产物类型
+      # 因为配置里的 "app" 是 macOS 专用的产物类型。
+      # createUpdaterArtifacts 只在 CI 打开：本地 make 构建没有私钥，打开会直接失败
       - name: Build bundles
         working-directory: desktop
+        shell: bash
         env:
           CI: true
           # Runner 里没有 FUSE 时，linuxdeploy / appimagetool 需要自解压才能跑
           APPIMAGE_EXTRACT_AND_RUN: 1
-        run: npx tauri build --bundles ${{ matrix.bundles }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: |
+          npx tauri build --bundles ${{ matrix.bundles }} \
+            --config '{"bundle":{"createUpdaterArtifacts":true}}'
 
       - name: Collect bundles
         shell: bash
         run: |
           mkdir -p out
+          # updater 的载荷是 tauri-bundler 打出的 zip / tar.gz，安装包本体（exe/AppImage）
+          # 只用于首次安装，两者都要随 Release 一起发
           find desktop/src-tauri/target/release/bundle -type f \
-            \( -name '*.exe' -o -name '*.deb' -o -name '*.AppImage' \) -exec cp {} out/ \;
+            \( -name '*.exe' -o -name '*.deb' -o -name '*.AppImage' -o -name '*.zip' -o -name '*.tar.gz' \) \
+            -exec cp {} out/ \;
+          find desktop/src-tauri/target/release/bundle -type f -name '*.sig' -exec cp {} out/ \;
           ls -lh out
           test -n "$(ls -A out)"
+
+      # 每个平台产出自己那份更新信息，publish 环节合并成 latest.json
+      - name: Write update fragment
+        shell: bash
+        env:
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          node -e '
+          const fs = require("fs");
+          const path = require("path");
+          const dir = "out";
+          const files = fs.readdirSync(dir);
+          const platform = process.env.PLATFORM;
+          const tag = process.env.RELEASE_TAG;
+          const repo = process.env.GITHUB_REPOSITORY;
+          // 平台键形如 linux-x86_64-appimage，最后一段是安装器类型；
+          // 后缀与 tauri-bundler 的 updater 产物命名保持一致
+          const suffix = {
+            nsis: "-setup.exe.zip",
+            appimage: ".AppImage.tar.gz",
+            app: ".app.tar.gz"
+          }[platform.split("-").pop()];
+          if (!suffix) throw new Error("unsupported platform: " + platform);
+          const file = files.find(
+            name => name.endsWith(suffix) && !name.endsWith(".sig")
+          );
+          const sig = file && files.find(name => name === file + ".sig");
+          if (!file || !sig) throw new Error("missing updater artifact for " + platform + ": " + files.join(", "));
+          const fragment = {};
+          fragment[platform] = {
+            signature: fs.readFileSync(path.join(dir, sig), "utf8").trim(),
+            url: "https://github.com/" + repo + "/releases/download/" + tag + "/" + file
+          };
+          fs.writeFileSync(path.join(dir, "update-" + platform + ".json"), JSON.stringify(fragment, null, 2));
+          '
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
@@ -136,6 +194,11 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
 
       - name: Download artifacts
         uses: actions/download-artifact@v8
@@ -168,6 +231,37 @@ jobs:
             echo "Install instructions are in the [README](https://github.com/${{ github.repository }}#install)."
           } > notes.md
           cat notes.md
+
+      # updater 的清单：版本、更新说明、各平台的下载地址和签名
+      - name: Compose updater manifest
+        run: |
+          node -e '
+          const fs = require("fs");
+          const path = require("path");
+          const dir = "dist";
+          const platforms = {};
+          for (const name of fs.readdirSync(dir)) {
+            if (!name.startsWith("update-") || !name.endsWith(".json")) continue;
+            Object.assign(platforms, JSON.parse(fs.readFileSync(path.join(dir, name), "utf8")));
+            fs.unlinkSync(path.join(dir, name));
+          }
+          if (Object.keys(platforms).length === 0) throw new Error("no updater fragments found");
+          const tag = process.env.RELEASE_TAG;
+          // 更新弹窗只展示要点，不要整篇发布说明
+          const bullets = fs
+            .readFileSync("notes.md", "utf8")
+            .split("\n")
+            .filter(line => line.startsWith("- "))
+            .join("\n");
+          const manifest = {
+            version: tag.replace(/^v/, ""),
+            notes: bullets || "Maintenance release.",
+            pub_date: new Date().toISOString(),
+            platforms
+          };
+          fs.writeFileSync(path.join(dir, "latest.json"), JSON.stringify(manifest, null, 2));
+          console.log(JSON.stringify(manifest, null, 2));
+          '
 
       - name: Publish release
         uses: softprops/action-gh-release@v3

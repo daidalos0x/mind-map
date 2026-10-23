@@ -350,6 +350,16 @@ export default {
     confirm: 'OK',
     cancel: 'Hủy'
   },
+  updater: {
+    title: 'Có bản cập nhật mới',
+    check: 'Kiểm tra cập nhật',
+    install: 'Cập nhật ngay',
+    later: 'Để sau',
+    upToDate: 'Bạn đang dùng phiên bản mới nhất',
+    failed: 'Không thể kiểm tra cập nhật, vui lòng thử lại sau',
+    installing:
+      'Đang tải và cài đặt. Ứng dụng sẽ tự khởi động lại khi hoàn tất.'
+  },
   toolbar: {
     undo: 'Hoàn tác',
     redo: 'Làm lại',

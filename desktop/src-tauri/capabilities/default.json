@@ -33,6 +33,10 @@
     "allow-save-thumbnail",
     "allow-ai-config-status",
     "allow-reveal-ai-config",
-    "allow-ai-complete"
+    "allow-ai-complete",
+    "allow-desktop-version",
+    "allow-check-update",
+    "allow-install-update",
+    "allow-update-progress"
   ]
 }

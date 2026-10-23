@@ -344,6 +344,15 @@ export default {
     confirm: '确定',
     cancel: '取消'
   },
+  updater: {
+    title: '发现新版本',
+    check: '检查更新',
+    install: '立即更新',
+    later: '稍后',
+    upToDate: '已是最新版本',
+    failed: '检查更新失败，请稍后再试',
+    installing: '正在下载并安装，完成后应用会自动重启'
+  },
   toolbar: {
     undo: '回退',
     redo: '前进',

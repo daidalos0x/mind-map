@@ -353,6 +353,15 @@ export default {
     confirm: 'OK',
     cancel: 'Cancel'
   },
+  updater: {
+    title: 'Update available',
+    check: 'Check for updates',
+    install: 'Update now',
+    later: 'Later',
+    upToDate: 'You are on the latest version',
+    failed: 'Could not check for updates, please try again later',
+    installing: 'Downloading and installing. The app will restart when done.'
+  },
   toolbar: {
     undo: 'Undo',
     redo: 'Redo',

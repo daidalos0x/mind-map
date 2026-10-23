@@ -46,5 +46,16 @@
         "role": "Editor"
       }
     ]
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/phaethix/mind-map/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ4ODcyRjU3RTAyNjI1OUQKUldTZEpTYmdWeStIU0IyNW5QenJlY2RacXA4WnA0Nlh1YXIzSDlBaEk3OUJGczhSWHd0eWRTRHkK",
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

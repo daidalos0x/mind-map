@@ -49,6 +49,20 @@ The Windows build is unsigned, so the first launch needs **More info → Run any
 make
 ```
 
+## Updates
+
+The desktop app checks for updates when it opens, and the home screen shows the current version next to a **Check for updates** button. Updates download in place and the app restarts when the install finishes.
+
+| Platform              | Updated in place |
+| --------------------- | ---------------- |
+| Windows (NSIS)        | yes              |
+| Linux (AppImage)      | yes              |
+| macOS (Apple Silicon) | yes              |
+
+The `.deb` package cannot update itself — the app says so and points you at the new release. macOS only publishes the update archive, so the first install still goes through `make`; later versions replace themselves in place. Builds released before the updater existed (0.1.2 and earlier) need one manual reinstall before in-app updates take over.
+
+Release builds sign their updater artifacts with the `TAURI_SIGNING_PRIVATE_KEY` secret (optionally `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`). The matching public key lives in `desktop/src-tauri/tauri.conf.json`; without the secret the release job fails while composing `latest.json`.
+
 ## Build from source
 
 | Item      | Detail                                                   |

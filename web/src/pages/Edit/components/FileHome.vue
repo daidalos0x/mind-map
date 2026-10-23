@@ -3,6 +3,15 @@
     <header class="homeHeader">
       <div class="brand">Mind</div>
       <div class="actions">
+        <span v-if="version" class="appVersion">v{{ version }}</span>
+        <button
+          v-if="isDesktop()"
+          type="button"
+          class="secondary"
+          @click="$bus.$emit('checkUpdate')"
+        >
+          {{ $t('updater.check') }}
+        </button>
         <button type="button" class="secondary" @click="pick">
           {{ $t('home.open') }}
         </button>
@@ -96,11 +105,13 @@ import {
   blankDocument,
   browserFileLibrary
 } from '@/utils/fileLibrary'
+import { isDesktop, invoke } from '@/utils/desktop'
 
 export default {
   data() {
     return {
       files: [],
+      version: '',
       canvasVisible: false,
       canvasList: [],
       canvasIndex: 0,
@@ -114,14 +125,19 @@ export default {
   },
   created() {
     this.refresh()
+    if (isDesktop()) {
+      this.invoke('desktop_version')
+        .then(version => {
+          this.version = version
+        })
+        .catch(error => {
+          console.log(error)
+        })
+    }
   },
   methods: {
-    isDesktop() {
-      return typeof window.__TAURI_INTERNALS__ !== 'undefined'
-    },
-    invoke(command, args) {
-      return window.__TAURI_INTERNALS__.invoke(command, args || {})
-    },
+    isDesktop,
+    invoke,
     library() {
       return browserFileLibrary()
     },
@@ -396,8 +412,14 @@ export default {
 
 .actions {
   display: flex;
+  align-items: center;
   gap: 10px;
   padding-bottom: 4px;
+}
+
+.appVersion {
+  color: #8e8e93;
+  font-size: 12px;
 }
 
 .fileInput {

@@ -11,6 +11,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu};
 use tauri::{AppHandle, Manager, State};
+use tauri_plugin_updater::UpdaterExt;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -1222,6 +1223,114 @@ async fn ai_complete(app: AppHandle, messages: Vec<ChatMessage>) -> Result<Strin
     Ok(content)
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct UpdateInfo {
+    version: String,
+    notes: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct UpdateStatus {
+    current_version: String,
+    update: Option<UpdateInfo>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct UpdateProgress {
+    downloaded: u64,
+    // 服务器没给 Content-Length 时为 None，前端据此显示不确定进度
+    total: Option<u64>,
+}
+
+fn empty_progress() -> UpdateProgress {
+    UpdateProgress {
+        downloaded: 0,
+        total: None,
+    }
+}
+
+// 下载进度放在静态变量里：前端在安装过程中轮询，避免依赖事件通道
+static UPDATE_PROGRESS: Mutex<UpdateProgress> = Mutex::new(UpdateProgress {
+    downloaded: 0,
+    total: None,
+});
+
+fn update_error(error: tauri_plugin_updater::Error) -> String {
+    use tauri_plugin_updater::Error;
+    match error {
+        Error::TargetNotFound(target) => format!("当前平台没有可用的更新包（{target}）"),
+        Error::TargetsNotFound(targets) => {
+            format!("当前平台没有可用的更新包（{}）", targets.join(" / "))
+        }
+        other => format!("更新失败：{other}"),
+    }
+}
+
+#[tauri::command]
+fn desktop_version(app: AppHandle) -> String {
+    app.package_info().version.to_string()
+}
+
+#[tauri::command]
+async fn check_update(app: AppHandle) -> Result<UpdateStatus, String> {
+    // deb 安装的客户端拿不到 AppImage 更新包，提前给出明确提示
+    #[cfg(target_os = "linux")]
+    if std::env::var_os("APPIMAGE").is_none() {
+        return Err("当前安装方式（deb）不支持自动更新，请到 Releases 页面下载新版本".to_string());
+    }
+    let current_version = app.package_info().version.to_string();
+    let updater = app.updater().map_err(|error| error.to_string())?;
+    let update = updater.check().await.map_err(update_error)?;
+    Ok(UpdateStatus {
+        current_version,
+        update: update.map(|update| UpdateInfo {
+            version: update.version.clone(),
+            notes: update.body.clone().unwrap_or_default(),
+        }),
+    })
+}
+
+#[tauri::command]
+async fn install_update(app: AppHandle, version: String) -> Result<(), String> {
+    let updater = app.updater().map_err(|error| error.to_string())?;
+    let Some(update) = updater.check().await.map_err(update_error)? else {
+        return Err("没有可用的更新".to_string());
+    };
+    // 弹窗展示的版本如果已经不是最新的，先让用户重新确认，别装成另一个版本
+    if update.version != version {
+        return Err("版本已变化，请重新检查更新".to_string());
+    }
+    if let Ok(mut progress) = UPDATE_PROGRESS.lock() {
+        *progress = empty_progress();
+    }
+    update
+        .download_and_install(
+            |chunk_length, content_length| {
+                if let Ok(mut progress) = UPDATE_PROGRESS.lock() {
+                    progress.downloaded += chunk_length as u64;
+                    if content_length.is_some() {
+                        progress.total = content_length;
+                    }
+                }
+            },
+            || {},
+        )
+        .await
+        .map_err(update_error)?;
+    app.restart();
+}
+
+#[tauri::command]
+fn update_progress() -> UpdateProgress {
+    UPDATE_PROGRESS
+        .lock()
+        .map(|progress| progress.clone())
+        .unwrap_or_else(|_| empty_progress())
+}
+
 fn dispatch_menu(app: &AppHandle, action: &str) {
     if let Some(window) = app.get_webview_window("main") {
         let script = format!("window.__desktopOnMenu && window.__desktopOnMenu({action:?})");
@@ -1256,6 +1365,7 @@ fn handle_run_event(_app: &AppHandle, _event: tauri::RunEvent) {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .menu(|app| build_menu(app))
         .on_menu_event(|app, event| {
             dispatch_menu(app, event.id().as_ref());
@@ -1296,7 +1406,11 @@ pub fn run() {
             save_thumbnail,
             ai_config_status,
             reveal_ai_config,
-            ai_complete
+            ai_complete,
+            desktop_version,
+            check_update,
+            install_update,
+            update_progress
         ])
         .build(tauri::generate_context!())
         .expect("failed to start Mind")

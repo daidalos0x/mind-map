@@ -20,6 +20,10 @@ fn main() {
             "ai_config_status",
             "reveal_ai_config",
             "ai_complete",
+            "desktop_version",
+            "check_update",
+            "install_update",
+            "update_progress",
         ]),
     ))
     .expect("failed to run tauri build");

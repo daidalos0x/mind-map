@@ -345,6 +345,15 @@ export default {
     confirm: '確定',
     cancel: '取消'
   },
+  updater: {
+    title: '發現新版本',
+    check: '檢查更新',
+    install: '立即更新',
+    later: '稍後',
+    upToDate: '已是最新版本',
+    failed: '檢查更新失敗，請稍後再試',
+    installing: '正在下載並安裝，完成後應用程式會自動重新啟動'
+  },
   toolbar: {
     undo: '復原',
     redo: '重做',
