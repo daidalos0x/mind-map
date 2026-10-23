@@ -1,0 +1,12 @@
+# 上游 SimpleMindMap 内核：保持原样，避免以后同步上游时全是格式冲突
+simple-mind-map
+
+node_modules
+dist
+desktop-dist
+desktop/src-tauri/target
+
+# 历史设计文档、锁文件与 JSON 不参与格式化
+docs
+*.json
+pnpm-lock.yaml

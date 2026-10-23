@@ -1,0 +1,13 @@
+{
+  "name": "mind-map-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Formatting and tooling for the Mind repository",
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10"
+  }
+}
