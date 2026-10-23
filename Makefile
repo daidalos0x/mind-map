@@ -9,11 +9,14 @@ LSREGISTER := /System/Library/Frameworks/CoreServices.framework/Frameworks/Launc
 # bootstrap installs node and rust into the home directory; make sure later steps see them
 export PATH := $(HOME)/.local/bin:$(HOME)/.cargo/bin:$(PATH)
 
-# On Windows the npm that ships with node has no extension and is a bash script
-# (shebang: #!/usr/bin/env bash). Some POSIX layers cannot exec it directly and
-# fail with "/cygdrive/.../npm: No such file or directory", which is execve
-# failing on the interpreter rather than a missing file. Handing it to sh skips
-# the shebang lookup entirely. macOS and Linux keep using npm as usual.
+# Windows 上 node 自带的 npm 没有扩展名，是个 bash 脚本（shebang: #!/usr/bin/env bash）。
+# 某些 POSIX 层（比如 cygwin）无法直接 exec 它，会报
+# "/cygdrive/.../npm: No such file or directory" —— 这是 execve 找不到解释器，
+# 不是文件不存在。交给 sh 去读文件执行就跳过了 shebang 查找。
+# macOS / Linux 没有这个问题，仍直接调用 npm。
+#
+# 局限：这里只覆盖官方安装包带的那个无扩展名脚本。nvm-windows、scoop 这类
+# 只提供 npm.cmd 的环境不在覆盖范围内。
 ifeq ($(OS),Windows_NT)
 NPM = sh "$$(command -v npm)"
 else
