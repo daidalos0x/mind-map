@@ -73,6 +73,7 @@
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue'
 import MindMap from 'simple-mind-map'
 import MiniMap from 'simple-mind-map/src/plugins/MiniMap.js'
 import Watermark from 'simple-mind-map/src/plugins/Watermark.js'
@@ -98,14 +99,16 @@ import NodeBase64ImageStorage from 'simple-mind-map/src/plugins/NodeBase64ImageS
 import Themes from 'simple-mind-map-plugin-themes'
 // 协同编辑插件
 // import Cooperate from 'simple-mind-map/src/plugins/Cooperate.js'
-import OutlineSidebar from './OutlineSidebar.vue'
-import Style from './Style.vue'
-import BaseStyle from './BaseStyle.vue'
-import Theme from './Theme.vue'
-import Structure from './Structure.vue'
+const OutlineSidebar = defineAsyncComponent(
+  () => import('./OutlineSidebar.vue')
+)
+const Style = defineAsyncComponent(() => import('./Style.vue'))
+const BaseStyle = defineAsyncComponent(() => import('./BaseStyle.vue'))
+const Theme = defineAsyncComponent(() => import('./Theme.vue'))
+const Structure = defineAsyncComponent(() => import('./Structure.vue'))
 import Count from './Count.vue'
 import NavigatorToolbar from './NavigatorToolbar.vue'
-import ShortcutKey from './ShortcutKey.vue'
+const ShortcutKey = defineAsyncComponent(() => import('./ShortcutKey.vue'))
 import Contextmenu from './Contextmenu.vue'
 import RichTextToolbar from './RichTextToolbar.vue'
 import NodeNoteContentShow from './NodeNoteContentShow.vue'
@@ -117,24 +120,36 @@ import SidebarTrigger from './SidebarTrigger.vue'
 import { mapState } from 'vuex'
 import icon from '@/config/icon'
 import Search from './Search.vue'
-import NodeIconSidebar from './NodeIconSidebar.vue'
-import NodeIconToolbar from './NodeIconToolbar.vue'
-import OutlineEdit from './OutlineEdit.vue'
+const NodeIconSidebar = defineAsyncComponent(
+  () => import('./NodeIconSidebar.vue')
+)
+const NodeIconToolbar = defineAsyncComponent(
+  () => import('./NodeIconToolbar.vue')
+)
+const OutlineEdit = defineAsyncComponent(() => import('./OutlineEdit.vue'))
 import { showLoading, hideLoading } from '@/utils/loading'
 import handleClipboardText from '@/utils/handleClipboardText'
 import { getParentWithClass } from '@/utils'
 import Scrollbar from './Scrollbar.vue'
 import exampleData from 'simple-mind-map/example/exampleData'
-import FormulaSidebar from './FormulaSidebar.vue'
-import NodeOuterFrame from './NodeOuterFrame.vue'
-import NodeTagStyle from './NodeTagStyle.vue'
-import Setting from './Setting.vue'
-import AssociativeLineStyle from './AssociativeLineStyle.vue'
+const FormulaSidebar = defineAsyncComponent(
+  () => import('./FormulaSidebar.vue')
+)
+const NodeOuterFrame = defineAsyncComponent(
+  () => import('./NodeOuterFrame.vue')
+)
+const NodeTagStyle = defineAsyncComponent(() => import('./NodeTagStyle.vue'))
+const Setting = defineAsyncComponent(() => import('./Setting.vue'))
+const AssociativeLineStyle = defineAsyncComponent(
+  () => import('./AssociativeLineStyle.vue')
+)
 import NodeImgPlacementToolbar from './NodeImgPlacementToolbar.vue'
-import NodeNoteSidebar from './NodeNoteSidebar.vue'
-import AiCreate from './AiCreate.vue'
-import AiChat from './AiChat.vue'
-import MermaidEditor from './MermaidEditor.vue'
+const NodeNoteSidebar = defineAsyncComponent(
+  () => import('./NodeNoteSidebar.vue')
+)
+const AiCreate = defineAsyncComponent(() => import('./AiCreate.vue'))
+const AiChat = defineAsyncComponent(() => import('./AiChat.vue'))
+const MermaidEditor = defineAsyncComponent(() => import('./MermaidEditor.vue'))
 import MermaidOfficialView from './MermaidOfficialView.vue'
 import { globals } from '@/utils/global'
 import fallbackImage from '@/assets/img/图片加载失败.svg'
