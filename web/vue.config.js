@@ -57,6 +57,48 @@ class DynamicPublicPathPlugin {
   }
 }
 
+/**
+ * 生产构建里样式模块由 mini-css-extract 生成，默认只写 `export {}`，没有默认导出；
+ * 而 vue-loader 15（每个 SFC 的 style 块）和 babel-plugin-component（element-ui 的
+ * 按需样式）都用默认导入，webpack 5 因此逐条报
+ * "export 'default' (imported as 'style0') was not found"（本项目 89 条）。
+ *
+ * defaultExport 是这个插件自己的选项，打开后它输出 `export {};export default {};`，
+ * 导入方拿到空对象，警告从根上消失，样式产物与运行行为不变。
+ * 选项必须在 loader 链装配完成后写，所以这里直接改 compiler.options。
+ */
+class CssDefaultExportPlugin {
+  apply(compiler) {
+    const patch = rule => {
+      if (!rule) {
+        return
+      }
+      const uses = []
+      if (Array.isArray(rule.use)) {
+        uses.push(...rule.use)
+      } else if (rule.use) {
+        uses.push(rule.use)
+      }
+      uses.forEach(use => {
+        if (
+          use &&
+          typeof use.loader === 'string' &&
+          use.loader.includes('mini-css-extract-plugin')
+        ) {
+          use.options = { ...(use.options || {}), defaultExport: true }
+        }
+      })
+      if (Array.isArray(rule.oneOf)) {
+        rule.oneOf.forEach(patch)
+      }
+      if (Array.isArray(rule.rules)) {
+        rule.rules.forEach(patch)
+      }
+    }
+    ;(compiler.options.module.rules || []).forEach(patch)
+  }
+}
+
 module.exports = {
   publicPath: isDev ? '' : './dist',
   outputDir: '../dist',
@@ -76,6 +118,10 @@ module.exports = {
         .use(DynamicPublicPathPlugin, [
           { externalPublicPath: 'window.externalPublicPath' }
         ])
+    }
+    // 生产构建里让样式模块带上默认导出，见 CssDefaultExportPlugin
+    if (!isDev) {
+      config.plugin('cssDefaultExport').use(CssDefaultExportPlugin)
     }
     // 给插入html页面内的js和css添加hash参数
     if (!isLibrary) {
