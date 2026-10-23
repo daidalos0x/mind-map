@@ -1035,6 +1035,14 @@ fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
         true,
         &[
             &PredefinedMenuItem::about(app, Some("About Mind"), None)?,
+            // macOS 的惯例：About 下面是检查更新
+            &MenuItem::with_id(
+                app,
+                "check-update",
+                "Check for Updates…",
+                true,
+                None::<&str>,
+            )?,
             &PredefinedMenuItem::separator(app)?,
             &PredefinedMenuItem::hide(app, Some("Hide Mind"))?,
             &PredefinedMenuItem::hide_others(app, Some("Hide Others"))?,
@@ -1261,6 +1269,8 @@ static UPDATE_PROGRESS: Mutex<UpdateProgress> = Mutex::new(UpdateProgress {
 fn update_error(error: tauri_plugin_updater::Error) -> String {
     use tauri_plugin_updater::Error;
     match error {
+        // 还没发过带 latest.json 的版本时会出现这个错误，别把英文原文抛给用户
+        Error::ReleaseNotFound => "当前发布渠道还没有提供更新包".to_string(),
         Error::TargetNotFound(target) => format!("当前平台没有可用的更新包（{target}）"),
         Error::TargetsNotFound(targets) => {
             format!("当前平台没有可用的更新包（{}）", targets.join(" / "))

@@ -162,6 +162,12 @@
       window.__desktopShow = showDesktopDocument
       window.__desktopOnMenu = async action => {
         try {
+          if (action === 'check-update') {
+            if (window.$bus) {
+              window.$bus.$emit('checkUpdate')
+            }
+            return
+          }
           if (action === 'save') {
             await invokeDesktop('save_mind_map', {
               data: window.__desktopSession.mindMapData
