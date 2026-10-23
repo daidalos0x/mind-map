@@ -88,10 +88,8 @@ export default {
 
     updatePos() {
       if (!this.imgNode) return
-      const {
-        width,
-        height
-      } = this.$refs.nodeImgPlacementToolbar.getBoundingClientRect()
+      const { width, height } =
+        this.$refs.nodeImgPlacementToolbar.getBoundingClientRect()
       const { width: imgWidth, x, y } = this.imgNode.rbox()
       this.style.left = x + imgWidth / 2 - width / 2 + 'px'
       this.style.top = y - height - 5 + 'px'

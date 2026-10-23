@@ -41,7 +41,7 @@
             <!-- 实现虚线 -->
             <el-select
               size="mini"
-              style="width: 80px;margin-left: 4px;"
+              style="width: 80px; margin-left: 4px"
               v-model="styleConfig.strokeDasharray"
               placeholder=""
               @change="
@@ -67,8 +67,8 @@
                       styleConfig.strokeDasharray === item.value
                         ? '#409eff'
                         : isDark
-                        ? '#fff'
-                        : '#000'
+                          ? '#fff'
+                          : '#000'
                     "
                     :stroke-dasharray="item.value"
                   ></line>
@@ -140,7 +140,7 @@
           </div>
         </div>
       </div>
-      <div class="panelHeader" style="margin-top: 12px;">
+      <div class="panelHeader" style="margin-top: 12px">
         <span class="name">{{ $t('nodeOuterFrame.outerFrameText') }}</span>
         <span class="deleteBtn" @click="deleteOuterFrameText">
           {{ $t('nodeOuterFrame.deleteOuterFrameText') }}
@@ -587,7 +587,9 @@ export default {
 
     .name {
       font-size: 16px;
-      font-family: PingFangSC-Medium, PingFang SC;
+      font-family:
+        PingFangSC-Medium,
+        PingFang SC;
       font-weight: 500;
       color: rgba(26, 26, 26, 0.9);
     }

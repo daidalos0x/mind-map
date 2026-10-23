@@ -101,7 +101,8 @@ export default {
 
     // 更新位置
     updateNoteContentPosition(left, top) {
-      const { width, height } = this.$refs.noteContentViewer.getBoundingClientRect()
+      const { width, height } =
+        this.$refs.noteContentViewer.getBoundingClientRect()
       const { right, bottom } = this.mindMap.elRect
       this.left = left + width > right ? right - width : left
       this.top = top + height > bottom ? bottom - height : top

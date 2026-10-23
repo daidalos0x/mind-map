@@ -1,5 +1,9 @@
 import { getData, storeData } from '@/api'
-import { forMermaidRender, mermaidDiagramSource, stringifyMermaidMindmap } from '@/utils/mermaidMindmap'
+import {
+  forMermaidRender,
+  mermaidDiagramSource,
+  stringifyMermaidMindmap
+} from '@/utils/mermaidMindmap'
 
 /**
  * mermaid 压缩前约 3.2MB，是编辑器最大的单点依赖，但只有开启 Mermaid 样式时才会用到。
@@ -89,12 +93,17 @@ export const isMermaidStyleOn = () => {
   }
   const root = data.root
   return Boolean(
-    root && root.data && root.data.shape === 'circle' && root.data.customLeft != null
+    root &&
+    root.data &&
+    root.data.shape === 'circle' &&
+    root.data.customLeft != null
   )
 }
 
 export const stripMermaidStyle = root => {
-  const tree = JSON.parse(JSON.stringify(root || { data: { text: '' }, children: [] }))
+  const tree = JSON.parse(
+    JSON.stringify(root || { data: { text: '' }, children: [] })
+  )
   const walk = node => {
     STYLE_KEYS.forEach(key => {
       delete node.data[key]
@@ -116,7 +125,9 @@ export const mermaidSourceFor = mindMap => {
 let renderSerial = 0
 
 const translateOf = value => {
-  const match = /translate\(\s*([-\d.eE+]+)[,\s]+([-\d.eE+]+)\s*\)/.exec(value || '')
+  const match = /translate\(\s*([-\d.eE+]+)[,\s]+([-\d.eE+]+)\s*\)/.exec(
+    value || ''
+  )
   return match ? { x: Number(match[1]), y: Number(match[2]) } : { x: 0, y: 0 }
 }
 
@@ -188,8 +199,10 @@ const separateMindmapOverlaps = svg => {
         const ay = a.y + a.dy - gap
         const bx = b.x + b.dx - gap
         const by = b.y + b.dy - gap
-        const overlapX = Math.min(ax + a.w + gap * 2, bx + b.w + gap * 2) - Math.max(ax, bx)
-        const overlapY = Math.min(ay + a.h + gap * 2, by + b.h + gap * 2) - Math.max(ay, by)
+        const overlapX =
+          Math.min(ax + a.w + gap * 2, bx + b.w + gap * 2) - Math.max(ax, bx)
+        const overlapY =
+          Math.min(ay + a.h + gap * 2, by + b.h + gap * 2) - Math.max(ay, by)
         if (overlapX <= 0 || overlapY <= 0) {
           continue
         }
@@ -215,7 +228,11 @@ const separateMindmapOverlaps = svg => {
   nodes.forEach(node => {
     node.el.setAttribute(
       'transform',
-      'translate(' + (node.origin.x + node.dx) + ', ' + (node.origin.y + node.dy) + ')'
+      'translate(' +
+        (node.origin.x + node.dx) +
+        ', ' +
+        (node.origin.y + node.dy) +
+        ')'
     )
   })
   edges.forEach(edge => {
@@ -238,7 +255,18 @@ const separateMindmapOverlaps = svg => {
     }
     edge.el.setAttribute(
       'd',
-      'M ' + movedStart.x + ',' + movedStart.y + ' L ' + mid.x + ',' + mid.y + ' L ' + movedEnd.x + ',' + movedEnd.y
+      'M ' +
+        movedStart.x +
+        ',' +
+        movedStart.y +
+        ' L ' +
+        mid.x +
+        ',' +
+        mid.y +
+        ' L ' +
+        movedEnd.x +
+        ',' +
+        movedEnd.y
     )
   })
   const minX = Math.min(...nodes.map(node => node.x + node.dx))
@@ -248,7 +276,10 @@ const separateMindmapOverlaps = svg => {
   const pad = 20
   const width = maxX - minX + pad * 2
   const height = maxY - minY + pad * 2
-  svg.setAttribute('viewBox', minX - pad + ' ' + (minY - pad) + ' ' + width + ' ' + height)
+  svg.setAttribute(
+    'viewBox',
+    minX - pad + ' ' + (minY - pad) + ' ' + width + ' ' + height
+  )
   svg.style.maxWidth = width + 'px'
 }
 
@@ -257,7 +288,8 @@ export const renderMermaidSvg = async (source, options = {}) => {
   const mermaid = await ensureOfficialMermaid(dark)
   const id = 'mind-official-' + ++renderSerial
   const host = document.createElement('div')
-  host.style.cssText = 'position:fixed;left:0;top:0;opacity:0;pointer-events:none;z-index:-1;'
+  host.style.cssText =
+    'position:fixed;left:0;top:0;opacity:0;pointer-events:none;z-index:-1;'
   document.body.appendChild(host)
   try {
     const rendered = await mermaid.render(id, forMermaidRender(source))

@@ -550,7 +550,7 @@ export const sidebarTriggerList = [
     name: '设置',
     value: 'setting',
     icon: 'iconshezhi'
-  },
+  }
   // {
   //   name: '快捷键',
   //   value: 'shortcutKey',
@@ -619,7 +619,7 @@ export const downTypeList = [
     type: 'json',
     icon: 'iconjson',
     desc: '流行的数据交换格式，可用于再次导入'
-  },
+  }
 ]
 
 // 编号类型列表
@@ -770,11 +770,7 @@ export const layoutGroupList = [
   },
   {
     name: '时间轴',
-    list: [
-      'timeline',
-      'timeline2',
-      'verticalTimeline'
-    ]
+    list: ['timeline', 'timeline2', 'verticalTimeline']
   },
   {
     name: '鱼骨图',

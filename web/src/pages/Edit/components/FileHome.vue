@@ -45,8 +45,12 @@
               <span></span><span></span><span></span>
             </button>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item command="rename">{{ $t('home.rename') }}</el-dropdown-item>
-              <el-dropdown-item command="delete">{{ $t('home.delete') }}</el-dropdown-item>
+              <el-dropdown-item command="rename">{{
+                $t('home.rename')
+              }}</el-dropdown-item>
+              <el-dropdown-item command="delete">{{
+                $t('home.delete')
+              }}</el-dropdown-item>
             </el-dropdown-menu>
           </el-dropdown>
         </div>
@@ -63,12 +67,18 @@
       append-to-body
     >
       <el-radio-group v-model="canvasIndex">
-        <el-radio v-for="(item, index) in canvasList" :key="index" :label="index">
+        <el-radio
+          v-for="(item, index) in canvasList"
+          :key="index"
+          :label="index"
+        >
           {{ item.title || index + 1 }}
         </el-radio>
       </el-radio-group>
       <span slot="footer">
-        <el-button type="primary" @click="confirmCanvas">{{ $t('home.confirm') }}</el-button>
+        <el-button type="primary" @click="confirmCanvas">{{
+          $t('home.confirm')
+        }}</el-button>
       </span>
     </el-dialog>
   </div>
@@ -77,7 +87,11 @@
 <script>
 import xmind from 'simple-mind-map/src/parse/xmind.js'
 import markdown from 'simple-mind-map/src/parse/markdown.js'
-import { asDocument, blankDocument, browserFileLibrary } from '@/utils/fileLibrary'
+import {
+  asDocument,
+  blankDocument,
+  browserFileLibrary
+} from '@/utils/fileLibrary'
 
 export default {
   data() {
@@ -243,11 +257,15 @@ export default {
     async onCommand(command, file) {
       if (command === 'rename') {
         try {
-          const { value } = await this.$prompt(this.$t('home.name'), this.$t('home.rename'), {
-            inputValue: file.name,
-            confirmButtonText: this.$t('home.confirm'),
-            cancelButtonText: this.$t('home.cancel')
-          })
+          const { value } = await this.$prompt(
+            this.$t('home.name'),
+            this.$t('home.rename'),
+            {
+              inputValue: file.name,
+              confirmButtonText: this.$t('home.confirm'),
+              cancelButtonText: this.$t('home.cancel')
+            }
+          )
           if (this.isDesktop()) {
             await this.invoke('rename_file', { path: file.id, name: value })
           } else {
@@ -264,11 +282,15 @@ export default {
       }
       if (command === 'delete') {
         try {
-          await this.$confirm(this.$t('home.deleteTip'), this.$t('home.delete'), {
-            type: 'warning',
-            confirmButtonText: this.$t('home.confirm'),
-            cancelButtonText: this.$t('home.cancel')
-          })
+          await this.$confirm(
+            this.$t('home.deleteTip'),
+            this.$t('home.delete'),
+            {
+              type: 'warning',
+              confirmButtonText: this.$t('home.confirm'),
+              cancelButtonText: this.$t('home.cancel')
+            }
+          )
         } catch (error) {
           return
         }
@@ -295,7 +317,9 @@ export default {
   min-height: 100vh;
   background: #f3f4f6;
   color: #1c1c1e;
-  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue',
+    sans-serif;
 
   &.isDark {
     background: #161618;
@@ -415,7 +439,9 @@ button {
   border-radius: 14px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
 
   &:hover {
     transform: translateY(-2px);

@@ -44,7 +44,7 @@ body.isDark #app {
   }
 }
 
-.el-dialog{
+.el-dialog {
   border-radius: 10px;
 }
 </style>

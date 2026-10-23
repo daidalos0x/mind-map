@@ -40,7 +40,12 @@
         >
           <div class="toolbarBtn" @click="saveCurrentFile">
             <span class="icon saveIcon">
-              <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+              <svg
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                aria-hidden="true"
+              >
                 <path
                   d="M3.2 2.2h7.4l3 3v8.6a1 1 0 0 1-1 1H3.2a1 1 0 0 1-1-1V3.2a1 1 0 0 1 1-1z"
                   fill="none"
@@ -75,10 +80,36 @@
         <div class="toolbarBtn" @click="$bus.$emit('showMermaid')">
           <span class="icon mermaidIcon">
             <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
-              <circle cx="3" cy="8" r="2" fill="none" stroke="currentColor" stroke-width="1.4" />
-              <circle cx="12" cy="4" r="1.7" fill="none" stroke="currentColor" stroke-width="1.4" />
-              <circle cx="12" cy="12" r="1.7" fill="none" stroke="currentColor" stroke-width="1.4" />
-              <path d="M5 7.2 L10.2 4.6 M5 8.8 L10.2 11.4" fill="none" stroke="currentColor" stroke-width="1.4" />
+              <circle
+                cx="3"
+                cy="8"
+                r="2"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.4"
+              />
+              <circle
+                cx="12"
+                cy="4"
+                r="1.7"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.4"
+              />
+              <circle
+                cx="12"
+                cy="12"
+                r="1.7"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.4"
+              />
+              <path
+                d="M5 7.2 L10.2 4.6 M5 8.8 L10.2 11.4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.4"
+              />
             </svg>
           </span>
           <span class="text">{{ $t('toolbar.mermaid') }}</span>
@@ -693,7 +724,8 @@ export default {
     pointer-events: auto;
     font-size: 12px;
     // 用系统字体栈：-apple-system 在 macOS 上会走 SF Pro（小字号更清晰），中文自动回落到苹方
-    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Arial,
+    font-family:
+      -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Arial,
       sans-serif;
     font-weight: 400;
     color: rgba(26, 26, 26, 0.9);

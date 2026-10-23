@@ -13,7 +13,10 @@
         id="mindMapContainer"
         ref="mindMapContainer"
       ></div>
-      <MermaidOfficialView v-if="mindMap" :mindMap="mindMap"></MermaidOfficialView>
+      <MermaidOfficialView
+        v-if="mindMap"
+        :mindMap="mindMap"
+      ></MermaidOfficialView>
     </div>
     <Count :mindMap="mindMap" v-if="!isZenMode"></Count>
     <Navigator v-if="mindMap" :mindMap="mindMap"></Navigator>

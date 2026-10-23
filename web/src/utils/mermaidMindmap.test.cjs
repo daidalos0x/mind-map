@@ -44,7 +44,10 @@ const exported = api.stringifyMermaidMindmap({
 assert.ok(exported.startsWith('mindmap\n'))
 assert.ok(exported.includes('((根节点))'))
 assert.ok(!exported.includes('<p>'))
-assert.deepStrictEqual(api.parseMermaidMindmap(exported).children[0].data.text, '二级节点')
+assert.deepStrictEqual(
+  api.parseMermaidMindmap(exported).children[0].data.text,
+  '二级节点'
+)
 
 const pkm = api.parseMermaidMindmap(`mindmap
   root((个人知识管理<br/>PKM 体系))
@@ -70,17 +73,35 @@ assert.strictEqual(
   'https://example.com/chat/completions'
 )
 
-assert.throws(() => api.parseMermaidMindmap('flowchart TD\n  A-->B'), error => error.code === 'missing')
-assert.throws(() => api.parseMermaidMindmap('mindmap\n'), error => error.code === 'empty')
-assert.strictEqual(api.extractMermaidMindmap('```mermaid\nmindmap\n  主题\n```').startsWith('mindmap'), true)
+assert.throws(
+  () => api.parseMermaidMindmap('flowchart TD\n  A-->B'),
+  error => error.code === 'missing'
+)
+assert.throws(
+  () => api.parseMermaidMindmap('mindmap\n'),
+  error => error.code === 'empty'
+)
 assert.strictEqual(
-  api.forMermaidRender('mindmap\n  root\n    1. 信息输入\n      灵感\n').includes('1\\. 信息输入'),
+  api
+    .extractMermaidMindmap('```mermaid\nmindmap\n  主题\n```')
+    .startsWith('mindmap'),
   true
 )
 assert.strictEqual(
-  api.forMermaidRender('mindmap\n  root((主题))\n    (1. 信息输入<br/>Input)\n').includes('(1\\. 信息输入<br/>Input)'),
+  api
+    .forMermaidRender('mindmap\n  root\n    1. 信息输入\n      灵感\n')
+    .includes('1\\. 信息输入'),
   true
 )
-assert.throws(() => api.extractMermaidMindmap('hello'), error => error.code === 'noMindmap')
+assert.strictEqual(
+  api
+    .forMermaidRender('mindmap\n  root((主题))\n    (1. 信息输入<br/>Input)\n')
+    .includes('(1\\. 信息输入<br/>Input)'),
+  true
+)
+assert.throws(
+  () => api.extractMermaidMindmap('hello'),
+  error => error.code === 'noMindmap'
+)
 
 console.log('mermaid mindmap ok')

@@ -64,9 +64,8 @@ export default {
     // 向插件传递滚动条宽高数据
     setScrollBarWrapSize() {
       if (!this.mindMap.scrollbar) return
-      const {
-        width
-      } = this.$refs.horizontalScrollbarRef.getBoundingClientRect()
+      const { width } =
+        this.$refs.horizontalScrollbarRef.getBoundingClientRect()
       const { height } = this.$refs.verticalScrollbarRef.getBoundingClientRect()
       this.mindMap.scrollbar.setScrollBarWrapSize(width, height)
     },

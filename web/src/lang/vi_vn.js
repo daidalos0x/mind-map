@@ -225,7 +225,8 @@ export default {
     saved: 'Đã lưu trên trình duyệt này',
     needDesktopKey: 'Hãy điền Base URL, mô hình và API key vào tệp cấu hình',
     needBrowserKey: 'Hãy điền Base URL, mô hình và API key trước',
-    corsError: 'Điểm cuối này không cho trình duyệt gọi trực tiếp. Ứng dụng Mac không có giới hạn này.',
+    corsError:
+      'Điểm cuối này không cho trình duyệt gọi trực tiếp. Ứng dụng Mac không có giới hạn này.',
     failed: 'Tạo thất bại',
     emptyPrompt: 'Hãy viết một đoạn mô tả trước',
     missing: 'Nội dung cần bắt đầu bằng mindmap',
@@ -424,10 +425,8 @@ export default {
     downGithub: 'Tải xuống Github'
   },
   mouseAction: {
-    tip1:
-      'Hiện tại: Nhấp chuột trái để kéo canvas, nhấp chuột phải để chọn nút theo hộp',
-    tip2:
-      'Hiện tại: Nhấp chuột trái để chọn nút theo hộp, nhấp chuột phải để kéo canvas'
+    tip1: 'Hiện tại: Nhấp chuột trái để kéo canvas, nhấp chuột phải để chọn nút theo hộp',
+    tip2: 'Hiện tại: Nhấp chuột trái để chọn nút theo hộp, nhấp chuột phải để kéo canvas'
   },
   search: {
     searchPlaceholder: 'Nhập nội dung tìm kiếm và nhấn Enter',

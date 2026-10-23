@@ -26,6 +26,10 @@ if (!md4Supported) {
   const originalCreateHash = crypto.createHash
   crypto.createHash = function createHash(algorithm, options) {
     const name = String(algorithm).toLowerCase()
-    return originalCreateHash.call(this, name === 'md4' ? 'sha256' : algorithm, options)
+    return originalCreateHash.call(
+      this,
+      name === 'md4' ? 'sha256' : algorithm,
+      options
+    )
   }
 }

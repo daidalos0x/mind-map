@@ -473,7 +473,8 @@ export default {
     initLoacalConfig() {
       this.enableNodeRichText = this.localConfig.openNodeRichText
       this.mousewheelAction = this.localConfig.mousewheelAction
-      this.mousewheelZoomActionReverse = this.localConfig.mousewheelZoomActionReverse
+      this.mousewheelZoomActionReverse =
+        this.localConfig.mousewheelZoomActionReverse
       Object.keys(this.localConfigs).forEach(key => {
         this.localConfigs[key] = this.localConfig[key]
       })
@@ -518,9 +519,8 @@ export default {
         this.mindMap.watermark.updateWatermark({
           ...config
         })
-        this.configData.watermarkConfig = this.mindMap.getConfig(
-          'watermarkConfig'
-        )
+        this.configData.watermarkConfig =
+          this.mindMap.getConfig('watermarkConfig')
         storeConfig(this.configData)
       }, 300)
     },
@@ -603,7 +603,9 @@ export default {
 
   .title {
     font-size: 16px;
-    font-family: PingFangSC-Medium, PingFang SC;
+    font-family:
+      PingFangSC-Medium,
+      PingFang SC;
     font-weight: 500;
     color: rgba(26, 26, 26, 0.9);
     margin-bottom: 10px;

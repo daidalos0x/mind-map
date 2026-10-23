@@ -25,21 +25,21 @@ Documents are `.xmind` files, stored locally.
 
 ![Mind map](./assets/screenshots/mind-map.png)
 
-*Mind map view*
+_Mind map view_
 
 ![Mermaid mode](./assets/screenshots/mermaid.png)
 
-*Mermaid view*
+_Mermaid view_
 
 ## Install
 
 Prebuilt builds are on [Releases](https://github.com/phaethix/mind-map/releases).
 
-| System | File |
-| --- | --- |
-| Windows 10 / 11 (x64) | `Mind_<version>_x64-setup.exe` |
-| Ubuntu 22.04+ / Debian 12+ (x64) | `Mind_<version>_amd64.deb` |
-| Any distro with WebKitGTK 4.1 | `Mind_<version>_amd64.AppImage` |
+| System                           | File                            |
+| -------------------------------- | ------------------------------- |
+| Windows 10 / 11 (x64)            | `Mind_<version>_x64-setup.exe`  |
+| Ubuntu 22.04+ / Debian 12+ (x64) | `Mind_<version>_amd64.deb`      |
+| Any distro with WebKitGTK 4.1    | `Mind_<version>_amd64.AppImage` |
 
 The Windows build is unsigned, so the first launch needs **More info → Run anyway**. Linux builds use the system WebKitGTK 4.1 (Ubuntu 20.04 will not start), and the AppImage also needs `libfuse2`.
 
@@ -51,12 +51,12 @@ make
 
 ## Build from source
 
-| Item | Detail |
-| --- | --- |
-| Requires | Xcode Command Line Tools — `xcode-select --install` |
+| Item      | Detail                                                   |
+| --------- | -------------------------------------------------------- |
+| Requires  | Xcode Command Line Tools — `xcode-select --install`      |
 | Toolchain | `scripts/bootstrap.sh` installs Node and Rust if missing |
-| Install | `make`; `Mind.app` ends up in `~/Applications` |
-| Documents | `~/Documents/Mind` |
+| Install   | `make`; `Mind.app` ends up in `~/Applications`           |
+| Documents | `~/Documents/Mind`                                       |
 
 ```bash
 make open      # launch the installed app

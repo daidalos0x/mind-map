@@ -178,8 +178,8 @@
                       style.borderDasharray === item.value
                         ? '#409eff'
                         : isDark
-                        ? '#fff'
-                        : '#000'
+                          ? '#fff'
+                          : '#000'
                     "
                     :stroke-dasharray="item.value"
                   ></line>
@@ -245,7 +245,7 @@
             <el-popover ref="popover4" placement="bottom" trigger="hover">
               <Color :color="style.fillColor" @change="changeFillColor"></Color>
             </el-popover>
-            <span class="name" style="margin-left: 20px;">{{
+            <span class="name" style="margin-left: 20px">{{
               $t('style.gradientStyle')
             }}</span>
             <el-checkbox
@@ -316,7 +316,11 @@
                 :key="item.value"
                 :label="item.name"
                 :value="item.value"
-                style="display: flex; justify-content: center; align-items: center;"
+                style="
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                "
               >
                 <svg
                   :width="item.width || 60"
@@ -330,8 +334,8 @@
                       style.shape === item.value
                         ? '#409eff'
                         : isDark
-                        ? '#fff'
-                        : '#000'
+                          ? '#fff'
+                          : '#000'
                     "
                     stroke-width="2"
                   ></path>
@@ -380,8 +384,8 @@
                       style.lineDasharray === item.value
                         ? '#409eff'
                         : isDark
-                        ? '#fff'
-                        : '#000'
+                          ? '#fff'
+                          : '#000'
                     "
                     :stroke-dasharray="item.value"
                   ></line>
@@ -820,7 +824,9 @@ export default {
 
   .title {
     font-size: 16px;
-    font-family: PingFangSC-Medium, PingFang SC;
+    font-family:
+      PingFangSC-Medium,
+      PingFang SC;
     font-weight: 500;
     color: rgba(26, 26, 26, 0.9);
     margin-bottom: 10px;

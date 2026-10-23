@@ -36,7 +36,10 @@ await run(NPM, ['run', 'build'], webDir, process.env)
 
 fs.rmSync(outputDir, { recursive: true, force: true })
 fs.mkdirSync(outputDir, { recursive: true })
-fs.copyFileSync(path.join(repoDir, 'index.html'), path.join(outputDir, 'index.html'))
+fs.copyFileSync(
+  path.join(repoDir, 'index.html'),
+  path.join(outputDir, 'index.html')
+)
 fs.cpSync(path.join(repoDir, 'dist'), path.join(outputDir, 'dist'), {
   recursive: true
 })

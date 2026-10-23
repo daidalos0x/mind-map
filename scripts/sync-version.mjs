@@ -35,8 +35,16 @@ const replaceOnce = (file, pattern, replacement) => {
 console.log(`同步版本到 ${version}：`)
 
 // 顶层 version 字段（这两个 JSON 的 version 都在第一层，缩进 2 个空格）
-replaceOnce('desktop/src-tauri/tauri.conf.json', /^ {2}"version": "[^"]*"/m, `  "version": "${version}"`)
-replaceOnce('web/package.json', /^ {2}"version": "[^"]*"/m, `  "version": "${version}"`)
+replaceOnce(
+  'desktop/src-tauri/tauri.conf.json',
+  /^ {2}"version": "[^"]*"/m,
+  `  "version": "${version}"`
+)
+replaceOnce(
+  'web/package.json',
+  /^ {2}"version": "[^"]*"/m,
+  `  "version": "${version}"`
+)
 
 // Cargo.toml 只改 [package] 段里的第一个 version
 const cargoPath = 'desktop/src-tauri/Cargo.toml'

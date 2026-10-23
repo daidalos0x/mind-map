@@ -10,7 +10,11 @@
 
 <script>
 import { mapState } from 'vuex'
-import { isMermaidStyleOn, mermaidSourceFor, renderMermaidSvg } from '@/utils/mermaidStyle'
+import {
+  isMermaidStyleOn,
+  mermaidSourceFor,
+  renderMermaidSvg
+} from '@/utils/mermaidStyle'
 
 // 相对「切换到 mermaid 模式时的缩放」的可见倍数范围
 const MIN_ZOOM = 0.2
@@ -125,7 +129,8 @@ export default {
         if (token !== this.token || !this.$refs.host) {
           return
         }
-        this.$refs.host.textContent = error && error.message ? error.message : String(error)
+        this.$refs.host.textContent =
+          error && error.message ? error.message : String(error)
       }
     },
     // 记录 svg 的原始宽度
@@ -136,7 +141,8 @@ export default {
         return
       }
       const box = svg.viewBox && svg.viewBox.baseVal
-      this.naturalWidth = box && box.width ? box.width : svg.getBoundingClientRect().width
+      this.naturalWidth =
+        box && box.width ? box.width : svg.getBoundingClientRect().width
     },
     // 按画布缩放同步 mermaid 视图的大小，scale 事件来自 +/- 按钮、Ctrl+滚轮等所有缩放入口
     applyZoom() {
@@ -147,7 +153,9 @@ export default {
       }
       const style = window.getComputedStyle(host)
       const available =
-        host.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)
+        host.clientWidth -
+        parseFloat(style.paddingLeft) -
+        parseFloat(style.paddingRight)
       // 切换进来时让整图铺满，之后跟随画布缩放倍数
       const fit = Math.min(1, available / this.naturalWidth)
       const scale = this.mindMap ? this.mindMap.view.scale : 1
@@ -155,7 +163,8 @@ export default {
       const zoom = Math.min(Math.max(ratio, MIN_ZOOM), MAX_ZOOM)
       svg.style.maxWidth = 'none'
       svg.style.height = 'auto'
-      svg.style.width = Math.max(40, Math.round(this.naturalWidth * fit * zoom)) + 'px'
+      svg.style.width =
+        Math.max(40, Math.round(this.naturalWidth * fit * zoom)) + 'px'
     },
     onWheel(e) {
       if (!this.mindMap || e.deltaY === 0) {

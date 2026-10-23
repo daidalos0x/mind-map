@@ -1,6 +1,6 @@
 <template>
   <div
-    class="sidebarTriggerContainer "
+    class="sidebarTriggerContainer"
     @click.stop
     :class="{ hasActive: show && activeSidebar, show: show, isDark: isDark }"
     :style="{ maxHeight: maxHeight + 'px' }"

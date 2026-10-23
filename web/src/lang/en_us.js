@@ -224,9 +224,11 @@ export default {
     apiKey: 'API Key',
     save: 'Save',
     saved: 'Saved in this browser',
-    needDesktopKey: 'Add a Base URL, model, and API key to the local config file',
+    needDesktopKey:
+      'Add a Base URL, model, and API key to the local config file',
     needBrowserKey: 'Add a Base URL, model, and API key first',
-    corsError: 'This endpoint does not allow browser requests. The Mac app does not have this limit.',
+    corsError:
+      'This endpoint does not allow browser requests. The Mac app does not have this limit.',
     failed: 'Generation failed',
     emptyPrompt: 'Write a short description first',
     missing: 'Start the text with mindmap',
@@ -426,10 +428,8 @@ export default {
     downGithub: 'Download from Github'
   },
   mouseAction: {
-    tip1:
-      'Current: Left click to drag the canvas, right click to box select nodes',
-    tip2:
-      'Current: Left click to box select nodes, right click to drag the canvas'
+    tip1: 'Current: Left click to drag the canvas, right click to box select nodes',
+    tip2: 'Current: Left click to box select nodes, right click to drag the canvas'
   },
   search: {
     searchPlaceholder: 'Enter the search content and press Enter',

@@ -9,9 +9,8 @@ export const showLoading = () => {
 }
 
 export const hideLoading = () => {
-    if (loadingInstance) {
-        loadingInstance.close()
-        loadingInstance = null
-    }
+  if (loadingInstance) {
+    loadingInstance.close()
+    loadingInstance = null
   }
-  
+}

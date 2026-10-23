@@ -78,7 +78,7 @@ export const printOutline = el => {
   iframeDoc.write('<style media="print">@page {size: portrait;}</style>')
   // 写入内容
   iframeDoc.write('<div>' + printContent + '</div>')
-  setTimeout(function() {
+  setTimeout(function () {
     iframe.contentWindow?.print()
     document.body.removeChild(iframe)
   }, 500)

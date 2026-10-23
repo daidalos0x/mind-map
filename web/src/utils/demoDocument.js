@@ -43,7 +43,10 @@ const demoRoot = () =>
         node('Technical Blogs'),
         node('Open Source Projects')
       ]),
-      node('Work Application', [node('Project Reviews'), node('Problem Solving')])
+      node('Work Application', [
+        node('Project Reviews'),
+        node('Problem Solving')
+      ])
     ]),
     node('Tool Ecosystem', [
       node('Primary Note Taking', [

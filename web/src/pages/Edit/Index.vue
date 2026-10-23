@@ -18,11 +18,28 @@ import FileHome from './components/FileHome.vue'
 import { mapState, mapMutations } from 'vuex'
 import { getData, getLocalConfig } from '@/api'
 import { browserFileLibrary, seedDemoDocument } from '@/utils/fileLibrary'
-import { isMermaidStyleOn, mermaidSourceFor, renderMermaidSvg } from '@/utils/mermaidStyle'
-import { mindMapPng, shrinkThumbnail, svgMarkupToThumbnail } from '@/utils/thumbnail'
+import {
+  isMermaidStyleOn,
+  mermaidSourceFor,
+  renderMermaidSvg
+} from '@/utils/mermaidStyle'
+import {
+  mindMapPng,
+  shrinkThumbnail,
+  svgMarkupToThumbnail
+} from '@/utils/thumbnail'
 
-const STYLE_COMMANDS = new Set(['SET_NODE_STYLE', 'SET_NODE_STYLES', 'SET_NODE_SHAPE'])
-const MERMAID_KEYS = ['mermaidStyle', 'mermaidSource', 'layoutBeforeMermaid', 'themeBeforeMermaid']
+const STYLE_COMMANDS = new Set([
+  'SET_NODE_STYLE',
+  'SET_NODE_STYLES',
+  'SET_NODE_SHAPE'
+])
+const MERMAID_KEYS = [
+  'mermaidStyle',
+  'mermaidSource',
+  'layoutBeforeMermaid',
+  'themeBeforeMermaid'
+]
 // 保存文档时除节点树外需要原样保留的字段
 const PASS_THROUGH_KEYS = ['demo', ...MERMAID_KEYS]
 

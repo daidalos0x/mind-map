@@ -26,10 +26,20 @@
     <div class="mermaidFooter" :class="{ isDark: isDark }">
       <div class="statusRow">
         <span class="status">{{ statusText }}</span>
-        <button v-if="isDesktop" type="button" class="textButton" @click="openConfig">
+        <button
+          v-if="isDesktop"
+          type="button"
+          class="textButton"
+          @click="openConfig"
+        >
           {{ $t('mermaid.openConfig') }}
         </button>
-        <button v-else type="button" class="textButton" @click="$bus.$emit('showAiConfigDialog')">
+        <button
+          v-else
+          type="button"
+          class="textButton"
+          @click="$bus.$emit('showAiConfigDialog')"
+        >
           {{ $t('mermaid.settings') }}
         </button>
       </div>
@@ -40,16 +50,27 @@
           :placeholder="$t('mermaid.promptPlaceholder')"
           @keydown.enter.prevent="generate"
         />
-        <button type="button" class="ghostButton" :disabled="generating" @click="generate">
+        <button
+          type="button"
+          class="ghostButton"
+          :disabled="generating"
+          @click="generate"
+        >
           {{ generating ? $t('mermaid.generating') : $t('mermaid.generate') }}
         </button>
       </div>
       <div class="aiError" v-if="aiError">{{ aiError }}</div>
       <div class="actionRow">
         <div class="leftActions">
-          <button type="button" class="ghostButton" @click="copySource">{{ $t('mermaid.copy') }}</button>
-          <button type="button" class="ghostButton" @click="downloadSource">{{ $t('mermaid.download') }}</button>
-          <button type="button" class="ghostButton" @click="pickFile">{{ $t('mermaid.open') }}</button>
+          <button type="button" class="ghostButton" @click="copySource">
+            {{ $t('mermaid.copy') }}
+          </button>
+          <button type="button" class="ghostButton" @click="downloadSource">
+            {{ $t('mermaid.download') }}
+          </button>
+          <button type="button" class="ghostButton" @click="pickFile">
+            {{ $t('mermaid.open') }}
+          </button>
           <input
             ref="file"
             class="fileInput"
@@ -58,7 +79,12 @@
             @change="onFile"
           />
         </div>
-        <button type="button" class="applyButton" :disabled="!previewRoot || !!error" @click="apply">
+        <button
+          type="button"
+          class="applyButton"
+          :disabled="!previewRoot || !!error"
+          @click="apply"
+        >
           {{ $t('mermaid.apply') }}
         </button>
       </div>
@@ -132,7 +158,8 @@ export default {
       this.error = ''
       this.aiError = ''
       const stored = getData() || {}
-      this.source = stored.mermaidSource || stringifyMermaidMindmap(this.mindMap.getData())
+      this.source =
+        stored.mermaidSource || stringifyMermaidMindmap(this.mindMap.getData())
       this.loadStatus()
     },
     onOpened() {
@@ -150,7 +177,8 @@ export default {
         return
       }
       try {
-        this.desktopStatus = await window.__TAURI_INTERNALS__.invoke('ai_config_status')
+        this.desktopStatus =
+          await window.__TAURI_INTERNALS__.invoke('ai_config_status')
       } catch (error) {
         this.desktopStatus = null
         this.aiError = this.explain(error)
@@ -178,7 +206,9 @@ export default {
       const token = this.renderToken + 1
       this.renderToken = token
       try {
-        const rendered = await renderMermaidSvg(mermaidDiagramSource(this.source))
+        const rendered = await renderMermaidSvg(
+          mermaidDiagramSource(this.source)
+        )
         if (token !== this.renderToken || !this.$refs.preview) {
           return
         }
@@ -207,7 +237,9 @@ export default {
         current.root.data &&
         current.root.data.shape === 'circle' &&
         current.root.data.customLeft != null
-      const layout = stored.layoutBeforeMermaid || (baked ? 'logicalStructure' : current.layout)
+      const layout =
+        stored.layoutBeforeMermaid ||
+        (baked ? 'logicalStructure' : current.layout)
       const theme = stored.themeBeforeMermaid || current.theme
       const source = mermaidDiagramSource(this.source)
       const root = stripMermaidStyle(this.previewRoot)

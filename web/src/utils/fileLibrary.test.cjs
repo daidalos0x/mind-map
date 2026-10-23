@@ -54,7 +54,10 @@ assert.strictEqual(refreshed.thumbnail, 'data:image/jpeg;base64,new')
 assert.strictEqual(refreshed.updatedAt, saved.updatedAt)
 assert.strictEqual(refreshed.data.theme.template, 'classic7')
 assert.strictEqual(library.saveThumbnail(created.id, ''), null)
-assert.strictEqual(library.saveThumbnail('missing', 'data:image/jpeg;base64,x'), null)
+assert.strictEqual(
+  library.saveThumbnail('missing', 'data:image/jpeg;base64,x'),
+  null
+)
 
 const wrapped = api.asDocument({
   data: { text: 'AI Agent 入门' },

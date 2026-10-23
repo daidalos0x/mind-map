@@ -531,7 +531,8 @@ export default {
     stoppedGenerating: '已停止生成',
     AIConfiguration: 'AI配置',
     VolcanoArkLargeModelConfiguration: '火山方舟大模型配置：',
-    configTip: '支援任何 OpenAI 相容介面。Base URL 一般以 /v1 結尾，金鑰只保存在這台瀏覽器。',
+    configTip:
+      '支援任何 OpenAI 相容介面。Base URL 一般以 /v1 結尾，金鑰只保存在這台瀏覽器。',
     course: '教程',
     inferenceAccessPoint: '模型',
     mindMappingClientConfiguration: '思緒思維導圖客戶端配置：',

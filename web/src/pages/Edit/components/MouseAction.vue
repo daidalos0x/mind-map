@@ -62,9 +62,9 @@ export default {
   display: flex;
   align-items: center;
 
-  &.isDark{
+  &.isDark {
     .btn {
-      color: hsla(0,0%,100%,.6);
+      color: hsla(0, 0%, 100%, 0.6);
     }
   }
 

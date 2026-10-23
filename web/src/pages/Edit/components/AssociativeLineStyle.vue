@@ -133,8 +133,8 @@
                     style.associativeLineDasharray === item.value
                       ? '#409eff'
                       : isDark
-                      ? '#fff'
-                      : '#000'
+                        ? '#fff'
+                        : '#000'
                   "
                   :stroke-dasharray="item.value"
                 ></line>
@@ -355,7 +355,9 @@ export default {
 
   .title {
     font-size: 16px;
-    font-family: PingFangSC-Medium, PingFang SC;
+    font-family:
+      PingFangSC-Medium,
+      PingFang SC;
     font-weight: 500;
     color: rgba(26, 26, 26, 0.9);
     margin-bottom: 10px;

@@ -51,7 +51,10 @@ function nodeLabel(token) {
     value = value.slice(1, -1)
   }
   return {
-    text: value.replace(/\\"/g, '"').replace(/<br\s*\/?>/gi, '\n').trim(),
+    text: value
+      .replace(/\\"/g, '"')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .trim(),
     shape
   }
 }
@@ -159,7 +162,9 @@ function mermaidText(value) {
 function mermaidLine(text, shape) {
   const cleaned = mermaidText(text).replace(/\n/g, '<br/>') || ' '
   const safe = /^[^[\](){}#`"]+$/.test(cleaned)
-  const body = safe ? cleaned : '"' + cleaned.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"'
+  const body = safe
+    ? cleaned
+    : '"' + cleaned.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"'
   if (shape === 'circle') {
     return '((' + body + '))'
   }
@@ -188,7 +193,9 @@ function mermaidLine(text, shape) {
 }
 
 export function applyMermaidAppearance(root, preview) {
-  const tree = JSON.parse(JSON.stringify(root || { data: { text: '' }, children: [] }))
+  const tree = JSON.parse(
+    JSON.stringify(root || { data: { text: '' }, children: [] })
+  )
   const svg = preview && preview.querySelector && preview.querySelector('svg')
   const elements = svg ? [...svg.querySelectorAll('g.mindmap-node')] : []
   const ordered = []
@@ -305,7 +312,9 @@ export function extractMermaidMindmap(reply) {
 }
 
 export function chatCompletionsUrl(baseUrl) {
-  const trimmed = String(baseUrl || '').trim().replace(/\/+$/, '')
+  const trimmed = String(baseUrl || '')
+    .trim()
+    .replace(/\/+$/, '')
   if (!trimmed) {
     return ''
   }

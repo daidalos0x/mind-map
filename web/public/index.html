@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="">
   <head>
     <meta charset="utf-8" />
@@ -218,7 +218,9 @@
           window.initApp()
           window.__bootLog('initApp done')
         } catch (error) {
-          window.__bootLog('initApp failed ' + (error && error.stack ? error.stack : error))
+          window.__bootLog(
+            'initApp failed ' + (error && error.stack ? error.stack : error)
+          )
         }
       }
     </script>

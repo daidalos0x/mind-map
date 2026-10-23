@@ -138,7 +138,8 @@ export default {
             md = new MarkdownIt()
           }
           this.chatList[this.chatList.length - 1].content = md.render(res)
-          this.$refs.chatResBoxRef.scrollTop = this.$refs.chatResBoxRef.scrollHeight
+          this.$refs.chatResBoxRef.scrollTop =
+            this.$refs.chatResBoxRef.scrollHeight
         },
         () => {
           this.isCreating = false
@@ -332,8 +333,14 @@ export default {
             white-space: break-spaces;
             background-color: rgba(175, 184, 193, 0.2);
             border-radius: 6px;
-            font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas,
-              Liberation Mono, monospace;
+            font-family:
+              ui-monospace,
+              SFMono-Regular,
+              SF Mono,
+              Menlo,
+              Consolas,
+              Liberation Mono,
+              monospace;
           }
 
           pre {

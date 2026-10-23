@@ -12,7 +12,7 @@
         />
         <el-button
           size="small"
-          style="width: 100%; margin-top: 20px;"
+          style="width: 100%; margin-top: 20px"
           @click="confirm"
           >{{ $t('formulaSidebar.confirm') }}</el-button
         >
@@ -52,8 +52,8 @@ export default {
   },
   computed: {
     ...mapState({
-      activeSidebar: state => state.activeSidebar, 
-      isDark: state => state.localConfig.isDark, 
+      activeSidebar: state => state.activeSidebar,
+      isDark: state => state.localConfig.isDark,
       localConfig: state => state.localConfig
     })
   },

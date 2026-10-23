@@ -33,7 +33,7 @@
       :placeholder="$t('search.replacePlaceholder')"
       size="small"
       v-model="replaceText"
-      style="margin: 12px 0;"
+      style="margin: 12px 0"
       @keydown.native.stop
       @focus="onFocus"
       @blur="onBlur"

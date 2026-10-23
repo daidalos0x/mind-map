@@ -21,7 +21,10 @@
           ></el-input>
         </el-form-item>
         <el-form-item :label="$t('ai.inferenceAccessPoint')" prop="model">
-          <el-input v-model="ruleForm.model" placeholder="gpt-4o-mini"></el-input>
+          <el-input
+            v-model="ruleForm.model"
+            placeholder="gpt-4o-mini"
+          ></el-input>
         </el-form-item>
         <el-form-item label="API Key" prop="key">
           <el-input

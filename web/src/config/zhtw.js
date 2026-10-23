@@ -448,7 +448,7 @@ export const sidebarTriggerList = [
     name: '設置',
     value: 'setting',
     icon: 'iconshezhi'
-  },
+  }
   // {
   //   name: '快捷鍵',
   //   value: 'shortcutKey',
@@ -517,7 +517,7 @@ export const downTypeList = [
     type: 'json',
     icon: 'iconjson',
     desc: '流行的數據交換格式，可用于再次導入'
-  },
+  }
 ]
 
 // 編號類型列表
@@ -668,11 +668,7 @@ export const layoutGroupList = [
   },
   {
     name: '時間軸',
-    list: [
-      'timeline',
-      'timeline2',
-      'verticalTimeline'
-    ]
+    list: ['timeline', 'timeline2', 'verticalTimeline']
   },
   {
     name: '魚骨圖',

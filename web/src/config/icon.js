@@ -3,7 +3,8 @@
 // "[BABEL] Note: The code generator has deoptimised the styling ..." 提示。
 import iconData from './icon-data.json'
 
-const { iconList, weekdayList, avatarList, starList, flagList, weatherList } = iconData
+const { iconList, weekdayList, avatarList, starList, flagList, weatherList } =
+  iconData
 
 export default [
   {

@@ -101,10 +101,12 @@
             <!-- 内置背景图片 -->
             <div
               class="rowItem spaceBetween"
-              style="margin-top: 8px; margin-bottom: 8px;"
+              style="margin-top: 8px; margin-bottom: 8px"
               v-if="bgList.length > 0"
             >
-              <div class="name">{{ $t('baseStyle.builtInBackgroundImage') }}</div>
+              <div class="name">
+                {{ $t('baseStyle.builtInBackgroundImage') }}
+              </div>
               <div
                 class="iconBtn el-icon-arrow-down"
                 :class="{ top: !bgListExpand }"
@@ -116,7 +118,7 @@
                 class="bgItem"
                 v-for="(item, index) in bgList"
                 :key="index"
-                :class="{active: style.backgroundImage === item}"
+                :class="{ active: style.backgroundImage === item }"
                 @click="useBg(item)"
               >
                 <img :src="item" alt="" />
@@ -528,8 +530,8 @@
                     style.associativeLineDasharray === item.value
                       ? '#409eff'
                       : isDark
-                      ? '#fff'
-                      : '#000'
+                        ? '#fff'
+                        : '#000'
                   "
                   :stroke-dasharray="item.value"
                 ></line>
@@ -994,20 +996,17 @@ export default {
 
     // 外框
     initOuterFramePadding() {
-      this.outerFramePadding.outerFramePaddingX = this.mindMap.getConfig(
-        'outerFramePaddingX'
-      )
-      this.outerFramePadding.outerFramePaddingY = this.mindMap.getConfig(
-        'outerFramePaddingX'
-      )
+      this.outerFramePadding.outerFramePaddingX =
+        this.mindMap.getConfig('outerFramePaddingX')
+      this.outerFramePadding.outerFramePaddingY =
+        this.mindMap.getConfig('outerFramePaddingX')
     },
 
     // margin初始值
     initMarginStyle() {
       ;['marginX', 'marginY'].forEach(key => {
-        this.style[key] = this.mindMap.getThemeConfig()[this.marginActiveTab][
-          key
-        ]
+        this.style[key] =
+          this.mindMap.getThemeConfig()[this.marginActiveTab][key]
       })
     },
 
@@ -1133,7 +1132,9 @@ export default {
 
   .title {
     font-size: 16px;
-    font-family: PingFangSC-Medium, PingFang SC;
+    font-family:
+      PingFangSC-Medium,
+      PingFang SC;
     font-weight: 500;
     color: rgba(26, 26, 26, 0.9);
     margin-bottom: 10px;
