@@ -107,6 +107,12 @@ export default defineConfig(({ command }) => ({
     assetsDir: 'js',
     sourcemap: false,
     cssCodeSplit: true,
+    /**
+     * mermaid 自带的构建产物就有 3.3MB，是这里最大的单块，属于已知上限
+     * （webpack 时代也是按 3.5MB 设的预算）。把阈值调到实际基线，
+     * 免得每次构建都拿一条跟代码无关的提示刷屏。
+     */
+    chunkSizeWarningLimit: 3500,
     rollupOptions: {
       output: buildOutput
     }
