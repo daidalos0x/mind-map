@@ -1,12 +1,13 @@
-# Normalize line endings in the repository so macOS and Windows checkouts agree.
+# 仓库里统一存 LF，避免 macOS 和 Windows 的检出结果不一致
 * text=auto
 
-# These are handed straight to `sh` / `make`. A CRLF checkout makes `set -eu\r`
-# an invalid option, so force LF no matter what core.autocrlf says.
+# 这两个文件会被直接交给 sh / make 执行。CRLF 检出会让 `set -eu` 变成 `set -eu\r`，
+# sh 把 \r 当成选项的一部分，报 "invalid option" 后直接退出。
+# 所以不管 core.autocrlf 怎么设，都强制成 LF。
 *.sh     text eol=lf
 Makefile text eol=lf
 
-# Binary assets: never convert.
+# 二进制资源，不做任何转换
 *.png   binary
 *.jpg   binary
 *.jpeg  binary
