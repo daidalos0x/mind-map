@@ -3,9 +3,11 @@
     <header class="homeHeader">
       <div class="brand">Mind</div>
       <div class="actions">
-        <span v-if="version" class="appVersion">v{{ version }}</span>
+        <span v-if="version && !isMac()" class="appVersion"
+          >v{{ version }}</span
+        >
         <button
-          v-if="isDesktop()"
+          v-if="isDesktop() && !isMac()"
           type="button"
           class="secondary"
           @click="$bus.$emit('checkUpdate')"
@@ -105,7 +107,7 @@ import {
   blankDocument,
   browserFileLibrary
 } from '@/utils/fileLibrary'
-import { isDesktop, invoke } from '@/utils/desktop'
+import { isDesktop, isMac, invoke } from '@/utils/desktop'
 
 export default {
   data() {
@@ -125,7 +127,7 @@ export default {
   },
   created() {
     this.refresh()
-    if (isDesktop()) {
+    if (isDesktop() && !isMac()) {
       this.invoke('desktop_version')
         .then(version => {
           this.version = version
@@ -137,6 +139,7 @@ export default {
   },
   methods: {
     isDesktop,
+    isMac,
     invoke,
     library() {
       return browserFileLibrary()
