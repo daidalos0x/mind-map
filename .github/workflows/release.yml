@@ -131,6 +131,12 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      # 需要完整历史才能 diff 出上一个 tag 到本次的提交
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
       - name: Download artifacts
         uses: actions/download-artifact@v8
         with:
@@ -140,6 +146,29 @@ jobs:
       - name: List files
         run: ls -lh dist
 
+      # 发布说明按「上一个 tag..本 tag」的提交自动生成，不用每次手写
+      - name: Compose release notes
+        run: |
+          tag="${{ env.RELEASE_TAG }}"
+          prev=$(git describe --tags --abbrev=0 "${tag}^" 2>/dev/null || true)
+          {
+            echo "A lightweight, minimal, and customizable mind map."
+            echo
+            if [ -n "$prev" ]; then
+              echo "### Changes since $prev"
+              echo
+              # 只列用户能感知的改动，chore/docs/build 这类内部提交不进发布说明
+              git log --no-merges --pretty='- %s' "$prev..$tag" | grep -E '^- (feat|fix|perf):' || echo "- Maintenance release."
+              echo
+              echo "Full changelog: https://github.com/${{ github.repository }}/compare/$prev...$tag"
+            else
+              echo "First release."
+            fi
+            echo
+            echo "Install instructions are in the [README](https://github.com/${{ github.repository }}#install)."
+          } > notes.md
+          cat notes.md
+
       - name: Publish release
         uses: softprops/action-gh-release@v3
         with:
@@ -147,7 +176,4 @@ jobs:
           name: Mind ${{ env.RELEASE_TAG }}
           files: dist/*
           fail_on_unmatched_files: true
-          body: |
-            🎉 A lightweight, minimal, and customizable mind map.
-
-            Install instructions are in the [README](https://github.com/phaethix/mind-map#install).
+          body_path: notes.md
