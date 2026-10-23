@@ -44,6 +44,8 @@ web: web/node_modules
 	cd web && npm run serve
 
 desktop: bootstrap web/node_modules desktop/node_modules
+	@# 构建产物里也有一份 Mind.app，Spotlight 会把它当成第二个应用；让 Spotlight 跳过 target/
+	@mkdir -p desktop/src-tauri/target && touch desktop/src-tauri/target/.metadata_never_index
 	cd desktop && npm run build
 
 dev: bootstrap web/node_modules desktop/node_modules
