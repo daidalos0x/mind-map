@@ -198,7 +198,12 @@ fn next_untitled(dir: &Path) -> PathBuf {
 
 fn set_window_title(app: &AppHandle, file_name: &str) {
     if let Some(window) = app.get_webview_window("main") {
-        let _ = window.set_title(&format!("{file_name} — Mind"));
+        // macOS 的菜单栏已经写着应用名，窗口标题只留文件名
+        #[cfg(target_os = "macos")]
+        let title = file_name.to_string();
+        #[cfg(not(target_os = "macos"))]
+        let title = format!("{file_name} — Mind");
+        let _ = window.set_title(&title);
     }
 }
 
@@ -1383,6 +1388,11 @@ pub fn run() {
         .setup(|app| {
             let state = initial_state(app.handle()).map_err(std::io::Error::other)?;
             app.manage(state);
+            // 首页没有文档时也不显示应用名：菜单栏里已经有了
+            #[cfg(target_os = "macos")]
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.set_title("");
+            }
             // macOS 的 tauri:// 自定义协议能跑脚本，但网页视图经常是白的。
             // 开发时用的 localhost 是正常的，所以正式包也改由本机 HTTP 提供页面。
             #[cfg(not(debug_assertions))]
