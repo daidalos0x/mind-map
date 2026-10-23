@@ -97,7 +97,7 @@ export default {
     this.$bus.$on('mermaidStyleChanged', this.onMermaidStyleChanged)
     document.body.classList.toggle('mindSidebarTriggerHidden', !this.show)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     window.removeEventListener('resize', this.onResize)
     this.$bus.$off('mermaidStyleChanged', this.onMermaidStyleChanged)
     document.body.classList.remove('mindSidebarTriggerHidden')

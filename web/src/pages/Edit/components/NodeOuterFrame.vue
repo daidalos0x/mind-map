@@ -438,7 +438,7 @@ export default {
     this.mindMap.on('outer_frame_delete', this.hide)
     this.mindMap.on('outer_frame_deactivate', this.hide)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.mindMap.off('outer_frame_active', this.onOuterFrameActive)
     this.mindMap.off('outer_frame_delete', this.hide)
     this.mindMap.off('outer_frame_deactivate', this.hide)

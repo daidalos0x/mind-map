@@ -639,7 +639,7 @@ export default {
   created() {
     this.$bus.$on('node_active', this.onNodeActive)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.$bus.$off('node_active', this.onNodeActive)
   },
   methods: {

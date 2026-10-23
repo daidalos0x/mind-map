@@ -3,7 +3,7 @@
     class="nodeExportDialog"
     :class="{ isMobile: isMobile, isDark: isDark }"
     :title="$t('export.title')"
-    :visible.sync="dialogVisible"
+    v-model="dialogVisible"
     v-loading.fullscreen.lock="loading"
     :element-loading-text="loadingText"
     element-loading-spinner="el-icon-loading"
@@ -40,7 +40,7 @@
                 style="max-width: 250px"
                 v-model="fileName"
                 size="mini"
-                @keydown.native.stop
+                @keydown.stop
               ></el-input>
             </div>
             <span class="closeBtn el-icon-close" @click="cancel"></span>
@@ -88,7 +88,7 @@
                       v-model="paddingX"
                       size="mini"
                       @change="onPaddingChange"
-                      @keydown.native.stop
+                      @keydown.stop
                     ></el-input>
                   </div>
                   <div class="valueSubItem">
@@ -98,7 +98,7 @@
                       v-model="paddingY"
                       size="mini"
                       @change="onPaddingChange"
-                      @keydown.native.stop
+                      @keydown.stop
                     ></el-input>
                   </div>
                   <div class="valueSubItem">
@@ -110,7 +110,7 @@
                       v-model="extraText"
                       size="mini"
                       :placeholder="$t('export.addFooterTextPlaceholder')"
-                      @keydown.native.stop
+                      @keydown.stop
                     ></el-input>
                   </div>
                   <div class="valueSubItem">
@@ -208,7 +208,7 @@ export default {
   created() {
     this.$bus.$on('showExport', this.handleShowExport)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.$bus.$off('showExport', this.handleShowExport)
   },
   methods: {

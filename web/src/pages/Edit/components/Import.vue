@@ -3,7 +3,7 @@
     <el-dialog
       class="nodeImportDialog"
       :title="$t('import.title')"
-      :visible.sync="dialogVisible"
+      v-model="dialogVisible"
       width="350px"
     >
       <el-upload
@@ -18,24 +18,29 @@
         :limit="1"
         :on-exceed="onExceed"
       >
-        <el-button slot="trigger" size="small" type="primary">{{
+        <el-button size="small" type="primary">{{
           $t('import.selectFile')
         }}</el-button>
-        <div slot="tip" class="el-upload__tip">
-          {{ $t('import.support') }}{{ supportFileStr }}{{ $t('import.file') }}
-        </div>
+        <template #tip>
+          <div class="el-upload__tip">
+            {{ $t('import.support') }}{{ supportFileStr
+            }}{{ $t('import.file') }}
+          </div>
+        </template>
       </el-upload>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="cancel">{{ $t('dialog.cancel') }}</el-button>
-        <el-button type="primary" @click="confirm">{{
-          $t('dialog.confirm')
-        }}</el-button>
-      </span>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="cancel">{{ $t('dialog.cancel') }}</el-button>
+          <el-button type="primary" @click="confirm">{{
+            $t('dialog.confirm')
+          }}</el-button>
+        </span>
+      </template>
     </el-dialog>
     <el-dialog
       class="xmindCanvasSelectDialog"
       :title="$t('import.xmindCanvasSelectDialogTitle')"
-      :visible.sync="xmindCanvasSelectDialogVisible"
+      v-model="xmindCanvasSelectDialogVisible"
       width="300px"
       :show-close="false"
     >
@@ -47,11 +52,13 @@
           >{{ item.title }}</el-radio
         >
       </el-radio-group>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="confirmSelect">{{
-          $t('dialog.confirm')
-        }}</el-button>
-      </span>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button type="primary" @click="confirmSelect">{{
+            $t('dialog.confirm')
+          }}</el-button>
+        </span>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -60,7 +67,6 @@
 import xmind from 'simple-mind-map/src/parse/xmind.js'
 import markdown from 'simple-mind-map/src/parse/markdown.js'
 import { mapMutations } from 'vuex'
-import Vue from 'vue'
 
 // 导入
 export default {
@@ -92,7 +98,7 @@ export default {
     this.$bus.$on('handle_file_url', this.handleFileURL)
     this.$bus.$on('importFile', this.handleImportFile)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.$bus.$off('showImport', this.handleShowImport)
     this.$bus.$off('handle_file_url', this.handleFileURL)
     this.$bus.$off('importFile', this.handleImportFile)

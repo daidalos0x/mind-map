@@ -1,8 +1,8 @@
 import exampleData from 'simple-mind-map/example/exampleData'
 import { simpleDeepClone } from 'simple-mind-map/src/utils/index'
-import Vue from 'vue'
 import vuexStore from '@/store'
 import { browserFileLibrary } from '@/utils/fileLibrary'
+import { globals } from '@/utils/global'
 
 const SIMPLE_MIND_MAP_DATA = 'SIMPLE_MIND_MAP_DATA'
 const SIMPLE_MIND_MAP_CONFIG = 'SIMPLE_MIND_MAP_CONFIG'
@@ -56,7 +56,7 @@ export const getData = () => {
   }
   // 操作本地文件模式
   if (vuexStore.state.isHandleLocalFile) {
-    return Vue.prototype.getCurrentData()
+    return globals.getCurrentData()
   }
   let store = localStorage.getItem(SIMPLE_MIND_MAP_DATA)
   if (store === null) {
@@ -101,7 +101,7 @@ export const storeData = data => {
       window.takeOverAppMethods.saveMindMapData(originData)
       return
     }
-    Vue.prototype.$bus.$emit('write_local_file', originData)
+    globals.bus.$emit('write_local_file', originData)
     if (vuexStore.state.isHandleLocalFile) {
       return
     }
@@ -113,7 +113,7 @@ export const storeData = data => {
   } catch (error) {
     console.log(error)
     if ('exceeded') {
-      Vue.prototype.$bus.$emit('localStorageExceeded')
+      globals.bus.$emit('localStorageExceeded')
     }
   }
 }

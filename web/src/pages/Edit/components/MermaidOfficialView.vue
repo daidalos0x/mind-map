@@ -88,7 +88,7 @@ export default {
       this.enter()
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     clearTimeout(this.timer)
     window.removeEventListener('resize', this.onResize)
     if (this.mindMap) {

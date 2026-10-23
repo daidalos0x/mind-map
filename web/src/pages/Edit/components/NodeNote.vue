@@ -2,7 +2,7 @@
   <el-dialog
     class="nodeNoteDialog"
     :title="$t('nodeNote.title')"
-    :visible.sync="dialogVisible"
+    v-model="dialogVisible"
     :width="isMobile ? '90%' : '50%'"
     :top="isMobile ? '20px' : '15vh'"
   >
@@ -15,12 +15,14 @@
     </el-input> -->
     <div class="noteEditor" ref="noteEditor" @keyup.stop @keydown.stop></div>
     <!-- <div class="tip">换行请使用：Enter+Shift</div> -->
-    <span slot="footer" class="dialog-footer">
-      <el-button @click="cancel">{{ $t('dialog.cancel') }}</el-button>
-      <el-button type="primary" @click="confirm">{{
-        $t('dialog.confirm')
-      }}</el-button>
-    </span>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="cancel">{{ $t('dialog.cancel') }}</el-button>
+        <el-button type="primary" @click="confirm">{{
+          $t('dialog.confirm')
+        }}</el-button>
+      </span>
+    </template>
   </el-dialog>
 </template>
 
@@ -51,7 +53,7 @@ export default {
     this.$bus.$on('node_active', this.handleNodeActive)
     this.$bus.$on('showNodeNote', this.handleShowNodeNote)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.$bus.$off('node_active', this.handleNodeActive)
     this.$bus.$off('showNodeNote', this.handleShowNodeNote)
   },

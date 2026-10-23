@@ -90,7 +90,7 @@ export default {
     loading.close()
     this.setBodyDark()
   },
-  beforeDestroy() {
+  beforeUnmount() {
     clearTimeout(this.previewTimer)
     this.unbindPreview()
     this.$bus.$off('mindMapReady', this.onMindMapReady)
@@ -400,9 +400,9 @@ export default {
     },
 
     setBodyDark() {
-      this.isDark
-        ? document.body.classList.add('isDark')
-        : document.body.classList.remove('isDark')
+      // body.isDark 管项目自己的样式，html.dark 让 Element Plus 切到它的暗色变量
+      document.body.classList.toggle('isDark', this.isDark)
+      document.documentElement.classList.toggle('dark', this.isDark)
     }
   }
 }

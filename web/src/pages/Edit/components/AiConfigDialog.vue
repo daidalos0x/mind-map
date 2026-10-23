@@ -2,7 +2,7 @@
   <el-dialog
     class="aiConfigDialog"
     :title="$t('ai.AIConfiguration')"
-    :visible.sync="aiConfigDialogVisible"
+    v-model="aiConfigDialogVisible"
     width="640px"
     append-to-body
   >
@@ -49,12 +49,14 @@
         </el-form-item> -->
       </el-form>
     </div>
-    <div slot="footer" class="dialog-footer">
-      <el-button @click="cancel">{{ $t('ai.cancel') }}</el-button>
-      <el-button type="primary" @click="confirm">{{
-        $t('ai.confirm')
-      }}</el-button>
-    </div>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="cancel">{{ $t('ai.cancel') }}</el-button>
+        <el-button type="primary" @click="confirm">{{
+          $t('ai.confirm')
+        }}</el-button>
+      </div>
+    </template>
   </el-dialog>
 </template>
 

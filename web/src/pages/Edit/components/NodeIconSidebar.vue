@@ -95,7 +95,7 @@ export default {
     this.$bus.$on('node_active', this.handleNodeActive)
     this.$bus.$on('showNodeIcon', this.handleShowNodeIcon)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.$bus.$off('node_active', this.handleNodeActive)
     this.$bus.$off('showNodeIcon', this.handleShowNodeIcon)
   },

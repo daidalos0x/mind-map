@@ -334,16 +334,18 @@
                 }}</span>
               </div>
             </div>
-            <div slot="reference" class="curRainbowLine">
-              <div class="colorsBar" v-if="curRainbowLineColorList">
-                <span
-                  class="colorItem"
-                  v-for="color in curRainbowLineColorList"
-                  :style="{ backgroundColor: color }"
-                ></span>
+            <template #reference>
+              <div class="curRainbowLine">
+                <div class="colorsBar" v-if="curRainbowLineColorList">
+                  <span
+                    class="colorItem"
+                    v-for="color in curRainbowLineColorList"
+                    :style="{ backgroundColor: color }"
+                  ></span>
+                </div>
+                <span v-else>{{ $t('baseStyle.notUseRainbowLines') }}</span>
               </div>
-              <span v-else>{{ $t('baseStyle.notUseRainbowLines') }}</span>
-            </div>
+            </template>
           </el-popover>
         </div>
       </div>
@@ -962,7 +964,7 @@ export default {
   created() {
     this.$bus.$on('setData', this.onSetData)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.$bus.$off('setData', this.onSetData)
   },
   methods: {
@@ -1004,7 +1006,7 @@ export default {
 
     // margin初始值
     initMarginStyle() {
-      ;['marginX', 'marginY'].forEach(key => {
+      ['marginX', 'marginY'].forEach(key => {
         this.style[key] =
           this.mindMap.getThemeConfig()[this.marginActiveTab][key]
       })

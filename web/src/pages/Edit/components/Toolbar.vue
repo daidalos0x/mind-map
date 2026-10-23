@@ -146,33 +146,35 @@
               node-key="id"
               lazy
             >
-              <span class="customTreeNode" slot-scope="{ node, data }">
-                <div class="treeNodeInfo">
-                  <span
-                    class="treeNodeIcon iconfont"
-                    :class="[
-                      data.type === 'file' ? 'iconwenjian' : 'icondakai'
-                    ]"
-                  ></span>
-                  <span class="treeNodeName">{{ node.label }}</span>
-                </div>
-                <div class="treeNodeBtnList" v-if="data.type === 'file'">
-                  <el-button
-                    type="text"
-                    size="mini"
-                    v-if="data.enableEdit"
-                    @click="editLocalFile(data)"
-                    >编辑</el-button
-                  >
-                  <el-button
-                    type="text"
-                    size="mini"
-                    v-else
-                    @click="importLocalFile(data)"
-                    >导入</el-button
-                  >
-                </div>
-              </span>
+              <template #default="{ node, data }">
+                <span class="customTreeNode">
+                  <div class="treeNodeInfo">
+                    <span
+                      class="treeNodeIcon iconfont"
+                      :class="[
+                        data.type === 'file' ? 'iconwenjian' : 'icondakai'
+                      ]"
+                    ></span>
+                    <span class="treeNodeName">{{ node.label }}</span>
+                  </div>
+                  <div class="treeNodeBtnList" v-if="data.type === 'file'">
+                    <el-button
+                      type="text"
+                      size="mini"
+                      v-if="data.enableEdit"
+                      @click="editLocalFile(data)"
+                      >编辑</el-button
+                    >
+                    <el-button
+                      type="text"
+                      size="mini"
+                      v-else
+                      @click="importLocalFile(data)"
+                      >导入</el-button
+                    >
+                  </div>
+                </span>
+              </template>
             </el-tree>
           </div>
         </div>
@@ -192,12 +194,14 @@
           <ToolbarNodeBtnList
             dir="v"
             :list="verticalList"
-            @click.native="popoverShow = false"
+            @click="popoverShow = false"
           ></ToolbarNodeBtnList>
-          <div slot="reference" class="toolbarBtn">
-            <span class="icon iconfont icongongshi"></span>
-            <span class="text">{{ $t('toolbar.more') }}</span>
-          </div>
+          <template #reference>
+            <div class="toolbarBtn">
+              <span class="icon iconfont icongongshi"></span>
+              <span class="text">{{ $t('toolbar.more') }}</span>
+            </div>
+          </template>
         </el-popover>
       </div>
     </div>
@@ -220,7 +224,7 @@ import NodeTag from './NodeTag.vue'
 import Export from './Export.vue'
 import Import from './Import.vue'
 import { mapState } from 'vuex'
-import { Notification } from 'element-ui'
+import { ElNotification } from 'element-plus'
 import exampleData from 'simple-mind-map/example/exampleData'
 import { getData } from '../../../api'
 import ToolbarNodeBtnList from './ToolbarNodeBtnList.vue'
@@ -304,7 +308,7 @@ export default {
   watch: {
     isHandleLocalFile(val) {
       if (!val) {
-        Notification.closeAll()
+        ElNotification.closeAll()
       }
     },
     btnLit: {
@@ -325,7 +329,7 @@ export default {
     window.addEventListener('beforeunload', this.onUnload)
     this.$bus.$on('node_note_dblclick', this.onNodeNoteDblclick)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.$bus.$off('write_local_file', this.onWriteLocalFile)
     window.removeEventListener('resize', this.computeToolbarShowThrottle)
     this.$bus.$off('lang_change', this.computeToolbarShowThrottle)
@@ -513,7 +517,7 @@ export default {
       fileReader.onload = async () => {
         this.$store.commit('setIsHandleLocalFile', true)
         this.setData(fileReader.result)
-        Notification.closeAll()
+        ElNotification.closeAll()
         Notification({
           title: this.$t('toolbar.tip'),
           message: `${this.$t('toolbar.editingLocalFileTipFront')}${

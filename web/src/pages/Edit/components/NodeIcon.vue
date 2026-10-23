@@ -2,7 +2,7 @@
   <el-dialog
     class="nodeIconDialog"
     :title="$t('nodeIcon.title')"
-    :visible.sync="dialogVisible"
+    v-model="dialogVisible"
     width="500"
   >
     <div class="item" v-for="item in nodeIconList" :key="item.name">
@@ -41,7 +41,7 @@ export default {
     this.$bus.$on('node_active', this.handleNodeActive)
     this.$bus.$on('showNodeIcon', this.handleShowNodeIcon)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.$bus.$off('node_active', this.handleNodeActive)
     this.$bus.$off('showNodeIcon', this.handleShowNodeIcon)
   },

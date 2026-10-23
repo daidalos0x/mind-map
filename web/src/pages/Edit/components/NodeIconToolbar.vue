@@ -66,7 +66,7 @@ export default {
   mounted() {
     document.body.append(this.$refs.nodeIconToolbar)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.mindMap.off('node_icon_click', this.show)
     this.mindMap.off('draw_click', this.close)
     this.mindMap.off('svg_mousedown', this.close)

@@ -44,14 +44,16 @@
             <button type="button" class="more" @click.stop aria-label="menu">
               <span></span><span></span><span></span>
             </button>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item command="rename">{{
-                $t('home.rename')
-              }}</el-dropdown-item>
-              <el-dropdown-item command="delete">{{
-                $t('home.delete')
-              }}</el-dropdown-item>
-            </el-dropdown-menu>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="rename">{{
+                  $t('home.rename')
+                }}</el-dropdown-item>
+                <el-dropdown-item command="delete">{{
+                  $t('home.delete')
+                }}</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
           </el-dropdown>
         </div>
         <div class="meta">
@@ -62,7 +64,7 @@
     </div>
     <el-dialog
       :title="$t('import.xmindCanvasSelectDialogTitle')"
-      :visible.sync="canvasVisible"
+      v-model="canvasVisible"
       width="520px"
       append-to-body
     >
@@ -75,11 +77,13 @@
           {{ item.title || index + 1 }}
         </el-radio>
       </el-radio-group>
-      <span slot="footer">
-        <el-button type="primary" @click="confirmCanvas">{{
-          $t('home.confirm')
-        }}</el-button>
-      </span>
+      <template #footer>
+        <span>
+          <el-button type="primary" @click="confirmCanvas">{{
+            $t('home.confirm')
+          }}</el-button>
+        </span>
+      </template>
     </el-dialog>
   </div>
 </template>

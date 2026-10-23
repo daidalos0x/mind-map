@@ -1,19 +1,33 @@
 //  布局结构图片映射
+import img0 from '../assets/img/structures/logicalStructure.jpg'
+import img1 from '../assets/img/structures/logicalStructureLeft.jpg'
+import img2 from '../assets/img/structures/mindMap.jpg'
+import img3 from '../assets/img/structures/organizationStructure.jpg'
+import img4 from '../assets/img/structures/catalogOrganization.jpg'
+import img5 from '../assets/img/structures/timeline.jpg'
+import img6 from '../assets/img/structures/timeline2.jpg'
+import img7 from '../assets/img/structures/fishbone.jpg'
+import img8 from '../assets/img/structures/fishbone2.jpg'
+import img9 from '../assets/img/structures/rightFishbone.jpg'
+import img10 from '../assets/img/structures/rightFishbone2.jpg'
+import img11 from '../assets/img/structures/verticalTimeline.jpg'
+import img12 from '../assets/img/structures/verticalTimeline2.jpg'
+import img13 from '../assets/img/structures/verticalTimeline3.jpg'
 export const layoutImgMap = {
-  logicalStructure: require('../assets/img/structures/logicalStructure.jpg'),
-  logicalStructureLeft: require('../assets/img/structures/logicalStructureLeft.jpg'),
-  mindMap: require('../assets/img/structures/mindMap.jpg'),
-  organizationStructure: require('../assets/img/structures/organizationStructure.jpg'),
-  catalogOrganization: require('../assets/img/structures/catalogOrganization.jpg'),
-  timeline: require('../assets/img/structures/timeline.jpg'),
-  timeline2: require('../assets/img/structures/timeline2.jpg'),
-  fishbone: require('../assets/img/structures/fishbone.jpg'),
-  fishbone2: require('../assets/img/structures/fishbone2.jpg'),
-  rightFishbone: require('../assets/img/structures/rightFishbone.jpg'),
-  rightFishbone2: require('../assets/img/structures/rightFishbone2.jpg'),
-  verticalTimeline: require('../assets/img/structures/verticalTimeline.jpg'),
-  verticalTimeline2: require('../assets/img/structures/verticalTimeline2.jpg'),
-  verticalTimeline3: require('../assets/img/structures/verticalTimeline3.jpg')
+  logicalStructure: img0,
+  logicalStructureLeft: img1,
+  mindMap: img2,
+  organizationStructure: img3,
+  catalogOrganization: img4,
+  timeline: img5,
+  timeline2: img6,
+  fishbone: img7,
+  fishbone2: img8,
+  rightFishbone: img9,
+  rightFishbone2: img10,
+  verticalTimeline: img11,
+  verticalTimeline2: img12,
+  verticalTimeline3: img13
 }
 
 // 公式列表

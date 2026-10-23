@@ -313,7 +313,7 @@ export default {
     this.$bus.$on('translate', this.hide)
     this.$bus.$on('node_mousedown', this.onNodeMousedown)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.$bus.$off('node_contextmenu', this.show)
     this.$bus.$off('node_click', this.hide)
     this.$bus.$off('draw_click', this.hide)

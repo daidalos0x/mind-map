@@ -1,13 +1,10 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-
-Vue.use(VueRouter)
+import { createRouter, createWebHashHistory } from 'vue-router'
 
 const routes = [
   {
     path: '/',
     name: 'Edit',
-    component: () => import(`./pages/Edit/Index.vue`)
+    component: () => import('./pages/Edit/Index.vue')
   },
   {
     path: '/index',
@@ -15,11 +12,13 @@ const routes = [
   },
   {
     path: '/doc/zh',
-    component: () => import(`./pages/Doc.vue`)
+    component: () => import('./pages/Doc.vue')
   }
 ]
 
-const router = new VueRouter({
+// 桌面端从 file/http 本地地址加载，用 hash 模式避免刷新 404
+const router = createRouter({
+  history: createWebHashHistory(),
   routes
 })
 

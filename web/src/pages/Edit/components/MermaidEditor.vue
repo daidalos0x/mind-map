@@ -1,6 +1,6 @@
 <template>
   <el-dialog
-    :visible.sync="visible"
+    v-model="visible"
     :title="$t('mermaid.title')"
     width="92%"
     top="4vh"
@@ -147,7 +147,7 @@ export default {
   created() {
     this.$bus.$on('showMermaid', this.open)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.$bus.$off('showMermaid', this.open)
     clearTimeout(this.timer)
     this.destroyPreview()

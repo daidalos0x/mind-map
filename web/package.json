@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
-    "build": "vue-cli-service build && node ./scripts/copy.js",
-    "lint": "vue-cli-service lint",
-    "buildLibrary": "node ./scripts/updateVersion.js && vue-cli-service build --mode library --target lib --name simpleMindMap ../simple-mind-map/full.js --dest ../simple-mind-map/dist && esbuild ../simple-mind-map/full.js --bundle --external:buffer --format=esm --outfile=../simple-mind-map/dist/simpleMindMap.esm.js && esbuild ../simple-mind-map/full.js --bundle --minify --external:buffer --format=esm --outfile=../simple-mind-map/dist/simpleMindMap.esm.min.js",
+    "serve": "vite",
+    "build": "vite build && node ./scripts/copy.js",
+    "lint": "eslint src --ext .js,.vue",
+    "buildLibrary": "node ./scripts/updateVersion.js && vite build --mode library --name simpleMindMap ../simple-mind-map/full.js --dest ../simple-mind-map/dist && esbuild ../simple-mind-map/full.js --bundle --external:buffer --format=esm --outfile=../simple-mind-map/dist/simpleMindMap.esm.js && esbuild ../simple-mind-map/full.js --bundle --minify --external:buffer --format=esm --outfile=../simple-mind-map/dist/simpleMindMap.esm.min.js",
     "format": "prettier --write src",
     "format:check": "prettier --check src",
     "createNodeImageList": "node ./scripts/createNodeImageList.js",
@@ -16,51 +16,50 @@
     "@toast-ui/editor": "^3.1.5",
     "axios": "^1.7.9",
     "codemirror": "^5.65.16",
-    "core-js": "^3.6.5",
-    "element-ui": "^2.15.1",
+    "element-plus": "^2.8.0",
     "highlight.js": "^10.7.3",
     "katex": "^0.16.9",
     "mermaid": "^10.9.3",
+    "mitt": "^3.0.1",
+    "pdf-lib": "^1.17.1",
     "simple-mind-map": "^0.14.0-fix.3",
     "simple-mind-map-plugin-themes": "^1.0.0",
-    "v-viewer": "^1.6.4",
-    "vue": "^2.6.11",
-    "vue-i18n": "^8.27.2",
-    "vue-router": "^3.5.1",
-    "vuex": "^3.6.2",
+    "uuid": "^11.0.0",
+    "v-viewer": "^3.0.15",
+    "vue": "^3.5.0",
+    "vue-i18n": "^11.0.0",
+    "vue-router": "^4.4.0",
+    "vuex": "^4.1.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.7",
-    "@babel/eslint-parser": "^7.25.9",
-    "@vue/cli-plugin-babel": "^5.0.8",
-    "@vue/cli-plugin-eslint": "^5.0.8",
-    "@vue/cli-service": "^5.0.8",
-    "babel-plugin-component": "^1.1.1",
+    "@vitejs/plugin-vue": "^5.2.0",
     "esbuild": "^0.17.15",
     "eslint": "^8.57.1",
     "eslint-plugin-vue": "^9.32.0",
     "express": "^4.21.2",
     "less": "^4.2.0",
-    "less-loader": "^10.2.0",
     "markdown-it": "^13.0.1",
     "markdown-it-checkbox": "^1.1.0",
     "prettier": "^3.9.10",
     "vconsole": "^3.15.1",
-    "vue-template-compiler": "^2.6.11"
+    "vite": "^5.4.0"
   },
   "eslintConfig": {
     "root": true,
     "env": {
-      "node": true
+      "node": true,
+      "browser": true,
+      "es2022": true
     },
     "extends": [
-      "plugin:vue/essential",
+      "plugin:vue/vue3-essential",
       "eslint:recommended"
     ],
     "parserOptions": {
-      "parser": "@babel/eslint-parser",
-      "requireConfigFile": false
+      "requireConfigFile": false,
+      "ecmaVersion": "latest",
+      "sourceType": "module"
     },
     "rules": {}
   },

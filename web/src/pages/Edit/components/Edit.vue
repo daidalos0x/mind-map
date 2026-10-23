@@ -116,7 +116,6 @@ import NodeImgPreview from './NodeImgPreview.vue'
 import SidebarTrigger from './SidebarTrigger.vue'
 import { mapState } from 'vuex'
 import icon from '@/config/icon'
-import Vue from 'vue'
 import Search from './Search.vue'
 import NodeIconSidebar from './NodeIconSidebar.vue'
 import NodeIconToolbar from './NodeIconToolbar.vue'
@@ -137,6 +136,8 @@ import AiCreate from './AiCreate.vue'
 import AiChat from './AiChat.vue'
 import MermaidEditor from './MermaidEditor.vue'
 import MermaidOfficialView from './MermaidOfficialView.vue'
+import { globals } from '@/utils/global'
+import fallbackImage from '@/assets/img/图片加载失败.svg'
 
 // 注册插件
 MindMap.usePlugin(MiniMap)
@@ -263,7 +264,7 @@ export default {
     this.$bus.$on('localStorageExceeded', this.onLocalStorageExceeded)
     window.addEventListener('resize', this.handleResize)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.$bus.$off('execCommand', this.execCommand)
     this.$bus.$off('paddingChange', this.onPaddingChange)
     this.$bus.$off('export', this.export)
@@ -394,7 +395,7 @@ export default {
         useLeftKeySelectionRightKeyDrag: this.useLeftKeySelectionRightKeyDrag,
         customInnerElsAppendTo: null,
         customHandleClipboardText: handleClipboardText,
-        defaultNodeImage: require('../../../assets/img/图片加载失败.svg'),
+        defaultNodeImage: fallbackImage,
         initRootNodePosition: ['center', 'center'],
         handleIsSplitByWrapOnPasteCreateNewNode: () => {
           return this.$confirm(
@@ -509,7 +510,7 @@ export default {
       }
       // api/index.js文件使用
       // 当正在编辑本地文件时通过该方法获取最新数据
-      Vue.prototype.getCurrentData = () => {
+      globals.getCurrentData = () => {
         const fullData = this.mindMap.getData(true)
         return { ...fullData }
       }

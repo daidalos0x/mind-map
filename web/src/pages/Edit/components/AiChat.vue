@@ -92,7 +92,7 @@ export default {
     }
   },
   created() {},
-  beforeDestroy() {},
+  beforeUnmount() {},
   methods: {
     onKeydown(e) {
       if (e.keyCode === 13) {

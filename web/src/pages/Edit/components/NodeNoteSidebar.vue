@@ -45,7 +45,7 @@ export default {
     this.$bus.$on('node_active', this.onNodeActive)
     this.mindMap.on('node_note_click', this.onNodeNoteClick)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     this.$bus.$off('node_active', this.onNodeActive)
     this.mindMap.off('node_note_click', this.onNodeNoteClick)
   },
