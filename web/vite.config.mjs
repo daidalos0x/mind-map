@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import Components from 'unplugin-vue-components/vite'
+import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 import fs from 'fs'
 import path from 'path'
 
@@ -59,7 +61,15 @@ const buildOutput = {
 export default defineConfig(({ command }) => ({
   // 页面最终被 copy.js 提到仓库根目录，资源留在 dist/ 下
   base: command === 'build' ? './' : '/',
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    // 模板里的 el-* 按需引入：只打包用到的组件和它们各自的样式，
+    // 不再整包引入 element-plus（整包 CSS 有 405KB）
+    Components({
+      dts: false,
+      resolvers: [ElementPlusResolver({ importStyle: 'css' })]
+    })
+  ],
   resolve: {
     alias: [
       ...engineAlias,

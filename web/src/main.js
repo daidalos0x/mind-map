@@ -1,11 +1,16 @@
 import { createApp } from 'vue'
-import ElementPlus, {
+import {
   ElLoading,
   ElMessage,
   ElMessageBox,
   ElNotification
 } from 'element-plus'
-import 'element-plus/dist/index.css'
+// 组件样式由 unplugin-vue-components 按需注入，这里只补“服务式”组件和指令用到的样式
+import 'element-plus/es/components/message/style/css'
+import 'element-plus/es/components/message-box/style/css'
+import 'element-plus/es/components/notification/style/css'
+import 'element-plus/es/components/loading/style/css'
+// 深色模式的变量集，和整包 CSS 无关，单独引
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import '@/assets/icon-font/iconfont.css'
 import 'viewerjs/dist/viewer.css'
@@ -35,7 +40,8 @@ const services = {
 const initApp = () => {
   const app = createApp(App)
 
-  app.use(ElementPlus)
+  // 组件由 vite 插件按需注册，这里只需补上 v-loading 指令
+  app.directive('loading', ElLoading.directive)
   app.use(router)
   app.use(store)
   app.use(i18n)
