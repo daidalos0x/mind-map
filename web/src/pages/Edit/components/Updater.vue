@@ -91,9 +91,12 @@ export default {
         console.log(error)
         // 后端返回的是给用户看的中文提示（如 deb 不支持自动更新），直接展示
         if (!silent) {
-          this.$message.error(
-            typeof error === 'string' ? error : this.$t('updater.failed')
-          )
+          this.$message.error({
+            message:
+              typeof error === 'string' ? error : this.$t('updater.failed'),
+            showClose: true,
+            duration: 5000
+          })
         }
       } finally {
         this.checking = false
@@ -109,9 +112,12 @@ export default {
         await invoke('install_update', { version: this.info.version })
       } catch (error) {
         console.log(error)
-        this.$message.error(
-          typeof error === 'string' ? error : this.$t('updater.failed')
-        )
+        this.$message.error({
+          message:
+            typeof error === 'string' ? error : this.$t('updater.failed'),
+          showClose: true,
+          duration: 5000
+        })
         this.installing = false
         this.stopPolling()
       }

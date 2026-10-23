@@ -1289,6 +1289,16 @@ fn desktop_version(app: AppHandle) -> String {
     app.package_info().version.to_string()
 }
 
+async fn pending_update(app: &AppHandle) -> Result<Option<tauri_plugin_updater::Update>, String> {
+    let updater = app.updater().map_err(|error| error.to_string())?;
+    match updater.check().await {
+        Ok(update) => Ok(update),
+        // 最新 Release 还没带 latest.json 时，当成“没有更新”，别拿报错打扰用户
+        Err(tauri_plugin_updater::Error::ReleaseNotFound) => Ok(None),
+        Err(error) => Err(update_error(error)),
+    }
+}
+
 #[tauri::command]
 async fn check_update(app: AppHandle) -> Result<UpdateStatus, String> {
     // deb 安装的客户端拿不到 AppImage 更新包，提前给出明确提示
@@ -1297,8 +1307,7 @@ async fn check_update(app: AppHandle) -> Result<UpdateStatus, String> {
         return Err("当前安装方式（deb）不支持自动更新，请到 Releases 页面下载新版本".to_string());
     }
     let current_version = app.package_info().version.to_string();
-    let updater = app.updater().map_err(|error| error.to_string())?;
-    let update = updater.check().await.map_err(update_error)?;
+    let update = pending_update(&app).await?;
     Ok(UpdateStatus {
         current_version,
         update: update.map(|update| UpdateInfo {
@@ -1310,8 +1319,7 @@ async fn check_update(app: AppHandle) -> Result<UpdateStatus, String> {
 
 #[tauri::command]
 async fn install_update(app: AppHandle, version: String) -> Result<(), String> {
-    let updater = app.updater().map_err(|error| error.to_string())?;
-    let Some(update) = updater.check().await.map_err(update_error)? else {
+    let Some(update) = pending_update(&app).await? else {
         return Err("没有可用的更新".to_string());
     };
     // 弹窗展示的版本如果已经不是最新的，先让用户重新确认，别装成另一个版本
