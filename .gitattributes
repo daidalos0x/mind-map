@@ -1,0 +1,17 @@
+# Normalize line endings in the repository so macOS and Windows checkouts agree.
+* text=auto
+
+# These are handed straight to `sh` / `make`. A CRLF checkout makes `set -eu\r`
+# an invalid option, so force LF no matter what core.autocrlf says.
+*.sh     text eol=lf
+Makefile text eol=lf
+
+# Binary assets: never convert.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.ico   binary
+*.icns  binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
