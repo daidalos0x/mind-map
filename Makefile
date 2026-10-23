@@ -56,8 +56,10 @@ install: desktop
 	mkdir -p "$(INSTALL_DIR)"
 	rm -rf "$(INSTALL_DIR)/Mind.app"
 	ditto "$(APP)" "$(INSTALL_DIR)/Mind.app"
-	@# 构建产物里那份也会被 LaunchServices 注册，"打开方式" 里就会多出一个 Mind
+	@# 构建产物里的那份副本会被 LaunchServices 和 Spotlight 一并收进去，
+	@# "打开方式" 里就会出现两个 Mind。装完直接删掉，并解除注册。
 	@-$(LSREGISTER) -u "$(APP)" >/dev/null 2>&1 || true
+	@rm -rf "$(APP)"
 	@printf 'Installed %s/Mind.app\n' "$(INSTALL_DIR)"
 
 open:
