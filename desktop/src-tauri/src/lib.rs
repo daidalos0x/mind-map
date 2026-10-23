@@ -147,7 +147,9 @@ fn write_text_atomic(path: &Path, text: &str) -> Result<(), String> {
     }
     let tmp_name = format!(
         ".{}.tmp",
-        path.file_name().and_then(|name| name.to_str()).unwrap_or("file")
+        path.file_name()
+            .and_then(|name| name.to_str())
+            .unwrap_or("file")
     );
     let tmp_path = path
         .parent()
@@ -260,7 +262,10 @@ fn topic_from_node(node: &Value, relationships: &mut Vec<Value>) -> Value {
         .and_then(|value| value.as_str())
         .unwrap_or("node")
         .to_string();
-    if let Some(targets) = data.get("associativeLineTargets").and_then(|value| value.as_array()) {
+    if let Some(targets) = data
+        .get("associativeLineTargets")
+        .and_then(|value| value.as_array())
+    {
         for target in targets {
             let Some(target_id) = target.as_str() else {
                 continue;
@@ -326,7 +331,10 @@ fn write_xmind(path: &Path, data: &Value) -> Result<(), String> {
     let options = zip::write::SimpleFileOptions::default()
         .compression_method(zip::CompressionMethod::Deflated);
     let files = [
-        ("mind.json", serde_json::to_vec_pretty(data).map_err(|error| error.to_string())?),
+        (
+            "mind.json",
+            serde_json::to_vec_pretty(data).map_err(|error| error.to_string())?,
+        ),
         (
             "content.json",
             serde_json::to_vec(&xmind_content(data)).map_err(|error| error.to_string())?,
@@ -353,7 +361,10 @@ fn write_xmind(path: &Path, data: &Value) -> Result<(), String> {
     fs::rename(&tmp, path).map_err(|error| error.to_string())
 }
 
-fn read_zip_file(archive: &mut zip::ZipArchive<std::io::Cursor<Vec<u8>>>, name: &str) -> Option<Vec<u8>> {
+fn read_zip_file(
+    archive: &mut zip::ZipArchive<std::io::Cursor<Vec<u8>>>,
+    name: &str,
+) -> Option<Vec<u8>> {
     let mut file = archive.by_name(name).ok()?;
     let mut bytes = Vec::new();
     file.read_to_end(&mut bytes).ok()?;
@@ -408,7 +419,10 @@ fn add_associative_line(node: &mut Value, from: &str, to: &str, title: Option<&s
         }
         return true;
     }
-    if let Some(children) = node.get_mut("children").and_then(|value| value.as_array_mut()) {
+    if let Some(children) = node
+        .get_mut("children")
+        .and_then(|value| value.as_array_mut())
+    {
         for child in children {
             if add_associative_line(child, from, to, title) {
                 return true;
@@ -419,12 +433,18 @@ fn add_associative_line(node: &mut Value, from: &str, to: &str, title: Option<&s
 }
 
 fn xmind_content_to_document(content: &Value) -> Value {
-    let sheet = content.as_array().and_then(|sheets| sheets.first()).unwrap_or(content);
+    let sheet = content
+        .as_array()
+        .and_then(|sheets| sheets.first())
+        .unwrap_or(content);
     let Some(root_topic) = sheet.get("rootTopic") else {
         return empty_document();
     };
     let mut root = topic_to_node(root_topic);
-    if let Some(relationships) = sheet.get("relationships").and_then(|value| value.as_array()) {
+    if let Some(relationships) = sheet
+        .get("relationships")
+        .and_then(|value| value.as_array())
+    {
         for relationship in relationships {
             let Some(from) = relationship.get("end1Id").and_then(|value| value.as_str()) else {
                 continue;
@@ -492,9 +512,7 @@ fn remember_recent(session: &mut SessionFile, path: &str) {
 
 fn display_name(path: &Path) -> String {
     let name = file_name_of(path);
-    name.strip_suffix(".xmind")
-        .unwrap_or(&name)
-        .to_string()
+    name.strip_suffix(".xmind").unwrap_or(&name).to_string()
 }
 
 fn modified_ms(path: &Path) -> u64 {
@@ -524,7 +542,8 @@ fn encode_base64(data: &[u8]) -> String {
     let mut out = String::new();
     let mut index = 0;
     while index + 3 <= data.len() {
-        let n = ((data[index] as u32) << 16) | ((data[index + 1] as u32) << 8) | data[index + 2] as u32;
+        let n =
+            ((data[index] as u32) << 16) | ((data[index + 1] as u32) << 8) | data[index + 2] as u32;
         out.push(TABLE[((n >> 18) & 63) as usize] as char);
         out.push(TABLE[((n >> 12) & 63) as usize] as char);
         out.push(TABLE[((n >> 6) & 63) as usize] as char);
@@ -559,7 +578,10 @@ fn decode_base64(input: &str) -> Result<Vec<u8>, String> {
             _ => Err("缩略图无法解析".to_string()),
         }
     }
-    let bytes: Vec<u8> = input.bytes().filter(|byte| !byte.is_ascii_whitespace()).collect();
+    let bytes: Vec<u8> = input
+        .bytes()
+        .filter(|byte| !byte.is_ascii_whitespace())
+        .collect();
     if bytes.len() % 4 != 0 {
         return Err("缩略图无法解析".to_string());
     }
@@ -568,8 +590,16 @@ fn decode_base64(input: &str) -> Result<Vec<u8>, String> {
         let pad = chunk.iter().filter(|byte| **byte == b'=').count();
         let a = value(chunk[0])?;
         let b = value(chunk[1])?;
-        let c = if chunk[2] == b'=' { 0 } else { value(chunk[2])? };
-        let d = if chunk[3] == b'=' { 0 } else { value(chunk[3])? };
+        let c = if chunk[2] == b'=' {
+            0
+        } else {
+            value(chunk[2])?
+        };
+        let d = if chunk[3] == b'=' {
+            0
+        } else {
+            value(chunk[3])?
+        };
         let n = ((a as u32) << 18) | ((b as u32) << 12) | ((c as u32) << 6) | d as u32;
         out.push((n >> 16) as u8);
         if pad < 2 {
@@ -649,7 +679,10 @@ fn open_external(path: &Path) -> Result<(), String> {
 
 #[cfg(target_os = "macos")]
 fn move_to_trash(path: &Path) -> Result<(), String> {
-    let text = path.to_string_lossy().replace('\\', "\\\\").replace('"', "\\\"");
+    let text = path
+        .to_string_lossy()
+        .replace('\\', "\\\\")
+        .replace('"', "\\\"");
     let status = Command::new("osascript")
         .arg("-e")
         .arg(format!(
@@ -732,7 +765,10 @@ fn initial_state(app: &AppHandle) -> Result<AppState, String> {
         fs::rename(&legacy_dir, &docs_dir).map_err(|error| error.to_string())?;
     }
     fs::create_dir_all(&docs_dir).map_err(|error| error.to_string())?;
-    let app_dir = app.path().app_data_dir().map_err(|error| error.to_string())?;
+    let app_dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| error.to_string())?;
     fs::create_dir_all(&app_dir).map_err(|error| error.to_string())?;
     let session_path = app_dir.join("session.json");
     let mut session = load_session_file(&session_path).unwrap_or_else(|| SessionFile {
@@ -878,7 +914,11 @@ fn list_files(state: State<AppState>) -> Result<Vec<FileCard>, String> {
 }
 
 #[tauri::command]
-fn open_path(app: AppHandle, state: State<AppState>, path: String) -> Result<DesktopSession, String> {
+fn open_path(
+    app: AppHandle,
+    state: State<AppState>,
+    path: String,
+) -> Result<DesktopSession, String> {
     switch_to(&state, &app, PathBuf::from(path))
 }
 
@@ -894,9 +934,7 @@ fn rename_file(state: State<AppState>, path: String, name: String) -> Result<Fil
     } else {
         format!("{trimmed}.xmind")
     };
-    let parent = source
-        .parent()
-        .ok_or_else(|| "名称无效".to_string())?;
+    let parent = source.parent().ok_or_else(|| "名称无效".to_string())?;
     let dest = parent.join(file_name);
     if dest != source && dest.exists() {
         return Err("已有同名文件".to_string());
@@ -1012,13 +1050,7 @@ fn build_menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
             &MenuItem::with_id(app, "new", "New", true, Some("CmdOrCtrl+N"))?,
             &MenuItem::with_id(app, "open", "Open…", true, Some("CmdOrCtrl+O"))?,
             &MenuItem::with_id(app, "save", "Save", true, Some("CmdOrCtrl+S"))?,
-            &MenuItem::with_id(
-                app,
-                "save-as",
-                "Save As…",
-                true,
-                Some("CmdOrCtrl+Shift+S"),
-            )?,
+            &MenuItem::with_id(app, "save-as", "Save As…", true, Some("CmdOrCtrl+Shift+S"))?,
             &PredefinedMenuItem::separator(app)?,
             &MenuItem::with_id(app, "reveal", reveal_label(), true, None::<&str>)?,
         ],
@@ -1045,7 +1077,10 @@ struct ChatMessage {
 }
 
 fn ai_config_path(app: &AppHandle) -> Result<PathBuf, String> {
-    let dir = app.path().app_data_dir().map_err(|error| error.to_string())?;
+    let dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| error.to_string())?;
     fs::create_dir_all(&dir).map_err(|error| error.to_string())?;
     Ok(dir.join("ai.json"))
 }
