@@ -1,7 +1,5 @@
-// 必须最先引入：给 OpenSSL 3 补上 md4，早于 webpack / terser 加载
-require('./build/md4-fallback')
-
 const path = require('path')
+const webpack = require('webpack')
 const isDev = process.env.NODE_ENV === 'development'
 const isLibrary = process.env.NODE_ENV === 'library'
 
@@ -9,7 +7,11 @@ const isLibrary = process.env.NODE_ENV === 'library'
  * 等价于 webpack-dynamic-public-path@1.0.8，但去掉了它 emit 阶段那句
  * `console.log('WebpackDynamicPublicPath: publicPath replaced.')`。
  * 行为完全一致：把产物里写死的 output.publicPath 换成全局变量，
- * 让 Mac 客户端可以在运行时指定资源路径。
+ * 让客户端在运行时指定资源路径。
+ *
+ * webpack 5 用 processAssets + updateAsset 实现：直接改写
+ * compilation.assets[file].source 不行，RawSource 在构造时就把内容缓存成
+ * buffer，重写 source() 不会改变真正写盘的字节。
  */
 class DynamicPublicPathPlugin {
   constructor(options) {
@@ -17,23 +19,40 @@ class DynamicPublicPathPlugin {
   }
 
   apply(compiler) {
-    let placeholder = ''
-
-    compiler.hooks.afterPlugins.tap('DynamicPublicPath', () => {
-      placeholder = `"${compiler.options.output.publicPath}"`
-    })
-
-    compiler.hooks.emit.tap('DynamicPublicPath', compilation => {
-      compilation.chunks.forEach(chunk => {
-        const file = (chunk.files || []).find(name => /\.js$/.test(name))
-        if (!file || !compilation.assets[file]) {
-          return
+    compiler.hooks.thisCompilation.tap('DynamicPublicPath', compilation => {
+      compilation.hooks.processAssets.tap(
+        {
+          name: 'DynamicPublicPath',
+          stage: webpack.Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE
+        },
+        () => {
+          const publicPath = compiler.options.output.publicPath || ''
+          // webpack 生成代码时可能带也可能不带结尾斜杠，两种都认
+          const placeholders = [`"${publicPath}/"`, `"${publicPath}"`]
+          compilation.chunks.forEach(chunk => {
+            chunk.files.forEach(file => {
+              if (!/\.js$/.test(file)) {
+                return
+              }
+              const asset = compilation.getAsset(file)
+              if (!asset) {
+                return
+              }
+              const code = asset.source.source().toString()
+              const placeholder = placeholders.find(item => code.includes(item))
+              if (!placeholder) {
+                return
+              }
+              compilation.updateAsset(
+                file,
+                new webpack.sources.RawSource(
+                  code.replace(placeholder, this.options.externalPublicPath)
+                )
+              )
+            })
+          })
         }
-        const asset = compilation.assets[file]
-        const source = asset.source()
-        asset.source = () =>
-          source.replace(placeholder, this.options.externalPublicPath)
-      })
+      )
     })
   }
 }
@@ -67,10 +86,6 @@ module.exports = {
     }
   },
   configureWebpack: {
-    // 用 sha256 替代 webpack 4 默认的 md4，避免依赖 --openssl-legacy-provider
-    output: {
-      hashFunction: 'sha256'
-    },
     /**
      * webpack 默认的 244KiB 预算是给普通网页的，对一个内嵌整个思维导图引擎的编辑器
      * 并不适用。这里按**生产构建**的实测基线设定预算：
@@ -93,6 +108,14 @@ module.exports = {
       noParse: /[\\/]mermaid[\\/]dist[\\/]mermaid\.min\.js$/
     },
     resolve: {
+      /**
+       * webpack 5 不再自动注入 Node 内置模块的 polyfill。sax 里是
+       * `try { require('stream').Stream } catch {}` 的写法，浏览器端根本用不到，
+       * 这里给它一个空模块即可，省掉一条 Module not found 警告。
+       */
+      fallback: {
+        stream: false
+      },
       alias: {
         '@': path.resolve(__dirname, './src/'),
         // 页面直接使用仓库里的库源码，改 simple-mind-map 会立刻进到开发服务
@@ -113,8 +136,11 @@ module.exports = {
      * 关闭 webpack 的进度输出。它会把正在编译的模块路径整行打印出来，
      * 长路径（例如 assets/img/图片加载失败.svg）会被截断成
      * "...web/src/assets/img/图片加载失"，看起来像在报错。
+     * webpack-dev-server 4 把它挪到了 client 选项下。
      */
-    progress: false,
+    client: {
+      progress: false
+    },
     proxy: {
       '^/api/v3/': {
         target: 'http://ark.cn-beijing.volces.com',
