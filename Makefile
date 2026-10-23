@@ -4,6 +4,7 @@ ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 CARGO_TARGET_DIR ?= $(ROOT)/desktop/src-tauri/target
 APP := $(CARGO_TARGET_DIR)/release/bundle/macos/Mind.app
 INSTALL_DIR := $(HOME)/Applications
+LSREGISTER := /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 
 # bootstrap installs node and rust into the home directory; make sure later steps see them
 export PATH := $(HOME)/.local/bin:$(HOME)/.cargo/bin:$(PATH)
@@ -55,6 +56,8 @@ install: desktop
 	mkdir -p "$(INSTALL_DIR)"
 	rm -rf "$(INSTALL_DIR)/Mind.app"
 	ditto "$(APP)" "$(INSTALL_DIR)/Mind.app"
+	@# 构建产物里那份也会被 LaunchServices 注册，"打开方式" 里就会多出一个 Mind
+	@-$(LSREGISTER) -u "$(APP)" >/dev/null 2>&1 || true
 	@printf 'Installed %s/Mind.app\n' "$(INSTALL_DIR)"
 
 open:
