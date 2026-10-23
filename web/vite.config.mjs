@@ -58,6 +58,37 @@ const buildOutput = {
   }
 }
 
+/**
+ * element-plus 的组件样式是按需注入的：unplugin-vue-components 在 transform 阶段
+ * 才往 .vue 里塞 `element-plus/es/components/x/style/css`，Vite 的依赖扫描器读的是
+ * 原始源码，看不到这些引用。结果就是每打开一个还没访问过的页面，就"发现"一批新依赖
+ * → 重新预构建 → 整页 reload，开发时的状态会丢。
+ *
+ * 这里把已安装版本里的组件样式全部列出来，启动时一次性预构建。
+ * 不能用 `element-plus/es/components/*\/style/css` 通配：Vite 展开通配时走的是包
+ * 的 exports 映射，得到的是带 .mjs 后缀的键，和运行时的无后缀说明符对不上。
+ */
+const EL_COMPONENTS_DIR = path.resolve(
+  __dirname,
+  'node_modules/element-plus/es/components'
+)
+const elementPlusStyleDeps = (() => {
+  if (!fs.existsSync(EL_COMPONENTS_DIR)) {
+    // 依赖没装好时静默降级，会让「每打开一个新页面就整页刷新」的老问题悄悄回来，
+    // 所以这里显式提醒一句，而不是直接返回空数组。
+    console.warn(
+      '[vite] element-plus is not installed, component styles will not be pre-bundled'
+    )
+    return []
+  }
+  return fs
+    .readdirSync(EL_COMPONENTS_DIR)
+    .filter(name =>
+      fs.existsSync(path.join(EL_COMPONENTS_DIR, name, 'style/css.mjs'))
+    )
+    .map(name => `element-plus/es/components/${name}/style/css`)
+})()
+
 export default defineConfig(({ command }) => ({
   // 页面最终被 copy.js 提到仓库根目录，资源留在 dist/ 下
   base: command === 'build' ? './' : '/',
@@ -100,6 +131,14 @@ export default defineConfig(({ command }) => ({
         javascriptEnabled: true
       }
     }
+  },
+  optimizeDeps: {
+    include: [
+      // 组件本身是从包根导入的：unplugin-vue-components 生成的 import 就是
+      // `element-plus/es`。不预构建它，第一个用到组件的页面照样会触发一次重建。
+      'element-plus/es',
+      ...elementPlusStyleDeps
+    ]
   },
   build: {
     outDir: '../dist',

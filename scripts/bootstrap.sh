@@ -39,6 +39,15 @@ PATH="$LOCAL_BIN:$HOME/.cargo/bin:$PATH"
 export PATH
 
 install_node() {
+  # 自动安装只认 macOS 的官方 tarball；Windows / Linux 上让用户自己装，
+  # 否则会在下载地址解析那一步报一句跟真实原因无关的错。
+  case "$(uname -s)" in
+    Darwin) : ;;
+    *)
+      die "Automatic Node.js installation is macOS-only. Install Node.js ${MIN_NODE_MAJOR}+ from https://nodejs.org, then run make again."
+      ;;
+  esac
+
   if command -v curl >/dev/null 2>&1; then :; else
     die "curl is required to install Node.js automatically."
   fi

@@ -9,6 +9,20 @@ LSREGISTER := /System/Library/Frameworks/CoreServices.framework/Frameworks/Launc
 # bootstrap installs node and rust into the home directory; make sure later steps see them
 export PATH := $(HOME)/.local/bin:$(HOME)/.cargo/bin:$(PATH)
 
+# Windows 上 node 自带的 npm 没有扩展名，是个 bash 脚本（shebang: #!/usr/bin/env bash）。
+# 某些 POSIX 层（比如 cygwin）无法直接 exec 它，会报
+# "/cygdrive/.../npm: No such file or directory" —— 这是 execve 找不到解释器，
+# 不是文件不存在。交给 sh 去读文件执行就跳过了 shebang 查找。
+# macOS / Linux 没有这个问题，仍直接调用 npm。
+#
+# 局限：这里只覆盖官方安装包带的那个无扩展名脚本。nvm-windows、scoop 这类
+# 只提供 npm.cmd 的环境不在覆盖范围内。
+ifeq ($(OS),Windows_NT)
+NPM = sh "$$(command -v npm)"
+else
+NPM = npm
+endif
+
 .PHONY: help bootstrap bootstrap-node web desktop dev install open
 
 help:
@@ -31,26 +45,28 @@ bootstrap-node:
 # toolchain. Those cannot be fixed from this repository, so keep the install quiet
 # and let only errors through.
 # 只认 lockfile：改 package.json 的脚本之类不该触发整包重装
-web/node_modules: bootstrap-node web/package-lock.json
+# bootstrap-node 是伪目标，每次都会"更新"；当普通前置依赖会让这条规则永远重跑
+# npm ci。改成 order-only，只保证顺序，不参与时间戳比较。
+web/node_modules: web/package-lock.json | bootstrap-node
 	@printf '  web: installing dependencies...\n'
-	@cd web && npm ci --no-audit --no-fund --loglevel=error
+	@cd web && $(NPM) ci --no-audit --no-fund --loglevel=error
 	@touch $@
 
 desktop/node_modules: desktop/package-lock.json
 	@printf '  desktop: installing dependencies...\n'
-	@cd desktop && npm ci --no-audit --no-fund --loglevel=error
+	@cd desktop && $(NPM) ci --no-audit --no-fund --loglevel=error
 	@touch $@
 
 web: web/node_modules
-	cd web && npm run serve
+	cd web && $(NPM) run serve
 
 desktop: bootstrap web/node_modules desktop/node_modules
 	@# 构建产物里也有一份 Mind.app，Spotlight 会把它当成第二个应用；让 Spotlight 跳过 target/
 	@mkdir -p desktop/src-tauri/target && touch desktop/src-tauri/target/.metadata_never_index
-	cd desktop && npm run build
+	cd desktop && $(NPM) run build
 
 dev: bootstrap web/node_modules desktop/node_modules
-	cd desktop && npm run dev
+	cd desktop && $(NPM) run dev
 
 install: desktop
 	mkdir -p "$(INSTALL_DIR)"
