@@ -147,7 +147,7 @@ export default {
       }
     }
 
-    /deep/ .el-textarea__inner {
+    :deep(.el-textarea__inner) {
       background-color: transparent;
       color: #fff;
     }

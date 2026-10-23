@@ -74,6 +74,11 @@ export default defineConfig(({ command }) => ({
     alias: [
       ...engineAlias,
       { find: '@', replacement: path.resolve(__dirname, 'src') },
+      // sax 只在 Node 下才用 stream，构建期给它一个空模块，避免 "externalized for browser" 提示
+      {
+        find: /^stream$/,
+        replacement: path.resolve(__dirname, 'build/empty-module.js')
+      },
       {
         find: 'simple-mind-map/src',
         replacement: path.resolve(__dirname, '../simple-mind-map/src')

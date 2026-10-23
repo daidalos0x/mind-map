@@ -245,7 +245,7 @@ export default {
   .tabBox {
     flex-shrink: 0;
 
-    /deep/ .el-tabs__nav-wrap {
+    :deep(.el-tabs__nav-wrap) {
       display: flex;
       justify-content: center;
     }

@@ -94,7 +94,7 @@ export default {
 
 <style lang="less" scoped>
 .nodeIconDialog {
-  /deep/ .el-dialog__body {
+  :deep(.el-dialog__body) {
     padding: 0 20px;
   }
 
@@ -122,12 +122,12 @@ export default {
         cursor: pointer;
         position: relative;
 
-        /deep/ img {
+        :deep(img) {
           width: 100%;
           height: 100%;
         }
 
-        /deep/ svg {
+        :deep(svg) {
           width: 100%;
           height: 100%;
         }

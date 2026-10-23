@@ -188,7 +188,7 @@ export default {
             background-color: #262a2e;
           }
 
-          /deep/ .content {
+          :deep(.content) {
             color: hsla(0, 0%, 100%, 0.75);
 
             pre {
@@ -301,7 +301,7 @@ export default {
           }
         }
 
-        /deep/ .content {
+        :deep(.content) {
           width: 100%;
           overflow: hidden;
           color: #3f4a54;

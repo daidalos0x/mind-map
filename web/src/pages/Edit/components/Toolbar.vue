@@ -665,7 +665,7 @@ export default {
             border-bottom-color: hsla(0, 0%, 100%, 0.1);
           }
 
-          /deep/ .el-tree {
+          :deep(.el-tree) {
             background-color: #262a2e;
 
             &.el-tree--highlight-current {

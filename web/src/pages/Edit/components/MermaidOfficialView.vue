@@ -214,12 +214,12 @@ export default {
     background: #1c1c1e;
   }
 
-  /deep/ svg,
-  /deep/ svg * {
+  :deep(svg),
+  :deep(svg *) {
     box-sizing: content-box;
   }
 
-  /deep/ svg {
+  :deep(svg) {
     // 尺寸由 applyZoom 按缩放写入
     margin: auto;
     max-width: none;

@@ -587,7 +587,7 @@ export default {
 <style lang="less" scoped>
 .clientTipDialog,
 .createDialog {
-  /deep/ .el-dialog__body {
+  :deep(.el-dialog__body) {
     padding: 12px 20px;
   }
 }

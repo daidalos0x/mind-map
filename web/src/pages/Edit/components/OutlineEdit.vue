@@ -340,7 +340,7 @@ export default {
       height: max-content;
       margin: 0 auto;
 
-      /deep/ .customNode {
+      :deep(.customNode) {
         .nodeEdit {
           max-width: 800px;
         }

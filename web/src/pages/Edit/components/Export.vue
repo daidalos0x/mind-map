@@ -346,7 +346,7 @@ export default {
 
 .nodeExportDialog {
   &.isDark {
-    /deep/ .el-dialog__body {
+    :deep(.el-dialog__body) {
       .el-checkbox {
         .el-checkbox__label {
           color: hsla(0, 0%, 100%, 0.6);
@@ -355,7 +355,7 @@ export default {
     }
   }
 
-  /deep/ .el-dialog {
+  :deep(.el-dialog) {
     border-radius: 10px;
     overflow: hidden;
 
@@ -364,7 +364,7 @@ export default {
     }
   }
 
-  /deep/ .el-dialog__body {
+  :deep(.el-dialog__body) {
     padding: 0;
 
     .el-checkbox__input.is-checked + .el-checkbox__label {
@@ -669,7 +669,7 @@ export default {
           flex-shrink: 0;
           border-top: 1px solid #f2f4f7;
 
-          /deep/ .el-button--small {
+          :deep(.el-button--small) {
             height: 25px;
             padding: 0 30px;
             border-radius: 5px;

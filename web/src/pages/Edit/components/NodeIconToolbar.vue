@@ -190,12 +190,12 @@ export default {
       position: relative;
       float: left;
 
-      /deep/ img {
+      :deep(img) {
         width: 100%;
         height: 100%;
       }
 
-      /deep/ svg {
+      :deep(svg) {
         width: 100%;
         height: 100%;
       }
