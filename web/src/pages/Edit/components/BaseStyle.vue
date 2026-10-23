@@ -1006,7 +1006,7 @@ export default {
 
     // margin初始值
     initMarginStyle() {
-      ['marginX', 'marginY'].forEach(key => {
+      ;['marginX', 'marginY'].forEach(key => {
         this.style[key] =
           this.mindMap.getThemeConfig()[this.marginActiveTab][key]
       })
