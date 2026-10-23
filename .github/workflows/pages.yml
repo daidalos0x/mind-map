@@ -31,15 +31,18 @@ jobs:
             web/package-lock.json
 
       - name: Install root dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm ci --no-audit --no-fund --loglevel=error
 
       # 格式不对就不部署，省得线上是一份没格式化的构建
       - name: Check formatting
         run: npm run format:check
 
+      # vue-cli 4 的传递依赖（webpack 4、request、svgo 1.x、Vue 2 等）会刷几十条
+      # deprecated / EBADENGINE 警告，这些只能靠迁移整条构建链消除，
+      # 所以安装阶段只保留错误输出，和 Makefile 里的写法一致。
       - name: Install web dependencies
         working-directory: web
-        run: npm ci
+        run: npm ci --no-audit --no-fund --loglevel=error
 
       - name: Build web app
         working-directory: web

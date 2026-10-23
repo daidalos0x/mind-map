@@ -84,13 +84,15 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
 
+      # vue-cli 4 的传递依赖会刷几十条 deprecated / EBADENGINE 警告，
+      # 这些只能靠迁移整条构建链消除，安装时只保留错误输出
       - name: Install web dependencies
         working-directory: web
-        run: npm ci --no-audit --no-fund
+        run: npm ci --no-audit --no-fund --loglevel=error
 
       - name: Install desktop dependencies
         working-directory: desktop
-        run: npm ci --no-audit --no-fund
+        run: npm ci --no-audit --no-fund --loglevel=error
 
       # 放在 npm ci 之后：它会改 web/package.json 的 version，避免和 lockfile 的校验撞上。
       # 用 GitHub 表达式而不是 ${VAR}：Windows runner 默认是 pwsh，读不到 bash 风格的变量
