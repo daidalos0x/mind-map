@@ -45,15 +45,15 @@ jobs:
             artifact: linux
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # 手动触发时默认只取分支，这里显式取 tag，保证打出来的包版本号对得上
           ref: ${{ github.event.inputs.tag || github.ref }}
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: |
             web/package-lock.json
@@ -69,7 +69,7 @@ jobs:
         run: cargo fmt --manifest-path desktop/src-tauri/Cargo.toml --check
 
       - name: Cache cargo registry
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry
@@ -120,7 +120,7 @@ jobs:
           test -n "$(ls -A out)"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact }}
           path: out/*
@@ -132,7 +132,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
@@ -141,7 +141,7 @@ jobs:
         run: ls -lh dist
 
       - name: Publish release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.RELEASE_TAG }}
           name: Mind ${{ env.RELEASE_TAG }}
