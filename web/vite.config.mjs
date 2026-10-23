@@ -72,14 +72,22 @@ const EL_COMPONENTS_DIR = path.resolve(
   __dirname,
   'node_modules/element-plus/es/components'
 )
-const elementPlusStyleDeps = fs.existsSync(EL_COMPONENTS_DIR)
-  ? fs
-      .readdirSync(EL_COMPONENTS_DIR)
-      .filter(name =>
-        fs.existsSync(path.join(EL_COMPONENTS_DIR, name, 'style/css.mjs'))
-      )
-      .map(name => `element-plus/es/components/${name}/style/css`)
-  : []
+const elementPlusStyleDeps = (() => {
+  if (!fs.existsSync(EL_COMPONENTS_DIR)) {
+    // 依赖没装好时静默降级，会让「每打开一个新页面就整页刷新」的老问题悄悄回来，
+    // 所以这里显式提醒一句，而不是直接返回空数组。
+    console.warn(
+      '[vite] element-plus is not installed, component styles will not be pre-bundled'
+    )
+    return []
+  }
+  return fs
+    .readdirSync(EL_COMPONENTS_DIR)
+    .filter(name =>
+      fs.existsSync(path.join(EL_COMPONENTS_DIR, name, 'style/css.mjs'))
+    )
+    .map(name => `element-plus/es/components/${name}/style/css`)
+})()
 
 export default defineConfig(({ command }) => ({
   // 页面最终被 copy.js 提到仓库根目录，资源留在 dist/ 下
@@ -125,7 +133,12 @@ export default defineConfig(({ command }) => ({
     }
   },
   optimizeDeps: {
-    include: ['element-plus/es', ...elementPlusStyleDeps]
+    include: [
+      // 组件本身是从包根导入的：unplugin-vue-components 生成的 import 就是
+      // `element-plus/es`。不预构建它，第一个用到组件的页面照样会触发一次重建。
+      'element-plus/es',
+      ...elementPlusStyleDeps
+    ]
   },
   build: {
     outDir: '../dist',
