@@ -9,6 +9,17 @@ LSREGISTER := /System/Library/Frameworks/CoreServices.framework/Frameworks/Launc
 # bootstrap installs node and rust into the home directory; make sure later steps see them
 export PATH := $(HOME)/.local/bin:$(HOME)/.cargo/bin:$(PATH)
 
+# On Windows the npm that ships with node has no extension and is a bash script
+# (shebang: #!/usr/bin/env bash). Some POSIX layers cannot exec it directly and
+# fail with "/cygdrive/.../npm: No such file or directory", which is execve
+# failing on the interpreter rather than a missing file. Handing it to sh skips
+# the shebang lookup entirely. macOS and Linux keep using npm as usual.
+ifeq ($(OS),Windows_NT)
+NPM = sh "$$(command -v npm)"
+else
+NPM = npm
+endif
+
 .PHONY: help bootstrap bootstrap-node web desktop dev install open
 
 help:
@@ -35,24 +46,24 @@ bootstrap-node:
 # npm ci。改成 order-only，只保证顺序，不参与时间戳比较。
 web/node_modules: web/package-lock.json | bootstrap-node
 	@printf '  web: installing dependencies...\n'
-	@cd web && npm ci --no-audit --no-fund --loglevel=error
+	@cd web && $(NPM) ci --no-audit --no-fund --loglevel=error
 	@touch $@
 
 desktop/node_modules: desktop/package-lock.json
 	@printf '  desktop: installing dependencies...\n'
-	@cd desktop && npm ci --no-audit --no-fund --loglevel=error
+	@cd desktop && $(NPM) ci --no-audit --no-fund --loglevel=error
 	@touch $@
 
 web: web/node_modules
-	cd web && npm run serve
+	cd web && $(NPM) run serve
 
 desktop: bootstrap web/node_modules desktop/node_modules
 	@# 构建产物里也有一份 Mind.app，Spotlight 会把它当成第二个应用；让 Spotlight 跳过 target/
 	@mkdir -p desktop/src-tauri/target && touch desktop/src-tauri/target/.metadata_never_index
-	cd desktop && npm run build
+	cd desktop && $(NPM) run build
 
 dev: bootstrap web/node_modules desktop/node_modules
-	cd desktop && npm run dev
+	cd desktop && $(NPM) run dev
 
 install: desktop
 	mkdir -p "$(INSTALL_DIR)"
