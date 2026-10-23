@@ -61,6 +61,12 @@ jobs:
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      # 格式不对就别打包了，早失败比发布一个风格不一致的构建便宜
+      - name: Check rust formatting
+        run: cargo fmt --manifest-path desktop/src-tauri/Cargo.toml --check
 
       - name: Cache cargo registry
         uses: actions/cache@v4
