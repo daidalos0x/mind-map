@@ -114,7 +114,28 @@ export default defineConfig(({ command }) => ({
      */
     chunkSizeWarningLimit: 3500,
     rollupOptions: {
-      output: buildOutput
+      output: {
+        ...buildOutput,
+        /**
+         * 只把几个「叶子」依赖单独分块：它们不参与 vue / element-plus 那套互相引用，
+         * 拆出来不会出现分块初始化顺序问题，但可以让浏览器并行下载、
+         * 并且和业务代码分开缓存。
+         *
+         * katex 不能改成动态加载：quill 的公式 blot 通过 window.katex 同步渲染，
+         * 插件构造函数里就要把它挂上，延后加载会让含公式的旧文档渲染失败。
+         */
+        manualChunks: id => {
+          if (id.includes('node_modules/katex')) {
+            return 'katex'
+          }
+          if (id.includes('node_modules/quill')) {
+            return 'quill'
+          }
+          if (id.includes('simple-mind-map-plugin-themes')) {
+            return 'themes'
+          }
+        }
+      }
     }
   },
   server: {
