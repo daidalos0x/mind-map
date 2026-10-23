@@ -31,7 +31,9 @@ bootstrap-node:
 # toolchain. Those cannot be fixed from this repository, so keep the install quiet
 # and let only errors through.
 # 只认 lockfile：改 package.json 的脚本之类不该触发整包重装
-web/node_modules: bootstrap-node web/package-lock.json
+# bootstrap-node 是伪目标，每次都会"更新"；当普通前置依赖会让这条规则永远重跑
+# npm ci。改成 order-only，只保证顺序，不参与时间戳比较。
+web/node_modules: web/package-lock.json | bootstrap-node
 	@printf '  web: installing dependencies...\n'
 	@cd web && npm ci --no-audit --no-fund --loglevel=error
 	@touch $@
