@@ -38,7 +38,7 @@ The merged title becomes the commit subject on `main`, so it follows the same ru
 ## Merging
 
 - Every pull request needs the `title`, `format` and `build` checks to pass, and every review conversation resolved, before it can be merged.
-- Pull requests are squashed into a single commit, using the pull request title as the subject. Write the body for the reader: it is what the merge commit and the release notes are built from.
+- Pull requests are squashed into a single commit whose subject is the pull request title. Keep the title accurate: it becomes the commit subject and the line the release notes list. The body stays on the pull request for reviewers.
 - Force pushes and branch deletions on `main` are disabled.
 
 ## Build notes
