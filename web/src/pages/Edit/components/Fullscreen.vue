@@ -1,7 +1,6 @@
 <template>
   <div class="fullscreenContainer" :class="{ isDark: isDark }">
     <el-tooltip
-      class="item"
       effect="dark"
       :content="$t('fullscreen.fullscreenShow')"
       placement="top"
@@ -9,7 +8,6 @@
       <div class="btn iconfont iconquanping" @click="toFullscreenShow"></div>
     </el-tooltip>
     <el-tooltip
-      class="item"
       effect="dark"
       :content="$t('fullscreen.fullscreenEdit')"
       placement="top"
@@ -61,18 +59,12 @@ export default {
 .fullscreenContainer {
   display: flex;
   align-items: center;
+  // el-tooltip 不会把 class 透传到触发元素上，间距只能由容器控制
+  gap: 12px;
 
   &.isDark {
     .btn {
       color: hsla(0, 0%, 100%, 0.6);
-    }
-  }
-
-  .item {
-    margin-right: 12px;
-
-    &:last-of-type {
-      margin-right: 0;
     }
   }
 
