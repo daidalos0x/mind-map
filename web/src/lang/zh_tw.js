@@ -355,6 +355,8 @@ export default {
     installing: '正在下載並安裝，完成後應用程式會自動重新啟動'
   },
   toolbar: {
+    renameSuccess: '重新命名成功',
+    renameFailed: '重新命名失敗',
     undo: '復原',
     redo: '重做',
     insertSiblingNode: '同層節點',

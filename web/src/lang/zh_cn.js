@@ -354,6 +354,8 @@ export default {
     installing: '正在下载并安装，完成后应用会自动重启'
   },
   toolbar: {
+    renameSuccess: '重命名成功',
+    renameFailed: '重命名失败',
     undo: '回退',
     redo: '前进',
     insertSiblingNode: '同级节点',

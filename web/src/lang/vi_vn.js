@@ -361,6 +361,8 @@ export default {
       'Đang tải và cài đặt. Ứng dụng sẽ tự khởi động lại khi hoàn tất.'
   },
   toolbar: {
+    renameSuccess: 'Đã đổi tên',
+    renameFailed: 'Không thể đổi tên',
     undo: 'Hoàn tác',
     redo: 'Làm lại',
     insertSiblingNode: 'Nút cùng cấp',

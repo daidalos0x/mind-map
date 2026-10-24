@@ -1,6 +1,19 @@
 <template>
   <div class="toolbarContainer" :class="{ isDark: isDark }">
     <div class="toolbar" ref="toolbarRef">
+      <!-- 当前文件名：点击重命名，不用回首页 -->
+      <div class="toolbarBlock fileNameBlock" v-if="fileName">
+        <el-tooltip
+          effect="dark"
+          :content="$t('home.rename')"
+          placement="bottom"
+        >
+          <div class="toolbarBtn fileNameBtn" @click="renameFile">
+            <span class="icon iconfont iconbianji"></span>
+            <span class="text" :title="fileName">{{ fileName }}</span>
+          </div>
+        </el-tooltip>
+      </div>
       <!-- 导出 -->
       <div class="toolbarBlock">
         <div class="toolbarBtn" @click="$bus.$emit('showFileHome')">
@@ -228,6 +241,8 @@ import { ElNotification } from 'element-plus'
 import exampleData from 'simple-mind-map/example/exampleData'
 import { getData } from '../../../api'
 import ToolbarNodeBtnList from './ToolbarNodeBtnList.vue'
+import { browserFileLibrary } from '@/utils/fileLibrary'
+import { isDesktop, invoke } from '@/utils/desktop'
 import { throttle, isMobile } from 'simple-mind-map/src/utils/index'
 
 // 工具栏
@@ -279,7 +294,8 @@ export default {
       fileTreeVisible: false,
       rootDirName: '',
       fileTreeExpand: true,
-      waitingWriteToLocalFile: false
+      waitingWriteToLocalFile: false,
+      fileName: ''
     }
   },
   computed: {
@@ -320,8 +336,11 @@ export default {
   },
   created() {
     this.$bus.$on('write_local_file', this.onWriteLocalFile)
+    // 打开/新建文档时刷新文件名；重命名后自己也会调用
+    this.$bus.$on('setData', this.refreshFileName)
   },
   mounted() {
+    this.refreshFileName()
     this.computeToolbarShow()
     this.computeToolbarShowThrottle = throttle(this.computeToolbarShow, 300)
     window.addEventListener('resize', this.computeToolbarShowThrottle)
@@ -331,12 +350,77 @@ export default {
   },
   beforeUnmount() {
     this.$bus.$off('write_local_file', this.onWriteLocalFile)
+    this.$bus.$off('setData', this.refreshFileName)
     window.removeEventListener('resize', this.computeToolbarShowThrottle)
     this.$bus.$off('lang_change', this.computeToolbarShowThrottle)
     window.removeEventListener('beforeunload', this.onUnload)
     this.$bus.$off('node_note_dblclick', this.onNodeNoteDblclick)
   },
   methods: {
+    // 当前文档名：桌面端来自会话，网页端来自文件库
+    refreshFileName() {
+      if (isDesktop()) {
+        const session = window.__desktopSession
+        this.fileName = (session && session.fileName) || ''
+        return
+      }
+      const library = browserFileLibrary()
+      const id = library.currentId()
+      const item = id ? library.list().find(file => file.id === id) : null
+      this.fileName = item ? item.name : ''
+    },
+
+    // 在编辑页直接重命名当前文档，不用退回首页
+    async renameFile() {
+      if (!this.fileName) {
+        return
+      }
+      let value = ''
+      try {
+        const result = await this.$prompt(
+          this.$t('home.name'),
+          this.$t('home.rename'),
+          {
+            inputValue: this.fileName,
+            confirmButtonText: this.$t('home.confirm'),
+            cancelButtonText: this.$t('home.cancel')
+          }
+        )
+        value = String(result.value || '').trim()
+      } catch (error) {
+        return
+      }
+      if (!value || value === this.fileName) {
+        return
+      }
+      try {
+        if (isDesktop()) {
+          const session = window.__desktopSession || {}
+          const card = await invoke('rename_file', {
+            path: session.path,
+            name: value
+          })
+          session.path = card.path
+          session.fileName = card.name
+          document.title = card.name
+        } else {
+          const library = browserFileLibrary()
+          const id = library.currentId()
+          if (!id) {
+            return
+          }
+          library.rename(id, value)
+        }
+        this.refreshFileName()
+        this.$message.success(this.$t('toolbar.renameSuccess'))
+      } catch (error) {
+        console.log(error)
+        this.$message.error(
+          typeof error === 'string' ? error : this.$t('toolbar.renameFailed')
+        )
+      }
+    },
+
     // 计算工具按钮如何显示
     computeToolbarShow() {
       if (!this.$refs.toolbarRef) return
@@ -832,6 +916,27 @@ export default {
               align-items: center;
             }
           }
+        }
+      }
+    }
+
+    // 文件名是一行横向排布的按钮，和普通图标按钮不同
+    .fileNameBlock {
+      .fileNameBtn {
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+        max-width: 220px;
+
+        .icon {
+          font-size: 14px;
+        }
+
+        .text {
+          max-width: 180px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
       }
     }

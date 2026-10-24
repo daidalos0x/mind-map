@@ -929,7 +929,12 @@ fn open_path(
 }
 
 #[tauri::command]
-fn rename_file(state: State<AppState>, path: String, name: String) -> Result<FileCard, String> {
+fn rename_file(
+    app: AppHandle,
+    state: State<AppState>,
+    path: String,
+    name: String,
+) -> Result<FileCard, String> {
     let source = PathBuf::from(&path);
     let trimmed = name.trim();
     if trimmed.is_empty() || trimmed.contains('/') || trimmed.contains('\\') {
@@ -941,7 +946,7 @@ fn rename_file(state: State<AppState>, path: String, name: String) -> Result<Fil
         format!("{trimmed}.xmind")
     };
     let parent = source.parent().ok_or_else(|| "名称无效".to_string())?;
-    let dest = parent.join(file_name);
+    let dest = parent.join(&file_name);
     if dest != source && dest.exists() {
         return Err("已有同名文件".to_string());
     }
@@ -963,6 +968,7 @@ fn rename_file(state: State<AppState>, path: String, name: String) -> Result<Fil
         }
     }
     persist_session(&state, &session)?;
+    set_window_title(&app, &file_name);
     Ok(file_card(&state, &dest))
 }
 

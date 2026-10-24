@@ -363,6 +363,8 @@ export default {
     installing: 'Downloading and installing. The app will restart when done.'
   },
   toolbar: {
+    renameSuccess: 'Renamed',
+    renameFailed: 'Could not rename',
     undo: 'Undo',
     redo: 'Redo',
     insertSiblingNode: 'Sibling node',
