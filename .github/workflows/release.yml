@@ -144,7 +144,8 @@ jobs:
           find desktop/src-tauri/target/release/bundle -type f \
             \( -name '*.exe' -o -name '*.deb' -o -name '*.AppImage' -o -name '*.app.tar.gz' \) \
             -exec cp {} out/ \;
-          find desktop/src-tauri/target/release/bundle -type f -name '*.sig' -exec cp {} out/ \;
+          # deb 不支持自更新，它的签名永远不会被读取，不随 Release 发布
+          find desktop/src-tauri/target/release/bundle -type f -name '*.sig' ! -name '*.deb.sig' -exec cp {} out/ \;
           ls -lh out
           test -n "$(ls -A out)"
 
