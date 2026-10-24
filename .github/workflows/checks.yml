@@ -71,6 +71,38 @@ jobs:
       - name: Check rust formatting
         run: cargo fmt --manifest-path desktop/src-tauri/Cargo.toml --check
 
+  cargo:
+    name: cargo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-check-${{ hashFiles('desktop/src-tauri/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-check-
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+
+      # generate_context! 要求 frontendDist 存在；PR 上不构建前端，给个空目录就够了
+      - name: Prepare frontend placeholder
+        run: mkdir -p desktop-dist
+
+      - name: Check Rust
+        run: cargo check --manifest-path desktop/src-tauri/Cargo.toml
+
   build:
     name: build
     runs-on: ubuntu-latest
