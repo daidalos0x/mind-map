@@ -83,6 +83,16 @@ const withoutThemeDarkSync = fn => {
   }
 }
 
+// 旧版本会把 mermaid 的样式烘焙进节点数据：根节点变成圆形并带 customLeft。
+// 现在的实现只在画布上叠加渲染，不再改写节点，所以只有这种历史文档才需要清理样式。
+export const isBakedMermaidRoot = root =>
+  Boolean(
+    root &&
+    root.data &&
+    root.data.shape === 'circle' &&
+    root.data.customLeft != null
+  )
+
 export const isMermaidStyleOn = () => {
   const data = getData()
   if (!data) {
@@ -326,12 +336,7 @@ export const enableMermaidStyle = mindMap => {
   const stored = getData() || {}
   const full = mindMap.getData(true)
   const alreadyOn = stored.mermaidStyle === true
-  const baked =
-    !alreadyOn &&
-    full.root &&
-    full.root.data &&
-    full.root.data.shape === 'circle' &&
-    full.root.data.customLeft != null
+  const baked = !alreadyOn && isBakedMermaidRoot(full.root)
   const layoutBefore = alreadyOn
     ? stored.layoutBeforeMermaid || full.layout
     : full.layout
@@ -368,7 +373,11 @@ export const enableMermaidStyle = mindMap => {
 export const disableMermaidStyle = mindMap => {
   const stored = getData() || {}
   const full = mindMap.getData(true)
-  const root = stripMermaidStyle(full.root)
+  // 新流程不会往节点里写 mermaid 样式，直接保留用户的树；
+  // 只有旧版本烘焙过的文档才需要剥掉，否则会连用户自己设的样式一起删掉
+  const root = isBakedMermaidRoot(full.root)
+    ? stripMermaidStyle(full.root)
+    : full.root
   const layout = stored.layoutBeforeMermaid || full.layout
   const theme = stored.themeBeforeMermaid || full.theme
   fitWhenReady(mindMap)

@@ -103,7 +103,11 @@ import {
   mermaidDiagramSource,
   stringifyMermaidMindmap
 } from '@/utils/mermaidMindmap'
-import { renderMermaidSvg, stripMermaidStyle } from '@/utils/mermaidStyle'
+import {
+  isBakedMermaidRoot,
+  renderMermaidSvg,
+  stripMermaidStyle
+} from '@/utils/mermaidStyle'
 
 export default {
   props: {
@@ -232,11 +236,7 @@ export default {
       }
       const stored = getData() || {}
       const current = this.mindMap.getData(true)
-      const baked =
-        current.root &&
-        current.root.data &&
-        current.root.data.shape === 'circle' &&
-        current.root.data.customLeft != null
+      const baked = isBakedMermaidRoot(current.root)
       const layout =
         stored.layoutBeforeMermaid ||
         (baked ? 'logicalStructure' : current.layout)
