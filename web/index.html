@@ -168,6 +168,12 @@
             }
             return
           }
+          if (action === 'rename') {
+            if (window.$bus) {
+              window.$bus.$emit('renameFile')
+            }
+            return
+          }
           if (action === 'save') {
             await invokeDesktop('save_mind_map', {
               data: window.__desktopSession.mindMapData
