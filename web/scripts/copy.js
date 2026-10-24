@@ -15,7 +15,7 @@ if (fs.existsSync(src)) {
   const html = fs
     .readFileSync(src, 'utf8')
     .replace(/(src|href)="\.\/(js|css|img|fonts)\//g, '$1="./dist/$2/')
-    .replace(/(src|href)="\.\/(logo\.ico)"/g, '$1="./dist/$2"')
+    .replace(/(src|href)="\.\/(logo\.ico)(\?[^"]*)?"/g, '$1="./dist/$2$3"')
   fs.writeFileSync(dest, html)
   fs.unlinkSync(src)
 }
