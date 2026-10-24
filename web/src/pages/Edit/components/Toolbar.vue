@@ -3,19 +3,6 @@
     <div class="toolbar" ref="toolbarRef">
       <!-- 导出 -->
       <div class="toolbarBlock">
-        <!-- 当前文件名：点击重命名，不用回首页 -->
-        <el-tooltip
-          v-if="fileName"
-          effect="dark"
-          :content="$t('home.rename')"
-          placement="bottom"
-        >
-          <div class="toolbarBtn fileNameBtn" @click="renameFile">
-            <span class="icon iconfont iconbianji"></span>
-            <span class="text" :title="fileName">{{ fileName }}</span>
-          </div>
-        </el-tooltip>
-        <div class="fileNameDivider" v-if="fileName"></div>
         <div class="toolbarBtn" @click="$bus.$emit('showFileHome')">
           <span class="icon iconfont iconzhuye"></span>
           <span class="text">{{ $t('home.back') }}</span>
@@ -294,8 +281,7 @@ export default {
       fileTreeVisible: false,
       rootDirName: '',
       fileTreeExpand: true,
-      waitingWriteToLocalFile: false,
-      fileName: ''
+      waitingWriteToLocalFile: false
     }
   },
   computed: {
@@ -336,13 +322,10 @@ export default {
   },
   created() {
     this.$bus.$on('write_local_file', this.onWriteLocalFile)
-    // 打开/新建文档时刷新文件名；重命名后自己也会调用
-    this.$bus.$on('setData', this.refreshFileName)
     // 桌面端 File → Rename… 菜单项
     this.$bus.$on('renameFile', this.renameFile)
   },
   mounted() {
-    this.refreshFileName()
     this.computeToolbarShow()
     this.computeToolbarShowThrottle = throttle(this.computeToolbarShow, 300)
     window.addEventListener('resize', this.computeToolbarShowThrottle)
@@ -352,7 +335,6 @@ export default {
   },
   beforeUnmount() {
     this.$bus.$off('write_local_file', this.onWriteLocalFile)
-    this.$bus.$off('setData', this.refreshFileName)
     this.$bus.$off('renameFile', this.renameFile)
     window.removeEventListener('resize', this.computeToolbarShowThrottle)
     this.$bus.$off('lang_change', this.computeToolbarShowThrottle)
@@ -361,21 +343,21 @@ export default {
   },
   methods: {
     // 当前文档名：桌面端来自会话，网页端来自文件库
-    refreshFileName() {
+    currentFileName() {
       if (isDesktop()) {
         const session = window.__desktopSession
-        this.fileName = (session && session.fileName) || ''
-        return
+        return (session && session.fileName) || ''
       }
       const library = browserFileLibrary()
       const id = library.currentId()
       const item = id ? library.list().find(file => file.id === id) : null
-      this.fileName = item ? item.name : ''
+      return item ? item.name : ''
     },
 
-    // 在编辑页直接重命名当前文档，不用退回首页
+    // 桌面端 File → Rename… 菜单项：在编辑页直接改名，不用退回首页
     async renameFile() {
-      if (!this.fileName) {
+      const current = this.currentFileName()
+      if (!current) {
         return
       }
       let value = ''
@@ -384,7 +366,7 @@ export default {
           this.$t('home.name'),
           this.$t('home.rename'),
           {
-            inputValue: this.fileName,
+            inputValue: current,
             confirmButtonText: this.$t('home.confirm'),
             cancelButtonText: this.$t('home.cancel')
           }
@@ -393,7 +375,7 @@ export default {
       } catch (error) {
         return
       }
-      if (!value || value === this.fileName) {
+      if (!value || value === current) {
         return
       }
       try {
@@ -414,7 +396,6 @@ export default {
           }
           library.rename(id, value)
         }
-        this.refreshFileName()
         this.$message.success(this.$t('toolbar.renameSuccess'))
       } catch (error) {
         console.log(error)
@@ -739,9 +720,6 @@ export default {
   &.isDark {
     .toolbar {
       color: hsla(0, 0%, 100%, 0.9);
-      .fileNameDivider {
-        background: hsla(0, 0%, 100%, 0.12);
-      }
       .toolbarBlock {
         background-color: #262a2e;
         border-color: hsla(0, 0%, 100%, 0.08);
@@ -924,34 +902,6 @@ export default {
           }
         }
       }
-    }
-
-    // 文件名是一行横向排布的按钮，和普通图标按钮不同
-    .fileNameBtn {
-      flex-direction: row;
-      align-items: center;
-      gap: 6px;
-      max-width: 220px;
-
-      .icon {
-        font-size: 14px;
-        color: #8e8e93;
-      }
-
-      .text {
-        max-width: 180px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-weight: 500;
-      }
-    }
-
-    .fileNameDivider {
-      width: 1px;
-      height: 24px;
-      margin-right: 20px;
-      background: rgba(0, 0, 0, 0.08);
     }
 
     .toolbarBtn {
