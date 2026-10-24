@@ -12,6 +12,15 @@ Thanks for taking the time to help. This document covers how to report a problem
 
 Issues that stay incomplete for two weeks may be closed. They can be reopened once the missing details arrive.
 
+## Labels
+
+Every issue carries one type label, usually one or two area labels, and `needs triage` until it has been looked at.
+
+- **Type** — `bug`, `enhancement`, `question`, `documentation`. The issue forms add `bug` or `enhancement` automatically. `duplicate`, `invalid` and `wontfix` are closing states and are only applied by the maintainer.
+- **Area** — `area: editor`, `area: desktop`, `area: web`, `area: import-export`, `area: ai`, `area: build`. Applied during triage so issues can be filtered by the part of the project they touch.
+- **Triage** — `needs triage` is added by the forms and removed once the issue has a type and an area.
+- **Contribution** — `good first issue` and `help wanted` mark work that is open to outside contributors. `accessibility` marks a barrier for people with disabilities.
+
 ## Sending a pull request
 
 1. **Open or find an issue first.** Anything beyond a small fix should have an issue that describes the problem, so the approach can be agreed before code is written.
