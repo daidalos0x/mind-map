@@ -1,0 +1,52 @@
+# 依赖更新交给 Dependabot：次要版本和补丁合并成一个 PR，避免刷屏；
+# 主版本仍然单独开 PR，需要人工判断破坏性变更。
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      tooling:
+        patterns: ['*']
+        update-types: ['minor', 'patch']
+
+  - package-ecosystem: npm
+    directory: /web
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      web:
+        patterns: ['*']
+        update-types: ['minor', 'patch']
+
+  - package-ecosystem: npm
+    directory: /desktop
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      desktop:
+        patterns: ['*']
+        update-types: ['minor', 'patch']
+
+  - package-ecosystem: cargo
+    directory: /desktop/src-tauri
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      rust:
+        patterns: ['*']
+        update-types: ['minor', 'patch']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      actions:
+        patterns: ['*']

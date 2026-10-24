@@ -17,8 +17,5 @@ Closes #
 
 ## Checklist
 
-- [ ] `npx prettier --check .` passes
-- [ ] `cargo fmt --manifest-path desktop/src-tauri/Cargo.toml --check` passes when Rust changed
-- [ ] `cd web && npm run build` succeeds when the web app changed
-- [ ] The linked issue describes the problem, and the commits stay focused on it
+- [ ] I ran the relevant build or test locally — CI covers formatting and the web build
 - [ ] Behaviour changes are reflected in the README or in code comments
