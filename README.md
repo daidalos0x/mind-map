@@ -4,8 +4,6 @@
 
 <h1 align="center">Mind</h1>
 
-<p align="center">A lightweight, minimal, and customizable mind map</p>
-
 <p align="center">
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License" /></a>
   <a href="https://github.com/phaethix/mind-map/releases"><img src="https://img.shields.io/github/v/release/phaethix/mind-map?label=release" alt="Release" /></a>
@@ -13,7 +11,9 @@
   <img src="https://img.shields.io/badge/Vue-3-4FC08D?logo=vuedotjs&logoColor=white" alt="Vue" />
 </p>
 
-Documents are `.xmind` files, stored locally.
+<p align="center">A lightweight, minimal, and customizable mind map</p>
+
+![Mind map](./assets/screenshots/mind-map.png)
 
 ## Features
 
@@ -23,13 +23,7 @@ Documents are `.xmind` files, stored locally.
 - **Full editor** — 14 layouts, 50+ themes, dark mode, rich text, notes, tags, images, formulas and an outline view.
 - **AI assisted** — generate a diagram from a prompt through your own OpenAI-compatible endpoint.
 
-![Mind map](./assets/screenshots/mind-map.png)
-
-_Mind map view_
-
 ![Mermaid mode](./assets/screenshots/mermaid.png)
-
-_Mermaid view_
 
 ## Install
 
@@ -49,19 +43,7 @@ The Windows build is unsigned, so the first launch needs **More info → Run any
 make
 ```
 
-## Updates
-
-The desktop app checks for updates when it opens, and the home screen shows the current version next to a **Check for updates** button. Updates download in place and the app restarts when the install finishes.
-
-| Platform              | Updated in place |
-| --------------------- | ---------------- |
-| Windows (NSIS)        | yes              |
-| Linux (AppImage)      | yes              |
-| macOS (Apple Silicon) | yes              |
-
-The `.deb` package cannot update itself — the app says so and points you at the new release. macOS only publishes the update archive, so the first install still goes through `make`; later versions replace themselves in place. Builds released before the updater existed (0.1.2 and earlier) need one manual reinstall before in-app updates take over.
-
-Release builds sign their updater artifacts with the `TAURI_SIGNING_PRIVATE_KEY` secret (optionally `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`). The matching public key lives in `desktop/src-tauri/tauri.conf.json`; without the secret the release job fails while composing `latest.json`.
+Installed builds update themselves in place; builds from before 0.1.3 need one manual reinstall first. The `.deb` package is the exception — download a newer one from Releases.
 
 ## Build from source
 
