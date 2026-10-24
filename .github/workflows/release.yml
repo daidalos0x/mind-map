@@ -139,10 +139,10 @@ jobs:
         shell: bash
         run: |
           mkdir -p out
-          # updater 的载荷是 tauri-bundler 打出的 zip / tar.gz，安装包本体（exe/AppImage）
-          # 只用于首次安装，两者都要随 Release 一起发
+          # updater 直接用安装包本体：Windows 的 -setup.exe、Linux 的 .AppImage，
+          # macOS 则是 .app.tar.gz；签名以同名 .sig 一起发
           find desktop/src-tauri/target/release/bundle -type f \
-            \( -name '*.exe' -o -name '*.deb' -o -name '*.AppImage' -o -name '*.zip' -o -name '*.tar.gz' \) \
+            \( -name '*.exe' -o -name '*.deb' -o -name '*.AppImage' -o -name '*.app.tar.gz' \) \
             -exec cp {} out/ \;
           find desktop/src-tauri/target/release/bundle -type f -name '*.sig' -exec cp {} out/ \;
           ls -lh out
@@ -163,10 +163,10 @@ jobs:
           const tag = process.env.RELEASE_TAG;
           const repo = process.env.GITHUB_REPOSITORY;
           // 平台键形如 linux-x86_64-appimage，最后一段是安装器类型；
-          // 后缀与 tauri-bundler 的 updater 产物命名保持一致
+          // 后缀按 tauri-bundler 的实际产物命名：NSIS 和 AppImage 直接签名安装包本体
           const suffix = {
-            nsis: "-setup.exe.zip",
-            appimage: ".AppImage.tar.gz",
+            nsis: "-setup.exe",
+            appimage: ".AppImage",
             app: ".app.tar.gz"
           }[platform.split("-").pop()];
           if (!suffix) throw new Error("unsupported platform: " + platform);
