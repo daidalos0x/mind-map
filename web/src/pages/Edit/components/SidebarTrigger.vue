@@ -11,7 +11,7 @@
     <div class="trigger customScrollbar">
       <div class="triggerItem mermaidStyleSwitch" @click.stop>
         <el-switch
-          :value="mermaidStyle"
+          :model-value="mermaidStyle"
           :disabled="!mindMap || switching"
           active-color="#409eff"
           @change="onToggle"
