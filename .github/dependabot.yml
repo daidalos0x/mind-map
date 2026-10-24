@@ -1,5 +1,6 @@
-# 依赖更新交给 Dependabot：次要版本和补丁合并成一个 PR，避免刷屏；
-# 主版本仍然单独开 PR，需要人工判断破坏性变更。
+# 依赖更新交给 Dependabot：
+# - 次要版本和补丁合并成一个 PR，主版本也各自合并成一个，避免一个依赖一个 PR
+# - vite 和 eslint 的主版本属于破坏性升级，需要单独规划，先忽略
 version: 2
 updates:
   - package-ecosystem: npm
@@ -8,9 +9,12 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
-      tooling:
+      minor-and-patch:
         patterns: ['*']
         update-types: ['minor', 'patch']
+      major:
+        patterns: ['*']
+        update-types: ['major']
 
   - package-ecosystem: npm
     directory: /web
@@ -18,9 +22,17 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
-      web:
+      minor-and-patch:
         patterns: ['*']
         update-types: ['minor', 'patch']
+      major:
+        patterns: ['*']
+        update-types: ['major']
+    ignore:
+      - dependency-name: vite
+        update-types: ['version-update:semver-major']
+      - dependency-name: eslint
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: npm
     directory: /desktop
@@ -28,9 +40,12 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
-      desktop:
+      minor-and-patch:
         patterns: ['*']
         update-types: ['minor', 'patch']
+      major:
+        patterns: ['*']
+        update-types: ['major']
 
   - package-ecosystem: cargo
     directory: /desktop/src-tauri
@@ -38,9 +53,12 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
-      rust:
+      minor-and-patch:
         patterns: ['*']
         update-types: ['minor', 'patch']
+      major:
+        patterns: ['*']
+        update-types: ['major']
 
   - package-ecosystem: github-actions
     directory: /
