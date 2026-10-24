@@ -134,7 +134,8 @@ export default {
   }
 
   .scaleInfo {
-    margin: 0 20px;
+    // 缩放按钮和数值是一组，内部间距小于容器统一间距
+    margin: 0 8px;
     display: flex;
     align-items: center;
 

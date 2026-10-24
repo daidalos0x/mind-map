@@ -60,7 +60,7 @@ export default {
   display: flex;
   align-items: center;
   // el-tooltip 不会把 class 透传到触发元素上，间距只能由容器控制
-  gap: 12px;
+  gap: 16px;
 
   &.isDark {
     .btn {

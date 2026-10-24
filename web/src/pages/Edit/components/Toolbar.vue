@@ -1,9 +1,11 @@
 <template>
   <div class="toolbarContainer" :class="{ isDark: isDark }">
     <div class="toolbar" ref="toolbarRef">
-      <!-- 当前文件名：点击重命名，不用回首页 -->
-      <div class="toolbarBlock fileNameBlock" v-if="fileName">
+      <!-- 导出 -->
+      <div class="toolbarBlock">
+        <!-- 当前文件名：点击重命名，不用回首页 -->
         <el-tooltip
+          v-if="fileName"
           effect="dark"
           :content="$t('home.rename')"
           placement="bottom"
@@ -13,9 +15,7 @@
             <span class="text" :title="fileName">{{ fileName }}</span>
           </div>
         </el-tooltip>
-      </div>
-      <!-- 导出 -->
-      <div class="toolbarBlock">
+        <div class="fileNameDivider" v-if="fileName"></div>
         <div class="toolbarBtn" @click="$bus.$emit('showFileHome')">
           <span class="icon iconfont iconzhuye"></span>
           <span class="text">{{ $t('home.back') }}</span>
@@ -338,6 +338,8 @@ export default {
     this.$bus.$on('write_local_file', this.onWriteLocalFile)
     // 打开/新建文档时刷新文件名；重命名后自己也会调用
     this.$bus.$on('setData', this.refreshFileName)
+    // 桌面端 File → Rename… 菜单项
+    this.$bus.$on('renameFile', this.renameFile)
   },
   mounted() {
     this.refreshFileName()
@@ -351,6 +353,7 @@ export default {
   beforeUnmount() {
     this.$bus.$off('write_local_file', this.onWriteLocalFile)
     this.$bus.$off('setData', this.refreshFileName)
+    this.$bus.$off('renameFile', this.renameFile)
     window.removeEventListener('resize', this.computeToolbarShowThrottle)
     this.$bus.$off('lang_change', this.computeToolbarShowThrottle)
     window.removeEventListener('beforeunload', this.onUnload)
@@ -736,6 +739,9 @@ export default {
   &.isDark {
     .toolbar {
       color: hsla(0, 0%, 100%, 0.9);
+      .fileNameDivider {
+        background: hsla(0, 0%, 100%, 0.12);
+      }
       .toolbarBlock {
         background-color: #262a2e;
         border-color: hsla(0, 0%, 100%, 0.08);
@@ -921,24 +927,31 @@ export default {
     }
 
     // 文件名是一行横向排布的按钮，和普通图标按钮不同
-    .fileNameBlock {
-      .fileNameBtn {
-        flex-direction: row;
-        align-items: center;
-        gap: 6px;
-        max-width: 220px;
+    .fileNameBtn {
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+      max-width: 220px;
 
-        .icon {
-          font-size: 14px;
-        }
-
-        .text {
-          max-width: 180px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
+      .icon {
+        font-size: 14px;
+        color: #8e8e93;
       }
+
+      .text {
+        max-width: 180px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 500;
+      }
+    }
+
+    .fileNameDivider {
+      width: 1px;
+      height: 24px;
+      margin-right: 20px;
+      background: rgba(0, 0, 0, 0.08);
     }
 
     .toolbarBtn {

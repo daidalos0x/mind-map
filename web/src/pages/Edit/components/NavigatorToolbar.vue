@@ -267,6 +267,8 @@ export default {
   font-size: 12px;
   display: flex;
   align-items: center;
+  // 统一由容器的 gap 控制间距，组件自带的 margin 会叠加出疏密不均
+  gap: 16px;
 
   &.isDark {
     background: #262a2e;
@@ -283,11 +285,8 @@ export default {
   }
 
   .item {
-    margin-right: 20px;
-
-    &:last-of-type {
-      margin-right: 0;
-    }
+    display: flex;
+    align-items: center;
 
     a {
       color: #303133;
