@@ -1,0 +1,72 @@
+name: Bug report
+description: Something does not work in the editor, the desktop app or the build
+title: '[Bug] '
+labels: ['bug', 'needs triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please fill in every required field — issues without a reproduction or a version are hard to act on and may be closed.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Before you start
+      options:
+        - label: I searched the open and closed issues and this is not a duplicate.
+          required: true
+        - label: I am on the latest release, or on the latest `main` when building from source.
+          required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: What did you expect to happen, and what happened instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered steps someone else can follow. Say what you clicked and what you saw.
+      placeholder: |
+        1. Open ...
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Windows
+        - Linux (AppImage)
+        - Linux (deb)
+        - Web browser
+        - Build / development setup
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The app menu on macOS, the home screen on Windows/Linux, or the commit SHA when building from source.
+      placeholder: '0.1.2'
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs, screenshots or recordings
+      description: Console output, error dialogs, screen recordings. Drag files into this field.
+      render: shell
+    validations:
+      required: false

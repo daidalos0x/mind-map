@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/phaethix/mind-map#readme
+    about: Install steps, build instructions, updates and AI configuration.
+  - name: Latest release
+    url: https://github.com/phaethix/mind-map/releases
+    about: Check whether the problem is already fixed in a newer version.

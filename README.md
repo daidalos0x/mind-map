@@ -83,6 +83,10 @@ make bootstrap # toolchain only
 
 AI generation reads `baseUrl`, `model` and `apiKey` from `ai.json` in the app config folder.
 
+## Contributing
+
+Issues and pull requests follow [CONTRIBUTING.md](CONTRIBUTING.md): use the issue forms, keep one concern per change, and run the checks listed there.
+
 ## Credits
 
 - Built on [SimpleMindMap](https://github.com/wanglin2/mind-map) by [wanglin2](https://github.com/wanglin2) — MIT, notice kept in [LICENSE](./LICENSE).
