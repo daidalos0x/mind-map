@@ -85,7 +85,7 @@ AI generation reads `baseUrl`, `model` and `apiKey` from `ai.json` in the app co
 
 ## Contributing
 
-Issues and pull requests follow [CONTRIBUTING.md](CONTRIBUTING.md): use the issue forms, keep one concern per change, and run the checks listed there.
+Issues and pull requests follow [CONTRIBUTING.md](CONTRIBUTING.md): use the issue forms, keep one concern per change, and run the checks listed there. Security problems should go through [SECURITY.md](SECURITY.md) rather than the public tracker.
 
 ## Credits
 
