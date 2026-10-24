@@ -31,6 +31,16 @@ Issues that stay incomplete for two weeks may be closed. They can be reopened on
 6. **Update the documentation.** Behaviour changes belong in the README or in a code comment next to the change.
 7. **Describe the verification.** State which platform you tested on and what you ran. CI does not cover the desktop shell on macOS or Windows.
 
+### Pull request titles
+
+The merged title becomes the commit subject on `main`, so it follows the same rule as commits: `type: lowercase imperative summary`, one of `feat`, `fix`, `perf`, `docs`, `style`, `refactor`, `test`, `build`, `ci`, `chore`, `revert`. No trailing period. A CI check (`title`) rejects anything else, and it is required to merge.
+
+## Merging
+
+- Every pull request needs the `title`, `format` and `build` checks to pass, and every review conversation resolved, before it can be merged.
+- Pull requests are squashed into a single commit, using the pull request title as the subject. Write the body for the reader: it is what the merge commit and the release notes are built from.
+- Force pushes and branch deletions on `main` are disabled.
+
 ## Build notes
 
 - **Node 14+** is required everywhere. `scripts/bootstrap.sh` only installs Node automatically on macOS; on Linux and Windows install it yourself and run `make` again.
