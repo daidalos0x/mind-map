@@ -1,6 +1,8 @@
 # 依赖更新交给 Dependabot：
-# - 次要版本和补丁合并成一个 PR，主版本也各自合并成一个，避免一个依赖一个 PR
-# - vite 和 eslint 的主版本属于破坏性升级，需要单独规划，先忽略
+# - 只自动处理次要版本和补丁，合并成每个生态一个 PR
+# - 主版本（vite、eslint、vue-router、uuid、zip、rfd 等）需要人工评估，
+#   统一忽略；升级时手动改 package.json / Cargo.toml，或临时移除对应 ignore
+# - GitHub Actions 的主版本单独分组，这类升级通常只改运行时版本
 version: 2
 updates:
   - package-ecosystem: npm
@@ -12,9 +14,9 @@ updates:
       minor-and-patch:
         patterns: ['*']
         update-types: ['minor', 'patch']
-      major:
-        patterns: ['*']
-        update-types: ['major']
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: npm
     directory: /web
@@ -25,13 +27,8 @@ updates:
       minor-and-patch:
         patterns: ['*']
         update-types: ['minor', 'patch']
-      major:
-        patterns: ['*']
-        update-types: ['major']
     ignore:
-      - dependency-name: vite
-        update-types: ['version-update:semver-major']
-      - dependency-name: eslint
+      - dependency-name: '*'
         update-types: ['version-update:semver-major']
 
   - package-ecosystem: npm
@@ -43,9 +40,9 @@ updates:
       minor-and-patch:
         patterns: ['*']
         update-types: ['minor', 'patch']
-      major:
-        patterns: ['*']
-        update-types: ['major']
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: cargo
     directory: /desktop/src-tauri
@@ -56,9 +53,9 @@ updates:
       minor-and-patch:
         patterns: ['*']
         update-types: ['minor', 'patch']
-      major:
-        patterns: ['*']
-        update-types: ['major']
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
 
   - package-ecosystem: github-actions
     directory: /
