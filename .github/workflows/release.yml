@@ -69,14 +69,12 @@ jobs:
           # 手动触发时默认只取分支，这里显式取 tag，保证打出来的包版本号对得上
           ref: ${{ github.event.inputs.tag || github.ref }}
 
+      # 不在这里缓存 npm / cargo：tag 的 ref 每次都是新的，缓存永远命中不了，
+      # 只会在每次发布后留下几十 MB 的一次性缓存
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
         with:
           node-version: 24
-          cache: npm
-          cache-dependency-path: |
-            web/package-lock.json
-            desktop/package-lock.json
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -86,15 +84,6 @@ jobs:
       # 格式不对就别打包了，早失败比发布一个风格不一致的构建便宜
       - name: Check rust formatting
         run: cargo fmt --manifest-path desktop/src-tauri/Cargo.toml --check
-
-      - name: Cache cargo registry
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ runner.os }}-cargo-${{ hashFiles('desktop/src-tauri/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-
 
       - name: Install Linux dependencies
         if: runner.os == 'Linux'
