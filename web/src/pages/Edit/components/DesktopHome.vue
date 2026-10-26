@@ -5,8 +5,14 @@
       <button
         type="button"
         class="navItem"
-        :class="{ active: view === 'folder' && !currentPath }"
+        :class="{
+          active: view === 'folder' && !currentPath,
+          dragOver: dragOverPath === rootPath
+        }"
         @click="goAll"
+        @dragover.prevent="onDragOver(rootPath)"
+        @dragleave="onDragLeave(rootPath)"
+        @drop.prevent.stop="onDrop(rootPath)"
       >
         <span class="icon iconfont iconwenjian"></span>
         {{ $t('home.all') }}
@@ -28,8 +34,14 @@
           :key="folder.path"
           type="button"
           class="navItem"
-          :class="{ active: activeFolder === folder.path }"
+          :class="{
+            active: activeFolder === folder.path,
+            dragOver: dragOverPath === folder.path
+          }"
           @click="openFolder(folder)"
+          @dragover.prevent="onDragOver(folder.path)"
+          @dragleave="onDragLeave(folder.path)"
+          @drop.prevent.stop="onDrop(folder.path)"
         >
           <span class="icon iconfont iconwenjianjia"></span>
           <span class="label">{{ folder.name }}</span>
@@ -57,8 +69,14 @@
             <button
               type="button"
               class="crumb"
-              :class="{ current: index === listing.breadcrumb.length - 1 }"
+              :class="{
+                current: index === listing.breadcrumb.length - 1,
+                dragOver: dragOverPath === crumb.path
+              }"
               @click="openPath(crumb.path)"
+              @dragover.prevent="onDragOver(crumb.path)"
+              @dragleave="onDragLeave(crumb.path)"
+              @drop.prevent.stop="onDrop(crumb.path)"
             >
               {{ index === 0 ? $t('home.all') : crumb.name }}
             </button>
@@ -102,7 +120,11 @@
             v-for="folder in visibleFolders"
             :key="folder.path"
             class="card folderCard"
+            :class="{ dragOver: dragOverPath === folder.path }"
             @click="openFolder(folder)"
+            @dragover.prevent="onDragOver(folder.path)"
+            @dragleave="onDragLeave(folder.path)"
+            @drop.prevent.stop="onDrop(folder.path)"
           >
             <span class="folderGlyph"></span>
             <div class="folderName">{{ folder.name }}</div>
@@ -112,6 +134,10 @@
             v-for="file in visibleFiles"
             :key="file.path"
             class="card fileCard"
+            :class="{ dragging: draggingPath === file.path }"
+            draggable="true"
+            @dragstart="onDragStart($event, file)"
+            @dragend="onDragEnd"
             @click="openFile(file)"
           >
             <div class="thumb">
@@ -146,8 +172,26 @@
               </el-dropdown>
             </div>
             <div class="meta">
-              <div class="name">{{ file.name }}</div>
-              <div class="time">{{ formatTime(file.modifiedMs) }}</div>
+              <input
+                v-if="renamingPath === file.path"
+                ref="renameInput"
+                v-model="renameValue"
+                class="renameInput"
+                @click.stop
+                @keydown.enter.stop.prevent="commitRename(file)"
+                @keydown.esc.stop.prevent="cancelRename"
+                @blur="commitRename(file)"
+              />
+              <template v-else>
+                <div
+                  class="name"
+                  :title="file.name"
+                  @dblclick.stop="startRename(file)"
+                >
+                  {{ file.name }}
+                </div>
+                <div class="time">{{ formatTime(file.modifiedMs) }}</div>
+              </template>
             </div>
           </article>
         </div>
@@ -225,7 +269,13 @@ export default {
       movingFile: null,
       movePath: null,
       moveListing: { path: '', breadcrumb: [], folders: [] },
-      searchTimer: null
+      searchTimer: null,
+      rootPath: '',
+      draggingPath: '',
+      dragOverPath: '',
+      renamingPath: '',
+      renameValue: '',
+      renaming: false
     }
   },
   computed: {
@@ -324,6 +374,7 @@ export default {
       try {
         const listing = await invoke('library_list', { dir: null })
         this.rootFolders = listing.folders || []
+        this.rootPath = listing.path
       } catch (error) {
         console.log(error)
         this.rootFolders = []
@@ -421,7 +472,7 @@ export default {
 
     onCommand(command, file) {
       if (command === 'rename') {
-        this.renameFile(file)
+        this.startRename(file)
       } else if (command === 'move') {
         this.openMove(file)
       } else if (command === 'delete') {
@@ -429,27 +480,84 @@ export default {
       }
     },
 
-    async renameFile(file) {
-      let name = ''
-      try {
-        const result = await this.$prompt(
-          this.$t('home.name'),
-          this.$t('home.rename'),
-          {
-            inputValue: file.name,
-            confirmButtonText: this.$t('home.confirm'),
-            cancelButtonText: this.$t('home.cancel')
-          }
-        )
-        name = String(result.value || '').trim()
-      } catch (error) {
+    startRename(file) {
+      this.renamingPath = file.path
+      this.renameValue = file.name
+      this.$nextTick(() => {
+        const refs = this.$refs.renameInput
+        const input = Array.isArray(refs) ? refs[0] : refs
+        if (input) {
+          input.focus()
+          input.select()
+        }
+      })
+    },
+
+    cancelRename() {
+      this.renamingPath = ''
+      this.renameValue = ''
+    },
+
+    async commitRename(file) {
+      if (this.renaming || !this.renamingPath) {
         return
       }
+      const name = this.renameValue.trim()
       if (!name || name === file.name) {
+        this.cancelRename()
         return
       }
+      this.renaming = true
       try {
         await invoke('rename_file', { path: file.path, name })
+        this.cancelRename()
+        await this.reload()
+      } catch (error) {
+        this.cancelRename()
+        this.notify(error)
+      } finally {
+        this.renaming = false
+      }
+    },
+
+    onDragStart(event, file) {
+      this.draggingPath = file.path
+      if (event.dataTransfer) {
+        event.dataTransfer.effectAllowed = 'move'
+        event.dataTransfer.setData('text/plain', file.path)
+      }
+    },
+
+    onDragEnd() {
+      this.draggingPath = ''
+      this.dragOverPath = ''
+    },
+
+    onDragOver(path) {
+      if (this.draggingPath) {
+        this.dragOverPath = path
+      }
+    },
+
+    onDragLeave(path) {
+      if (this.dragOverPath === path) {
+        this.dragOverPath = ''
+      }
+    },
+
+    async onDrop(path) {
+      const source = this.draggingPath
+      this.draggingPath = ''
+      this.dragOverPath = ''
+      if (!source) {
+        return
+      }
+      const target = path || this.rootPath
+      if (!target || this.dirOf(source) === target) {
+        return
+      }
+      try {
+        await invoke('library_move', { path: source, dir: target })
         await this.reload()
       } catch (error) {
         this.notify(error)
@@ -581,6 +689,11 @@ export default {
 
     .more:hover {
       background: hsla(0, 0%, 100%, 0.1);
+    }
+
+    .renameInput {
+      background: #2c2c2e;
+      color: #f5f5f7;
     }
 
     .search input {
@@ -851,6 +964,18 @@ export default {
   white-space: nowrap;
 }
 
+// 拖拽反馈：可放置的目标高亮，被拖动的卡片变淡
+.folderCard.dragOver,
+.navItem.dragOver,
+.crumb.dragOver {
+  background: rgba(64, 158, 255, 0.12);
+  box-shadow: inset 0 0 0 2px #409eff;
+}
+
+.fileCard.dragging {
+  opacity: 0.45;
+}
+
 .fileCard {
   overflow: hidden;
 }
@@ -914,6 +1039,20 @@ export default {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .renameInput {
+    width: 100%;
+    height: 22px;
+    padding: 0 6px;
+    border: none;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 0 0 1px #409eff inset;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1d1d1f;
+    outline: none;
   }
 
   .time {
