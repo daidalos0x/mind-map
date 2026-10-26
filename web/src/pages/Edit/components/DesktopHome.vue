@@ -99,6 +99,18 @@
               ×
             </button>
           </label>
+          <span v-if="version" class="appVersion">v{{ version }}</span>
+          <button
+            v-if="!isMac()"
+            type="button"
+            class="secondary"
+            @click="$bus.$emit('checkUpdate')"
+          >
+            {{ $t('updater.check') }}
+          </button>
+          <button type="button" class="secondary" @click="openExternal">
+            {{ $t('home.open') }}
+          </button>
           <button type="button" class="primary" @click="createFile">
             {{ $t('home.new') }}
           </button>
@@ -219,12 +231,17 @@
                 @blur="commitRename(file)"
               />
               <template v-else>
-                <div
-                  class="name"
-                  :title="file.name"
-                  @dblclick.stop="startRename(file)"
-                >
-                  {{ file.name }}
+                <div class="nameRow">
+                  <div class="name" :title="file.name">{{ file.name }}</div>
+                  <button
+                    type="button"
+                    class="nameEdit"
+                    :title="$t('home.rename')"
+                    @click.stop="startRename(file)"
+                    @mousedown.stop
+                  >
+                    <span class="iconfont iconbianji"></span>
+                  </button>
                 </div>
                 <div class="time">{{ formatTime(file.modifiedMs) }}</div>
               </template>
@@ -288,7 +305,7 @@
 
 <script>
 import { mapState } from 'vuex'
-import { invoke } from '@/utils/desktop'
+import { isMac, invoke } from '@/utils/desktop'
 
 // 桌面端首页：直接以磁盘目录为结构，不维护额外索引
 export default {
@@ -307,6 +324,7 @@ export default {
       moveListing: { path: '', breadcrumb: [], folders: [] },
       searchTimer: null,
       rootPath: '',
+      version: '',
       draggingPath: '',
       dragOverPath: '',
       pointerDrag: null,
@@ -355,8 +373,10 @@ export default {
     },
 
     canMoveHere() {
+      // movePath 为空说明目录没加载成功，此时不能落点，否则会被当成根目录
       return Boolean(
         this.movingFile &&
+        this.movePath &&
         this.movePath !== this.dirOf(this.movingFile.path) &&
         this.movePath !== this.movingFile.path
       )
@@ -364,6 +384,16 @@ export default {
   },
   created() {
     this.reload()
+    // macOS 的版本号和更新入口都在应用菜单里，界面不再重复
+    if (!isMac()) {
+      invoke('desktop_version')
+        .then(version => {
+          this.version = version
+        })
+        .catch(error => {
+          console.log(error)
+        })
+    }
   },
   mounted() {
     // WKWebView 不支持页面内的 HTML5 拖拽，统一改成指针事件实现
@@ -379,6 +409,8 @@ export default {
     this.cancelPointerDrag()
   },
   methods: {
+    isMac,
+
     dirOf(path) {
       const index = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'))
       return index > 0 ? path.slice(0, index) : ''
@@ -485,6 +517,22 @@ export default {
         const session = await invoke('library_create_file', {
           dir: dir || null
         })
+        if (window.__desktopShow) {
+          window.__desktopShow(session)
+        }
+        this.$emit('open')
+      } catch (error) {
+        this.notify(error)
+      }
+    },
+
+    // 打开文档目录之外的文件：走系统文件选择器
+    async openExternal() {
+      try {
+        const session = await invoke('open_file')
+        if (!session) {
+          return
+        }
         if (window.__desktopShow) {
           window.__desktopShow(session)
         }
@@ -647,7 +695,11 @@ export default {
     },
 
     onPointerDown(event, file) {
-      if (event.button !== 0 || event.target.closest('.more')) {
+      // 菜单、改名输入框和铅笔按钮都不应该触发拖拽
+      if (
+        event.button !== 0 ||
+        event.target.closest('.more, .renameInput, .nameEdit')
+      ) {
         return
       }
       this.pointerDrag = {
@@ -774,7 +826,7 @@ export default {
     },
 
     async confirmMove() {
-      if (!this.movingFile) {
+      if (!this.movingFile || !this.movePath) {
         return
       }
       try {
@@ -1223,6 +1275,15 @@ export default {
   opacity: 1;
 }
 
+.card:hover .nameEdit {
+  opacity: 1;
+}
+
+.appVersion {
+  color: #8e8e93;
+  font-size: 12px;
+}
+
 // 文件和文件夹共用同一个就地改名输入框
 .renameInput {
   width: 100%;
@@ -1242,12 +1303,38 @@ export default {
 .meta {
   padding: 10px 12px 12px;
 
+  .nameRow {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
   .name {
+    flex: 1;
+    min-width: 0;
     font-size: 13px;
     font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .nameEdit {
+    flex-shrink: 0;
+    padding: 2px;
+    border: none;
+    background: transparent;
+    color: #8e8e93;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0;
+    transition:
+      opacity 0.15s,
+      color 0.15s;
+
+    &:hover {
+      color: #409eff;
+    }
   }
 
   .time {

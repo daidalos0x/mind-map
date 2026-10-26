@@ -779,6 +779,9 @@ fn initial_state(app: &AppHandle) -> Result<AppState, String> {
         fs::rename(&legacy_dir, &docs_dir).map_err(|error| error.to_string())?;
     }
     fs::create_dir_all(&docs_dir).map_err(|error| error.to_string())?;
+    // 统一成规范路径再存进 state：Windows 上 canonicalize 会加 \\?\ 前缀，
+    // 如果不统一，后面 docs_root() 和 docs_dir 比较会全部失配
+    let docs_dir = fs::canonicalize(&docs_dir).unwrap_or(docs_dir);
     let app_dir = app
         .path()
         .app_data_dir()
@@ -1105,24 +1108,9 @@ fn library_move(
         return Err("目标位置已有同名文件".to_string());
     }
     fs::rename(&source, &dest).map_err(|error| error.to_string())?;
-    let old_thumb = thumbnail_file(&state, &path);
-    if old_thumb.exists() {
-        let _ = fs::rename(old_thumb, thumbnail_file(&state, &dest.to_string_lossy()));
-    }
-    // 移动后同步会话与最近列表，否则「打开的文件」会指向不存在的路径
-    let from = source.to_string_lossy().into_owned();
-    let to = dest.to_string_lossy().into_owned();
-    if let Ok(mut session) = state.session.lock() {
-        if session.current_path == from {
-            session.current_path = to.clone();
-        }
-        for item in session.recent.iter_mut() {
-            if item == &from {
-                *item = to.clone();
-            }
-        }
-        let _ = persist_session(&state, &session);
-    }
+    // 移动后同步缩略图与会话路径，否则「打开的文件」会指向不存在的位置
+    remap_thumbnails(&state, &source, &dest);
+    remap_session_paths(&state, &source, &dest);
     Ok(file_card(&state, &dest))
 }
 

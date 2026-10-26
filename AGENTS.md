@@ -41,7 +41,7 @@ Use Node 20.11 or newer: the build toolchain relies on `import.meta.dirname`.
 - Return Chinese, human-readable error strings from Tauri commands.
 - Register every new Tauri command in `desktop/src-tauri/build.rs` and grant it in `desktop/src-tauri/capabilities/default.json`.
 - Regenerate icons from the SVG instead of editing PNGs: `cd desktop && npx tauri icon ../assets/icon/icon.svg && cp src-tauri/icons/icon.ico ../web/public/logo.ico`.
-- Commit with Conventional Commits (`feat:`, `fix:`, `perf:`, `docs:`, `build:`, `ci:`, `chore:`), lowercase and imperative, no trailing period.
+- Commit with Conventional Commits (`feat:`, `fix:`, `perf:`, `docs:`, `style:`, `refactor:`, `test:`, `build:`, `ci:`, `chore:`, `revert:`), lowercase and imperative, no trailing period.
 
 ## Releases
 
