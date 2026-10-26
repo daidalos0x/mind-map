@@ -133,14 +133,14 @@
             <span class="folderGlyph"></span>
             <div class="folderHead">
               <input
-                v-if="folderRenamingPath === folder.path"
-                ref="folderRenameInput"
-                v-model="folderRenameValue"
+                v-if="renamingPath === folder.path"
+                ref="renameInput"
+                v-model="renameValue"
                 class="renameInput"
                 @click.stop
-                @keydown.enter.stop.prevent="commitRenameFolder(folder)"
-                @keydown.esc.stop.prevent="cancelRenameFolder"
-                @blur="commitRenameFolder(folder)"
+                @keydown.enter.stop.prevent="commitRename(folder)"
+                @keydown.esc.stop.prevent="cancelRename"
+                @blur="commitRename(folder)"
               />
               <template v-else>
                 <div class="folderName" :title="folder.name">
@@ -237,7 +237,7 @@
                     type="button"
                     class="nameEdit"
                     :title="$t('home.rename')"
-                    @click.stop="startRename(file)"
+                    @click.stop="beginRename(file, 'file')"
                     @mousedown.stop
                   >
                     <span class="iconfont iconbianji"></span>
@@ -332,10 +332,8 @@ export default {
       ghost: null,
       renamingPath: '',
       renameValue: '',
-      renaming: false,
-      folderRenamingPath: '',
-      folderRenameValue: '',
-      renamingFolder: false
+      renamingKind: '',
+      renaming: false
     }
   },
   computed: {
@@ -576,17 +574,27 @@ export default {
 
     onCommand(command, file) {
       if (command === 'rename') {
-        this.startRename(file)
+        this.beginRename(file, 'file')
       } else if (command === 'move') {
         this.openMove(file)
       } else if (command === 'delete') {
-        this.deleteFile(file)
+        this.removeEntry(file, 'file')
       }
     },
 
-    startRename(file) {
-      this.renamingPath = file.path
-      this.renameValue = file.name
+    onFolderCommand(command, folder) {
+      if (command === 'rename') {
+        this.beginRename(folder, 'folder')
+      } else if (command === 'delete') {
+        this.removeEntry(folder, 'folder')
+      }
+    },
+
+    // 文件和文件夹共用一套就地改名状态，kind 只决定调用哪个命令
+    beginRename(item, kind) {
+      this.renamingPath = item.path
+      this.renameValue = item.name
+      this.renamingKind = kind
       this.$nextTick(() => {
         const refs = this.$refs.renameInput
         const input = Array.isArray(refs) ? refs[0] : refs
@@ -600,20 +608,25 @@ export default {
     cancelRename() {
       this.renamingPath = ''
       this.renameValue = ''
+      this.renamingKind = ''
     },
 
-    async commitRename(file) {
+    async commitRename(item) {
       if (this.renaming || !this.renamingPath) {
         return
       }
       const name = this.renameValue.trim()
-      if (!name || name === file.name) {
+      if (!name || name === item.name) {
         this.cancelRename()
         return
       }
       this.renaming = true
       try {
-        await invoke('rename_file', { path: file.path, name })
+        if (this.renamingKind === 'folder') {
+          await invoke('library_rename_folder', { path: item.path, name })
+        } else {
+          await invoke('rename_file', { path: item.path, name })
+        }
         this.cancelRename()
         await this.reload()
       } catch (error) {
@@ -624,70 +637,26 @@ export default {
       }
     },
 
-    onFolderCommand(command, folder) {
-      if (command === 'rename') {
-        this.startRenameFolder(folder)
-      } else if (command === 'delete') {
-        this.deleteFolder(folder)
+    async removeEntry(item, kind) {
+      const tip =
+        kind === 'folder'
+          ? this.$t('home.deleteFolderTip')
+          : this.$t('home.deleteTip')
+      try {
+        await this.$confirm(tip, this.$t('home.delete'), {
+          confirmButtonText: this.$t('home.confirm'),
+          cancelButtonText: this.$t('home.cancel'),
+          type: 'warning'
+        })
+      } catch (error) {
+        return
       }
-    },
-
-    startRenameFolder(folder) {
-      this.folderRenamingPath = folder.path
-      this.folderRenameValue = folder.name
-      this.$nextTick(() => {
-        const refs = this.$refs.folderRenameInput
-        const input = Array.isArray(refs) ? refs[0] : refs
-        if (input) {
-          input.focus()
-          input.select()
+      try {
+        if (kind === 'folder') {
+          await invoke('library_delete_folder', { path: item.path })
+        } else {
+          await invoke('delete_file', { path: item.path })
         }
-      })
-    },
-
-    cancelRenameFolder() {
-      this.folderRenamingPath = ''
-      this.folderRenameValue = ''
-    },
-
-    async commitRenameFolder(folder) {
-      if (this.renamingFolder || !this.folderRenamingPath) {
-        return
-      }
-      const name = this.folderRenameValue.trim()
-      if (!name || name === folder.name) {
-        this.cancelRenameFolder()
-        return
-      }
-      this.renamingFolder = true
-      try {
-        await invoke('library_rename_folder', { path: folder.path, name })
-        this.cancelRenameFolder()
-        await this.reload()
-      } catch (error) {
-        this.cancelRenameFolder()
-        this.notify(error)
-      } finally {
-        this.renamingFolder = false
-      }
-    },
-
-    async deleteFolder(folder) {
-      try {
-        await this.$confirm(
-          this.$t('home.deleteFolderTip'),
-          this.$t('home.delete'),
-          {
-            confirmButtonText: this.$t('home.confirm'),
-            cancelButtonText: this.$t('home.cancel'),
-            type: 'warning'
-          }
-        )
-      } catch (error) {
-        return
-      }
-      try {
-        await invoke('library_delete_folder', { path: folder.path })
         await this.reload()
       } catch (error) {
         this.notify(error)
@@ -789,24 +758,6 @@ export default {
         this.ghost.parentNode.removeChild(this.ghost)
       }
       this.ghost = null
-    },
-
-    async deleteFile(file) {
-      try {
-        await this.$confirm(this.$t('home.deleteTip'), this.$t('home.delete'), {
-          confirmButtonText: this.$t('home.confirm'),
-          cancelButtonText: this.$t('home.cancel'),
-          type: 'warning'
-        })
-      } catch (error) {
-        return
-      }
-      try {
-        await invoke('delete_file', { path: file.path })
-        await this.reload()
-      } catch (error) {
-        this.notify(error)
-      }
     },
 
     async openMove(file) {
