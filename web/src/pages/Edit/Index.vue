@@ -3,7 +3,14 @@
     class="container"
     :class="{ isDark: isDark, activeSidebar: activeSidebar }"
   >
-    <FileHome v-if="show && screen === 'home'" @open="enterEditor"></FileHome>
+    <FileHome
+      v-if="show && screen === 'home' && !isDesktop()"
+      @open="enterEditor"
+    ></FileHome>
+    <DesktopHome
+      v-else-if="show && screen === 'home'"
+      @open="enterEditor"
+    ></DesktopHome>
     <template v-if="show && screen === 'edit'">
       <Toolbar v-if="!isZenMode"></Toolbar>
       <Edit></Edit>
@@ -16,7 +23,9 @@
 import Toolbar from './components/Toolbar.vue'
 import Edit from './components/Edit.vue'
 import FileHome from './components/FileHome.vue'
+import DesktopHome from './components/DesktopHome.vue'
 import Updater from './components/Updater.vue'
+import { isDesktop } from '@/utils/desktop'
 import { mapState, mapMutations } from 'vuex'
 import { getData, getLocalConfig } from '@/api'
 import { browserFileLibrary, seedDemoDocument } from '@/utils/fileLibrary'
@@ -50,6 +59,7 @@ export default {
     Toolbar,
     Edit,
     FileHome,
+    DesktopHome,
     Updater
   },
   data() {
@@ -104,6 +114,7 @@ export default {
   },
   methods: {
     ...mapMutations(['setLocalConfig']),
+    isDesktop,
 
     enterEditor() {
       this.screen = 'edit'

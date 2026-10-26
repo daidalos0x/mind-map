@@ -343,7 +343,19 @@ export default {
     back: '首頁',
     name: '名稱',
     confirm: '確定',
-    cancel: '取消'
+    cancel: '取消',
+    all: '全部檔案',
+    recent: '最近開啟',
+    folders: '資料夾',
+    noFolders: '還沒有資料夾',
+    newFolder: '新增資料夾',
+    search: '搜尋檔案',
+    emptyFolder: '這裡還沒有檔案',
+    noResults: '沒有找到符合的檔案',
+    moveTo: '移動到',
+    moveHere: '移到這裡',
+    reveal: '開啟資料夾',
+    actionFailed: '操作失敗，請重試'
   },
   updater: {
     title: '發現新版本',

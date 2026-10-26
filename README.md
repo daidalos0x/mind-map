@@ -19,6 +19,7 @@
 
 - **Lightweight** — Tauri 2 on the system WebView: 10 MB on macOS, ~70 MB RAM idle.
 - **Local-first** — documents are plain `.xmind` files on disk, no account, nothing uploaded.
+- **Real folders** — organise documents in folders under `~/Documents/Mind`, so the file manager and the app always agree.
 - **Two views of one document** — a classic mind map, or a Mermaid `mindmap` source with live preview.
 - **Full editor** — 14 layouts, 50+ themes, dark mode, rich text, notes, tags, images, formulas and an outline view.
 - **AI assisted** — generate a diagram from a prompt through your own OpenAI-compatible endpoint.

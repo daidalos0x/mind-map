@@ -342,7 +342,19 @@ export default {
     back: '首页',
     name: '名称',
     confirm: '确定',
-    cancel: '取消'
+    cancel: '取消',
+    all: '全部文件',
+    recent: '最近打开',
+    folders: '文件夹',
+    noFolders: '还没有文件夹',
+    newFolder: '新建文件夹',
+    search: '搜索文件',
+    emptyFolder: '这里还没有文件',
+    noResults: '没有找到匹配的文件',
+    moveTo: '移动到',
+    moveHere: '移到这里',
+    reveal: '打开文件夹',
+    actionFailed: '操作失败，请重试'
   },
   updater: {
     title: '发现新版本',

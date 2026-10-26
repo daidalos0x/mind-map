@@ -351,7 +351,19 @@ export default {
     back: 'Home',
     name: 'Name',
     confirm: 'OK',
-    cancel: 'Cancel'
+    cancel: 'Cancel',
+    all: 'All files',
+    recent: 'Recent',
+    folders: 'Folders',
+    noFolders: 'No folders yet',
+    newFolder: 'New folder',
+    search: 'Search files',
+    emptyFolder: 'Nothing here yet',
+    noResults: 'No matching files',
+    moveTo: 'Move to',
+    moveHere: 'Move here',
+    reveal: 'Open folder',
+    actionFailed: 'Something went wrong, please try again'
   },
   updater: {
     title: 'Update available',

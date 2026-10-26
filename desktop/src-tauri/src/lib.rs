@@ -919,6 +919,273 @@ fn list_files(state: State<AppState>) -> Result<Vec<FileCard>, String> {
     Ok(cards)
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct FolderCard {
+    path: String,
+    name: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct Crumb {
+    // 根目录留空，由前端显示成「全部文件」
+    name: String,
+    path: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct LibraryListing {
+    path: String,
+    breadcrumb: Vec<Crumb>,
+    folders: Vec<FolderCard>,
+    files: Vec<FileCard>,
+}
+
+// 前端传来的路径一律限制在文档目录内，防止误操作到别处
+fn docs_root(state: &AppState) -> Result<PathBuf, String> {
+    fs::canonicalize(&state.docs_dir).map_err(|error| error.to_string())
+}
+
+fn canonical_inside(root: &Path, path: &Path) -> Result<PathBuf, String> {
+    let canonical = fs::canonicalize(path).map_err(|_| "路径不存在".to_string())?;
+    if canonical.starts_with(root) {
+        Ok(canonical)
+    } else {
+        Err("路径不在文档目录内".to_string())
+    }
+}
+
+fn resolve_dir(state: &AppState, raw: Option<String>) -> Result<PathBuf, String> {
+    let root = docs_root(state)?;
+    let raw = raw.unwrap_or_default();
+    let raw = raw.trim();
+    if raw.is_empty() {
+        return Ok(root);
+    }
+    let candidate = PathBuf::from(raw);
+    let target = if candidate.is_absolute() {
+        candidate
+    } else {
+        root.join(candidate)
+    };
+    let dir = canonical_inside(&root, &target)?;
+    if !dir.is_dir() {
+        return Err("目录不存在".to_string());
+    }
+    Ok(dir)
+}
+
+fn valid_folder_name(name: &str) -> bool {
+    !name.is_empty()
+        && name != "."
+        && name != ".."
+        && !name
+            .chars()
+            .any(|value| matches!(value, '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|'))
+}
+
+fn folder_card(path: &Path) -> FolderCard {
+    FolderCard {
+        name: file_name_of(path),
+        path: path.to_string_lossy().into_owned(),
+    }
+}
+
+fn breadcrumbs(root: &Path, dir: &Path) -> Vec<Crumb> {
+    let mut chain = Vec::new();
+    let mut current = dir;
+    while current != root {
+        chain.push(current.to_path_buf());
+        match current.parent() {
+            Some(parent) => current = parent,
+            None => break,
+        }
+    }
+    chain.push(root.to_path_buf());
+    chain.reverse();
+    chain
+        .into_iter()
+        .map(|path| Crumb {
+            name: if path == root {
+                String::new()
+            } else {
+                file_name_of(&path)
+            },
+            path: path.to_string_lossy().into_owned(),
+        })
+        .collect()
+}
+
+#[tauri::command]
+fn library_list(state: State<AppState>, dir: Option<String>) -> Result<LibraryListing, String> {
+    let root = docs_root(&state)?;
+    let current = resolve_dir(&state, dir)?;
+    let mut folders = Vec::new();
+    let mut files = Vec::new();
+    if let Ok(entries) = fs::read_dir(&current) {
+        for entry in entries.flatten() {
+            let Ok(file_type) = entry.file_type() else {
+                continue;
+            };
+            let path = entry.path();
+            if file_type.is_dir() {
+                folders.push(folder_card(&path));
+            } else if file_type.is_file() && is_xmind(&path) {
+                files.push(file_card(&state, &path));
+            }
+        }
+    }
+    folders.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    files.sort_by(|a, b| b.modified_ms.cmp(&a.modified_ms));
+    Ok(LibraryListing {
+        path: current.to_string_lossy().into_owned(),
+        breadcrumb: breadcrumbs(&root, &current),
+        folders,
+        files,
+    })
+}
+
+#[tauri::command]
+fn library_create_folder(
+    state: State<AppState>,
+    dir: Option<String>,
+    name: String,
+) -> Result<FolderCard, String> {
+    let parent = resolve_dir(&state, dir)?;
+    let name = name.trim();
+    if !valid_folder_name(name) {
+        return Err("文件夹名称无效".to_string());
+    }
+    let target = parent.join(name);
+    if target.exists() {
+        return Err("已存在同名文件夹".to_string());
+    }
+    fs::create_dir(&target).map_err(|error| error.to_string())?;
+    Ok(folder_card(&target))
+}
+
+#[tauri::command]
+fn library_create_file(
+    app: AppHandle,
+    state: State<AppState>,
+    dir: Option<String>,
+) -> Result<DesktopSession, String> {
+    let target = resolve_dir(&state, dir)?;
+    let path = next_untitled(&target);
+    switch_to(&state, &app, path)
+}
+
+#[tauri::command]
+fn library_move(
+    state: State<AppState>,
+    path: String,
+    dir: Option<String>,
+) -> Result<FileCard, String> {
+    let root = docs_root(&state)?;
+    let source = canonical_inside(&root, &PathBuf::from(&path))?;
+    if !source.is_file() || !is_xmind(&source) {
+        return Err("只能移动 .xmind 文件".to_string());
+    }
+    let target_dir = resolve_dir(&state, dir)?;
+    let dest = target_dir.join(file_name_of(&source));
+    if dest == source {
+        return Ok(file_card(&state, &source));
+    }
+    if dest.exists() {
+        return Err("目标位置已有同名文件".to_string());
+    }
+    fs::rename(&source, &dest).map_err(|error| error.to_string())?;
+    let old_thumb = thumbnail_file(&state, &path);
+    if old_thumb.exists() {
+        let _ = fs::rename(old_thumb, thumbnail_file(&state, &dest.to_string_lossy()));
+    }
+    // 移动后同步会话与最近列表，否则「打开的文件」会指向不存在的路径
+    let from = source.to_string_lossy().into_owned();
+    let to = dest.to_string_lossy().into_owned();
+    if let Ok(mut session) = state.session.lock() {
+        if session.current_path == from {
+            session.current_path = to.clone();
+        }
+        for item in session.recent.iter_mut() {
+            if item == &from {
+                *item = to.clone();
+            }
+        }
+        let _ = persist_session(&state, &session);
+    }
+    Ok(file_card(&state, &dest))
+}
+
+#[tauri::command]
+fn library_recent(state: State<AppState>) -> Result<Vec<FileCard>, String> {
+    let recent = state
+        .session
+        .lock()
+        .map_err(|error| error.to_string())?
+        .recent
+        .clone();
+    let mut seen = HashSet::new();
+    let mut cards = Vec::new();
+    for item in recent {
+        if !seen.insert(item.clone()) {
+            continue;
+        }
+        let path = PathBuf::from(&item);
+        if path.is_file() && is_xmind(&path) {
+            cards.push(file_card(&state, &path));
+        }
+        if cards.len() >= 12 {
+            break;
+        }
+    }
+    Ok(cards)
+}
+
+fn collect_matches(dir: &Path, query: &str, out: &mut Vec<PathBuf>, depth: usize) {
+    if depth > 8 || out.len() >= 200 {
+        return;
+    }
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let Ok(file_type) = entry.file_type() else {
+            continue;
+        };
+        let path = entry.path();
+        if file_type.is_dir() {
+            if file_name_of(&path).starts_with('.') {
+                continue;
+            }
+            collect_matches(&path, query, out, depth + 1);
+        } else if file_type.is_file()
+            && is_xmind(&path)
+            && file_name_of(&path).to_lowercase().contains(query)
+        {
+            out.push(path);
+        }
+    }
+}
+
+#[tauri::command]
+fn library_search(state: State<AppState>, query: String) -> Result<Vec<FileCard>, String> {
+    let query = query.trim().to_lowercase();
+    if query.is_empty() {
+        return Ok(Vec::new());
+    }
+    let root = docs_root(&state)?;
+    let mut matches = Vec::new();
+    collect_matches(&root, &query, &mut matches, 0);
+    matches.sort_by(|a, b| modified_ms(b).cmp(&modified_ms(a)));
+    matches.truncate(100);
+    Ok(matches
+        .into_iter()
+        .map(|path| file_card(&state, &path))
+        .collect())
+}
+
 #[tauri::command]
 fn open_path(
     app: AppHandle,
@@ -1435,6 +1702,12 @@ pub fn run() {
             take_pending_open,
             boot_log,
             list_files,
+            library_list,
+            library_create_folder,
+            library_create_file,
+            library_move,
+            library_recent,
+            library_search,
             open_path,
             rename_file,
             delete_file,

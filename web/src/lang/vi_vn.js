@@ -348,7 +348,19 @@ export default {
     back: 'Trang chủ',
     name: 'Tên',
     confirm: 'OK',
-    cancel: 'Hủy'
+    cancel: 'Hủy',
+    all: 'Tất cả tệp',
+    recent: 'Gần đây',
+    folders: 'Thư mục',
+    noFolders: 'Chưa có thư mục',
+    newFolder: 'Thư mục mới',
+    search: 'Tìm tệp',
+    emptyFolder: 'Chưa có gì ở đây',
+    noResults: 'Không tìm thấy tệp phù hợp',
+    moveTo: 'Di chuyển đến',
+    moveHere: 'Di chuyển vào đây',
+    reveal: 'Mở thư mục',
+    actionFailed: 'Thao tác thất bại, vui lòng thử lại'
   },
   updater: {
     title: 'Có bản cập nhật mới',
