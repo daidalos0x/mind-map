@@ -9,10 +9,8 @@
           active: view === 'folder' && !currentPath,
           dragOver: dragOverPath === rootPath
         }"
+        :data-drop-path="rootPath"
         @click="goAll"
-        @dragover.prevent="onDragOver(rootPath)"
-        @dragleave="onDragLeave(rootPath)"
-        @drop.prevent.stop="onDrop(rootPath)"
       >
         <span class="icon iconfont iconwenjian"></span>
         {{ $t('home.all') }}
@@ -38,10 +36,8 @@
             active: activeFolder === folder.path,
             dragOver: dragOverPath === folder.path
           }"
+          :data-drop-path="folder.path"
           @click="openFolder(folder)"
-          @dragover.prevent="onDragOver(folder.path)"
-          @dragleave="onDragLeave(folder.path)"
-          @drop.prevent.stop="onDrop(folder.path)"
         >
           <span class="icon iconfont iconwenjianjia"></span>
           <span class="label">{{ folder.name }}</span>
@@ -73,10 +69,8 @@
                 current: index === listing.breadcrumb.length - 1,
                 dragOver: dragOverPath === crumb.path
               }"
+              :data-drop-path="crumb.path"
               @click="openPath(crumb.path)"
-              @dragover.prevent="onDragOver(crumb.path)"
-              @dragleave="onDragLeave(crumb.path)"
-              @drop.prevent.stop="onDrop(crumb.path)"
             >
               {{ index === 0 ? $t('home.all') : crumb.name }}
             </button>
@@ -121,10 +115,8 @@
             :key="folder.path"
             class="card folderCard"
             :class="{ dragOver: dragOverPath === folder.path }"
+            :data-drop-path="folder.path"
             @click="openFolder(folder)"
-            @dragover.prevent="onDragOver(folder.path)"
-            @dragleave="onDragLeave(folder.path)"
-            @drop.prevent.stop="onDrop(folder.path)"
           >
             <span class="folderGlyph"></span>
             <div class="folderName">{{ folder.name }}</div>
@@ -135,13 +127,17 @@
             :key="file.path"
             class="card fileCard"
             :class="{ dragging: draggingPath === file.path }"
-            draggable="true"
-            @dragstart="onDragStart($event, file)"
-            @dragend="onDragEnd"
+            @mousedown="onPointerDown($event, file)"
+            @dragstart.prevent
             @click="openFile(file)"
           >
             <div class="thumb">
-              <img v-if="file.thumbnail" :src="file.thumbnail" alt="" />
+              <img
+                v-if="file.thumbnail"
+                :src="file.thumbnail"
+                alt=""
+                draggable="false"
+              />
               <span v-else class="placeholder iconfont iconwenjian"></span>
               <el-dropdown
                 class="menu"
@@ -273,6 +269,9 @@ export default {
       rootPath: '',
       draggingPath: '',
       dragOverPath: '',
+      pointerDrag: null,
+      suppressClick: false,
+      ghost: null,
       renamingPath: '',
       renameValue: '',
       renaming: false
@@ -323,8 +322,18 @@ export default {
   created() {
     this.reload()
   },
+  mounted() {
+    // WKWebView 不支持页面内的 HTML5 拖拽，统一改成指针事件实现
+    window.addEventListener('mousemove', this.onPointerMove)
+    window.addEventListener('mouseup', this.onPointerUp)
+    window.addEventListener('blur', this.cancelPointerDrag)
+  },
   beforeUnmount() {
     clearTimeout(this.searchTimer)
+    window.removeEventListener('mousemove', this.onPointerMove)
+    window.removeEventListener('mouseup', this.onPointerUp)
+    window.removeEventListener('blur', this.cancelPointerDrag)
+    this.cancelPointerDrag()
   },
   methods: {
     dirOf(path) {
@@ -412,6 +421,10 @@ export default {
     },
 
     async openFile(file) {
+      if (this.suppressClick) {
+        this.suppressClick = false
+        return
+      }
       try {
         const session = await invoke('open_path', { path: file.path })
         if (window.__desktopShow) {
@@ -520,48 +533,97 @@ export default {
       }
     },
 
-    onDragStart(event, file) {
-      this.draggingPath = file.path
-      if (event.dataTransfer) {
-        event.dataTransfer.effectAllowed = 'move'
-        event.dataTransfer.setData('text/plain', file.path)
-      }
-    },
-
-    onDragEnd() {
-      this.draggingPath = ''
-      this.dragOverPath = ''
-    },
-
-    onDragOver(path) {
-      if (this.draggingPath) {
-        this.dragOverPath = path
-      }
-    },
-
-    onDragLeave(path) {
-      if (this.dragOverPath === path) {
-        this.dragOverPath = ''
-      }
-    },
-
-    async onDrop(path) {
-      const source = this.draggingPath
-      this.draggingPath = ''
-      this.dragOverPath = ''
-      if (!source) {
+    onPointerDown(event, file) {
+      if (event.button !== 0 || event.target.closest('.more')) {
         return
       }
-      const target = path || this.rootPath
-      if (!target || this.dirOf(source) === target) {
+      this.pointerDrag = {
+        file,
+        x: event.clientX,
+        y: event.clientY,
+        active: false
+      }
+    },
+
+    onPointerMove(event) {
+      const drag = this.pointerDrag
+      if (!drag) {
+        return
+      }
+      if (!drag.active) {
+        // 移动超过阈值才算拖拽，普通点击仍然能打开文件
+        if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) < 4) {
+          return
+        }
+        drag.active = true
+        this.draggingPath = drag.file.path
+        this.suppressClick = true
+        document.body.classList.add('fileDragging')
+        this.createGhost(drag.file)
+      }
+      event.preventDefault()
+      this.moveGhost(event)
+      const target = document.elementFromPoint(event.clientX, event.clientY)
+      const zone = target && target.closest('[data-drop-path]')
+      this.dragOverPath = zone ? zone.getAttribute('data-drop-path') : ''
+    },
+
+    async onPointerUp() {
+      const drag = this.pointerDrag
+      this.pointerDrag = null
+      if (!drag || !drag.active) {
+        return
+      }
+      const target = this.dragOverPath
+      this.draggingPath = ''
+      this.dragOverPath = ''
+      document.body.classList.remove('fileDragging')
+      this.removeGhost()
+      // 拖拽结束后浏览器还会补一个 click，这里吞掉，避免误打开文件
+      window.setTimeout(() => {
+        this.suppressClick = false
+      }, 0)
+      if (!target || this.dirOf(drag.file.path) === target) {
         return
       }
       try {
-        await invoke('library_move', { path: source, dir: target })
+        await invoke('library_move', { path: drag.file.path, dir: target })
         await this.reload()
       } catch (error) {
         this.notify(error)
       }
+    },
+
+    cancelPointerDrag() {
+      this.pointerDrag = null
+      this.draggingPath = ''
+      this.dragOverPath = ''
+      this.suppressClick = false
+      document.body.classList.remove('fileDragging')
+      this.removeGhost()
+    },
+
+    createGhost(file) {
+      const ghost = document.createElement('div')
+      ghost.className = 'fileDragGhost'
+      ghost.textContent = file.name
+      document.body.appendChild(ghost)
+      this.ghost = ghost
+    },
+
+    moveGhost(event) {
+      if (!this.ghost) {
+        return
+      }
+      this.ghost.style.left = `${event.clientX}px`
+      this.ghost.style.top = `${event.clientY}px`
+    },
+
+    removeGhost() {
+      if (this.ghost && this.ghost.parentNode) {
+        this.ghost.parentNode.removeChild(this.ghost)
+      }
+      this.ghost = null
     },
 
     async deleteFile(file) {
@@ -992,6 +1054,7 @@ export default {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    -webkit-user-drag: none;
   }
 
   .placeholder {
