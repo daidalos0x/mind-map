@@ -33,6 +33,8 @@
     "allow-library-move",
     "allow-library-recent",
     "allow-library-search",
+    "allow-library-rename-folder",
+    "allow-library-delete-folder",
     "allow-open-path",
     "allow-rename-file",
     "allow-delete-file",

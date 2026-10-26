@@ -19,6 +19,8 @@ fn main() {
             "library_move",
             "library_recent",
             "library_search",
+            "library_rename_folder",
+            "library_delete_folder",
             "open_path",
             "rename_file",
             "delete_file",

@@ -706,14 +706,22 @@ fn move_to_trash(path: &Path) -> Result<(), String> {
 #[cfg(target_os = "windows")]
 fn move_to_trash(path: &Path) -> Result<(), String> {
     // 回收站没有命令行原语，借 Microsoft.VisualBasic 的 FileSystem 走 Shell 的删除
+    // 目录要用 DeleteDirectory，DeleteFile 对文件夹会直接失败
+    let method = if path.is_dir() {
+        "DeleteDirectory"
+    } else {
+        "DeleteFile"
+    };
     let mut command = Command::new("powershell");
     command
         .args([
             "-NoProfile",
             "-NonInteractive",
             "-Command",
-            "Add-Type -AssemblyName Microsoft.VisualBasic; \
-             [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($args[0], 'OnlyErrorDialogs', 'SendToRecycleBin')",
+            &format!(
+                "Add-Type -AssemblyName Microsoft.VisualBasic; \
+                 [Microsoft.VisualBasic.FileIO.FileSystem]::{method}($args[0], 'OnlyErrorDialogs', 'SendToRecycleBin')"
+            ),
         ])
         .arg(path);
     no_console_window(&mut command);
@@ -1184,6 +1192,128 @@ fn library_search(state: State<AppState>, query: String) -> Result<Vec<FileCard>
         .into_iter()
         .map(|path| file_card(&state, &path))
         .collect())
+}
+
+// 缩略图按文件全路径的十六进制命名，文件夹改名或删除时要同步处理
+fn thumbnail_path_from_name(name: &str) -> Option<String> {
+    let stem = name.strip_suffix(".jpg")?;
+    if stem.len() % 2 != 0 {
+        return None;
+    }
+    let mut bytes = Vec::with_capacity(stem.len() / 2);
+    let mut index = 0;
+    while index < stem.len() {
+        bytes.push(u8::from_str_radix(&stem[index..index + 2], 16).ok()?);
+        index += 2;
+    }
+    String::from_utf8(bytes).ok()
+}
+
+fn remap_thumbnails(state: &AppState, from: &Path, to: &Path) {
+    let Ok(entries) = fs::read_dir(thumbnails_dir(state)) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let Some(name) = path.file_name().and_then(|value| value.to_str()) else {
+            continue;
+        };
+        let Some(source) = thumbnail_path_from_name(name) else {
+            continue;
+        };
+        let Ok(rest) = Path::new(&source).strip_prefix(from) else {
+            continue;
+        };
+        let target = to.join(rest).to_string_lossy().into_owned();
+        let _ = fs::rename(&path, thumbnail_file(state, &target));
+    }
+}
+
+fn forget_thumbnails(state: &AppState, dir: &Path) {
+    let Ok(entries) = fs::read_dir(thumbnails_dir(state)) else {
+        return;
+    };
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let Some(name) = path.file_name().and_then(|value| value.to_str()) else {
+            continue;
+        };
+        let Some(source) = thumbnail_path_from_name(name) else {
+            continue;
+        };
+        if Path::new(&source).starts_with(dir) {
+            let _ = fs::remove_file(&path);
+        }
+    }
+}
+
+fn remap_session_paths(state: &AppState, from: &Path, to: &Path) {
+    if let Ok(mut session) = state.session.lock() {
+        let remap = |value: &mut String| {
+            if let Ok(rest) = PathBuf::from(&*value).strip_prefix(from) {
+                *value = to.join(rest).to_string_lossy().into_owned();
+            }
+        };
+        remap(&mut session.current_path);
+        for item in session.recent.iter_mut() {
+            remap(item);
+        }
+        let _ = persist_session(state, &session);
+    }
+}
+
+fn forget_session_paths(state: &AppState, dir: &Path) {
+    if let Ok(mut session) = state.session.lock() {
+        if PathBuf::from(&session.current_path).starts_with(dir) {
+            session.current_path.clear();
+        }
+        session
+            .recent
+            .retain(|item| !PathBuf::from(item).starts_with(dir));
+        let _ = persist_session(state, &session);
+    }
+}
+
+#[tauri::command]
+fn library_rename_folder(
+    state: State<AppState>,
+    path: String,
+    name: String,
+) -> Result<FolderCard, String> {
+    let root = docs_root(&state)?;
+    let source = canonical_inside(&root, &PathBuf::from(&path))?;
+    if !source.is_dir() || source == root {
+        return Err("只能重命名文档目录下的文件夹".to_string());
+    }
+    let name = name.trim();
+    if !valid_folder_name(name) {
+        return Err("文件夹名称无效".to_string());
+    }
+    let parent = source.parent().ok_or_else(|| "路径无效".to_string())?;
+    let dest = parent.join(name);
+    if dest == source {
+        return Ok(folder_card(&source));
+    }
+    if dest.exists() {
+        return Err("已存在同名文件夹".to_string());
+    }
+    fs::rename(&source, &dest).map_err(|error| error.to_string())?;
+    remap_thumbnails(&state, &source, &dest);
+    remap_session_paths(&state, &source, &dest);
+    Ok(folder_card(&dest))
+}
+
+#[tauri::command]
+fn library_delete_folder(state: State<AppState>, path: String) -> Result<(), String> {
+    let root = docs_root(&state)?;
+    let target = canonical_inside(&root, &PathBuf::from(&path))?;
+    if !target.is_dir() || target == root {
+        return Err("只能删除文档目录下的文件夹".to_string());
+    }
+    move_to_trash(&target)?;
+    forget_thumbnails(&state, &target);
+    forget_session_paths(&state, &target);
+    Ok(())
 }
 
 #[tauri::command]
@@ -1708,6 +1838,8 @@ pub fn run() {
             library_move,
             library_recent,
             library_search,
+            library_rename_folder,
+            library_delete_folder,
             open_path,
             rename_file,
             delete_file,

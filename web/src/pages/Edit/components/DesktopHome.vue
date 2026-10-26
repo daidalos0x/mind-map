@@ -119,7 +119,47 @@
             @click="openFolder(folder)"
           >
             <span class="folderGlyph"></span>
-            <div class="folderName">{{ folder.name }}</div>
+            <div class="folderHead">
+              <input
+                v-if="folderRenamingPath === folder.path"
+                ref="folderRenameInput"
+                v-model="folderRenameValue"
+                class="renameInput"
+                @click.stop
+                @keydown.enter.stop.prevent="commitRenameFolder(folder)"
+                @keydown.esc.stop.prevent="cancelRenameFolder"
+                @blur="commitRenameFolder(folder)"
+              />
+              <template v-else>
+                <div class="folderName" :title="folder.name">
+                  {{ folder.name }}
+                </div>
+                <el-dropdown
+                  class="folderMenu"
+                  trigger="click"
+                  @command="command => onFolderCommand(command, folder)"
+                >
+                  <button
+                    type="button"
+                    class="more folderMore"
+                    @click.stop
+                    aria-label="menu"
+                  >
+                    <span></span><span></span><span></span>
+                  </button>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item command="rename">{{
+                        $t('home.rename')
+                      }}</el-dropdown-item>
+                      <el-dropdown-item command="delete">{{
+                        $t('home.delete')
+                      }}</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </template>
+            </div>
           </article>
 
           <article
@@ -274,7 +314,10 @@ export default {
       ghost: null,
       renamingPath: '',
       renameValue: '',
-      renaming: false
+      renaming: false,
+      folderRenamingPath: '',
+      folderRenameValue: '',
+      renamingFolder: false
     }
   },
   computed: {
@@ -530,6 +573,76 @@ export default {
         this.notify(error)
       } finally {
         this.renaming = false
+      }
+    },
+
+    onFolderCommand(command, folder) {
+      if (command === 'rename') {
+        this.startRenameFolder(folder)
+      } else if (command === 'delete') {
+        this.deleteFolder(folder)
+      }
+    },
+
+    startRenameFolder(folder) {
+      this.folderRenamingPath = folder.path
+      this.folderRenameValue = folder.name
+      this.$nextTick(() => {
+        const refs = this.$refs.folderRenameInput
+        const input = Array.isArray(refs) ? refs[0] : refs
+        if (input) {
+          input.focus()
+          input.select()
+        }
+      })
+    },
+
+    cancelRenameFolder() {
+      this.folderRenamingPath = ''
+      this.folderRenameValue = ''
+    },
+
+    async commitRenameFolder(folder) {
+      if (this.renamingFolder || !this.folderRenamingPath) {
+        return
+      }
+      const name = this.folderRenameValue.trim()
+      if (!name || name === folder.name) {
+        this.cancelRenameFolder()
+        return
+      }
+      this.renamingFolder = true
+      try {
+        await invoke('library_rename_folder', { path: folder.path, name })
+        this.cancelRenameFolder()
+        await this.reload()
+      } catch (error) {
+        this.cancelRenameFolder()
+        this.notify(error)
+      } finally {
+        this.renamingFolder = false
+      }
+    },
+
+    async deleteFolder(folder) {
+      try {
+        await this.$confirm(
+          this.$t('home.deleteFolderTip'),
+          this.$t('home.delete'),
+          {
+            confirmButtonText: this.$t('home.confirm'),
+            cancelButtonText: this.$t('home.cancel'),
+            type: 'warning'
+          }
+        )
+      } catch (error) {
+        return
+      }
+      try {
+        await invoke('library_delete_folder', { path: folder.path })
+        await this.reload()
+      } catch (error) {
+        this.notify(error)
       }
     },
 
@@ -1018,12 +1131,29 @@ export default {
   }
 }
 
+.folderHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .folderName {
+  flex: 1;
+  min-width: 0;
   font-size: 13px;
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.folderMore {
+  opacity: 0;
+  background: transparent;
+}
+
+.folderCard:hover .folderMore {
+  opacity: 1;
 }
 
 // 拖拽反馈：可放置的目标高亮，被拖动的卡片变淡
@@ -1093,6 +1223,22 @@ export default {
   opacity: 1;
 }
 
+// 文件和文件夹共用同一个就地改名输入框
+.renameInput {
+  width: 100%;
+  min-width: 0;
+  height: 22px;
+  padding: 0 6px;
+  border: none;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 0 0 1px #409eff inset;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1d1d1f;
+  outline: none;
+}
+
 .meta {
   padding: 10px 12px 12px;
 
@@ -1102,20 +1248,6 @@ export default {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .renameInput {
-    width: 100%;
-    height: 22px;
-    padding: 0 6px;
-    border: none;
-    border-radius: 6px;
-    background: #fff;
-    box-shadow: 0 0 0 1px #409eff inset;
-    font-size: 13px;
-    font-weight: 500;
-    color: #1d1d1f;
-    outline: none;
   }
 
   .time {

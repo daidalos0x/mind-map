@@ -348,6 +348,8 @@ export default {
     empty: 'No mind maps yet',
     blank: 'Blank map',
     deleteTip: 'This mind map will be removed. Continue?',
+    deleteFolderTip:
+      'The folder and everything inside it will be moved to the trash. Continue?',
     back: 'Home',
     name: 'Name',
     confirm: 'OK',

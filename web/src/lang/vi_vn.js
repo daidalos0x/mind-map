@@ -345,6 +345,8 @@ export default {
     empty: 'Chưa có sơ đồ',
     blank: 'Sơ đồ trống',
     deleteTip: 'Sơ đồ này sẽ bị xóa. Tiếp tục?',
+    deleteFolderTip:
+      'Thư mục và toàn bộ nội dung bên trong sẽ được chuyển vào thùng rác. Tiếp tục?',
     back: 'Trang chủ',
     name: 'Tên',
     confirm: 'OK',

@@ -340,6 +340,7 @@ export default {
     empty: '還沒有導圖',
     blank: '空白導圖',
     deleteTip: '刪除後無法復原，確定刪除這份導圖嗎？',
+    deleteFolderTip: '資料夾會移到垃圾桶，裡面的導圖也會一起移走，確定刪除嗎？',
     back: '首頁',
     name: '名稱',
     confirm: '確定',

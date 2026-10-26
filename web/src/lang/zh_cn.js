@@ -339,6 +339,7 @@ export default {
     empty: '还没有导图',
     blank: '空白导图',
     deleteTip: '删除后无法恢复，确定删除这份导图吗？',
+    deleteFolderTip: '文件夹会移到废纸篓，里面的导图也会一起移走，确定删除吗？',
     back: '首页',
     name: '名称',
     confirm: '确定',
