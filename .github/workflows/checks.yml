@@ -77,7 +77,8 @@ jobs:
   cargo:
     name: cargo
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 首次运行要装 apt 包并全量编译，给足时间；命中缓存后约 1 分钟
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -85,20 +86,19 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Cache cargo registry
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-          key: ${{ runner.os }}-cargo-check-${{ hashFiles('desktop/src-tauri/Cargo.lock') }}
-          restore-keys: ${{ runner.os }}-cargo-check-
-
+      # 命中缓存时不再跑 apt-get update，避免 Ubuntu 源变慢把整步拖到超时
       - name: Install Linux dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
-            libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+        uses: awalsh128/cache-apt-pkgs-action@b8f4936ae6bd604d21de6c1243d45b013396d81b # v1
+        with:
+          packages: libwebkit2gtk-4.1-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+          version: 1.0
+
+      # 缓存 ~/.cargo 和 target：依赖只编译一次，之后的运行直接命中
+      - name: Cache Rust build
+        uses: Swatinem/rust-cache@e9d7b9f1e587218970671bac74e5511ed9506e6a # v2
+        with:
+          workspaces: desktop/src-tauri
+          shared-key: cargo-check
 
       # generate_context! 要求 frontendDist 存在；PR 上不构建前端，给个空目录就够了
       - name: Prepare frontend placeholder
