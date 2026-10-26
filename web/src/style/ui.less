@@ -1,0 +1,197 @@
+/**
+ * 全局 UI 基础样式。
+ *
+ * 之前没有设置 body 字体，浏览器会退回 Times，弹窗标题、按钮里的拉丁字符
+ * 都会变成衬线体，和界面其他部分不一致。
+ */
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/**
+ * Element Plus 的 MessageBox：默认 420px 宽、4px 圆角、12px 内边距，
+ * 偏大偏方，这里改成和首页一致的紧凑卡片。
+ */
+.el-message-box {
+  --el-messagebox-width: 400px;
+
+  width: 400px;
+  max-width: calc(100vw - 32px);
+  padding: 22px 24px 18px;
+  border: none;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
+  vertical-align: middle;
+
+  .el-message-box__header {
+    padding: 0 0 12px;
+  }
+
+  .el-message-box__title {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0;
+    color: #1d1d1f;
+  }
+
+  .el-message-box__headerbtn {
+    top: 14px;
+    right: 14px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    transition: background 0.15s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .el-message-box__close {
+      color: #8e8e93;
+      font-size: 15px;
+    }
+  }
+
+  .el-message-box__content {
+    padding: 0;
+    font-size: 13px;
+    color: #1d1d1f;
+  }
+
+  .el-message-box__message {
+    p {
+      margin: 0 0 8px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #6e6e73;
+    }
+  }
+
+  .el-message-box__input {
+    padding-top: 0;
+  }
+
+  .el-input__wrapper {
+    min-height: 36px;
+    padding: 0 12px;
+    border-radius: 8px;
+    background: transparent;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12) inset;
+    transition: box-shadow 0.15s;
+
+    &:hover {
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2) inset;
+    }
+
+    &.is-focus {
+      box-shadow:
+        0 0 0 1px #409eff inset,
+        0 0 0 3px rgba(64, 158, 255, 0.16);
+    }
+  }
+
+  .el-input__inner {
+    height: 34px;
+    font-size: 13px;
+    color: #1d1d1f;
+  }
+
+  .el-message-box__btns {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 18px 0 0;
+
+    .el-button {
+      height: 32px;
+      margin: 0;
+      padding: 0 16px;
+      border-radius: 8px;
+      border: none;
+      font-size: 13px;
+      background: rgba(0, 0, 0, 0.05);
+      color: #1d1d1f;
+      transition:
+        background 0.15s,
+        opacity 0.15s;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.08);
+      }
+
+      &.el-button--primary {
+        background: #409eff;
+        color: #fff;
+
+        &:hover {
+          background: #66b1ff;
+        }
+      }
+    }
+  }
+}
+
+.el-overlay.el-modal-dialog {
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+body.isDark {
+  .el-message-box {
+    background: #262a2e;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+
+    .el-message-box__title {
+      color: #f5f5f7;
+    }
+
+    .el-message-box__headerbtn:hover {
+      background: hsla(0, 0%, 100%, 0.08);
+    }
+
+    .el-message-box__message p {
+      color: hsla(0, 0%, 100%, 0.6);
+    }
+
+    .el-input__wrapper {
+      box-shadow: 0 0 0 1px hsla(0, 0%, 100%, 0.16) inset;
+
+      &:hover {
+        box-shadow: 0 0 0 1px hsla(0, 0%, 100%, 0.28) inset;
+      }
+
+      &.is-focus {
+        box-shadow:
+          0 0 0 1px #409eff inset,
+          0 0 0 3px rgba(64, 158, 255, 0.24);
+      }
+    }
+
+    .el-input__inner {
+      color: #f5f5f7;
+    }
+
+    .el-message-box__btns .el-button {
+      background: hsla(0, 0%, 100%, 0.08);
+      color: #f5f5f7;
+
+      &:hover {
+        background: hsla(0, 0%, 100%, 0.14);
+      }
+
+      &.el-button--primary {
+        background: #409eff;
+        color: #fff;
+
+        &:hover {
+          background: #66b1ff;
+        }
+      }
+    }
+  }
+}

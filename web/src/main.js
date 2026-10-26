@@ -16,6 +16,8 @@ import '@/assets/icon-font/iconfont.css'
 import 'viewerjs/dist/viewer.css'
 // 全局深色主题，必须在 element-plus / 第三方样式之后引入
 import '@/style/dark.less'
+// 基础字体与弹窗样式，同样需要覆盖 element-plus 的默认值
+import '@/style/ui.less'
 import VueViewer from 'v-viewer'
 import App from './App.vue'
 import router from './router'
